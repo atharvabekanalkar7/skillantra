@@ -9,11 +9,16 @@ export default function SignUp() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 font-sans">
       <div className="mx-auto max-w-md px-6 py-12">
-        {/* Header */}
-        <header className="mb-12">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            SkillAntra
-          </h1>
+        {/* Header with Back Button */}
+        <header className="mb-12 flex items-center justify-end">
+          <Link
+            href="/"
+            className="flex items-center gap-2 rounded-lg border border-slate-700/50 bg-slate-800/50 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-slate-700/50 hover:border-slate-600"
+            title="Back to home"
+          >
+            <span className="text-lg">←</span>
+            <span>Back</span>
+          </Link>
         </header>
 
         {/* Signup Card */}

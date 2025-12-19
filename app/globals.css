@@ -30,11 +30,12 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-/* Smooth transitions for theme changes */
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
+/* Smooth transitions for theme changes - only on specific elements */
+html,
+body {
+  transition-property: background-color, color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+  transition-duration: 300ms;
 }
 
 /* Animations */
@@ -99,4 +100,59 @@ h1, h2, h3, h4, h5, h6 {
 
 .delay-1000 {
   animation-delay: 1s;
+}
+
+/* Scroll reveal animations */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.6s ease-out forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale 0.8s ease-out forwards;
+}
+
+/* Prevent white flashes */
+html {
+  background-color: #0f172a;
+}
+
+body {
+  background-color: transparent;
+  overflow-x: hidden;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Performance optimizations */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
 }

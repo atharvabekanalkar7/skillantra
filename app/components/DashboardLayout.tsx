@@ -166,6 +166,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Right Side Actions */}
             <div className="flex items-center gap-4">
+              {/* Back Button */}
+              <Link
+                href="/"
+                className={`rounded-lg p-2 transition-all duration-200 hover:scale-110 ${
+                  isDark
+                    ? "text-slate-300 hover:bg-blue-500/10 hover:text-blue-300"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-indigo-700"
+                }`}
+                title="Back to home"
+              >
+                <span className="text-xl">←</span>
+              </Link>
+
               {/* Demo Mode Badge */}
               <div
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold border shadow-lg animate-pulse ${
