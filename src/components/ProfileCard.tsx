@@ -18,6 +18,10 @@ export default function ProfileCard({ profile }: ProfileCardProps) {
     >
       <h3 className="text-xl font-semibold text-gray-900 mb-2">{profile.name}</h3>
       
+      {profile.college && (
+        <p className="text-gray-500 text-sm mb-2">{profile.college}</p>
+      )}
+      
       {profile.bio && (
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{profile.bio}</p>
       )}

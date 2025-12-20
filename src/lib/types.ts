@@ -9,6 +9,8 @@ export interface Profile {
   name: string;
   bio: string | null;
   skills: string | null;
+  college: string | null;
+  phone_number: string | null;
   user_type: 'SkillSeeker' | 'SkillHolder' | 'Both' | null;
   created_at: string;
   updated_at: string;

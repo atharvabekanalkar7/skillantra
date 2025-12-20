@@ -102,13 +102,26 @@ export default function LandingPageClient() {
             <div className="mt-14 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
               <Link
                 href="/dashboard?demo=true"
-                className="group flex h-14 min-w-[160px] items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-10 font-bold text-slate-900 shadow-2xl shadow-amber-900/50 transition-all duration-300 hover:scale-105 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-500 hover:shadow-amber-900/60 sm:w-auto"
+                className="group flex h-19 min-w-[216px] items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-14 font-bold text-slate-900 shadow-2xl shadow-amber-900/50 transition-all duration-300 hover:scale-105 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-500 hover:shadow-amber-900/60 sm:w-auto text-lg"
+                style={{ height: 'calc(3.5rem * 1.35)', minWidth: 'calc(160px * 1.35)', paddingLeft: 'calc(2.5rem * 1.35)', paddingRight: 'calc(2.5rem * 1.35)' }}
               >
-                🚀 Try Demo
+                <span 
+                  className="inline-block animate-bounce mr-3 text-2xl" 
+                  style={{ 
+                    animationDuration: '1.5s', 
+                    animationIterationCount: 'infinite',
+                    filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 12px rgba(255, 165, 0, 0.6))',
+                    textShadow: '0 0 10px rgba(255, 215, 0, 0.9), 0 0 20px rgba(255, 165, 0, 0.7)'
+                  }}
+                >
+                  🚀
+                </span>
+                Try Demo
               </Link>
               <Link
                 href="/signup"
-                className="group flex h-14 min-w-[160px] items-center justify-center rounded-xl bg-white px-10 font-bold text-indigo-700 shadow-2xl shadow-indigo-900/30 transition-all duration-300 hover:scale-105 hover:bg-indigo-50 hover:shadow-indigo-900/40 sm:w-auto"
+                className="group flex h-19 min-w-[216px] items-center justify-center rounded-xl bg-white px-14 font-bold text-indigo-700 shadow-2xl shadow-indigo-900/30 transition-all duration-300 hover:scale-105 hover:bg-indigo-50 hover:shadow-indigo-900/40 sm:w-auto text-lg"
+                style={{ height: 'calc(3.5rem * 1.35)', minWidth: 'calc(160px * 1.35)', paddingLeft: 'calc(2.5rem * 1.35)', paddingRight: 'calc(2.5rem * 1.35)' }}
               >
                 Sign Up
               </Link>
@@ -202,6 +215,39 @@ export default function LandingPageClient() {
           </div>
         </div>
       </section>
+
+      {/* Footer Section */}
+      <footer className="relative bg-gradient-to-b from-slate-950 to-black py-12 border-t border-purple-500/20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <p className="text-white/80 text-sm mb-2">
+                📧 Contact: <a href="mailto:skillantra0511@gmail.com" className="text-purple-300 hover:text-purple-200 underline">skillantra0511@gmail.com</a>
+              </p>
+            </div>
+            <div className="flex items-center gap-6 text-sm">
+              <Link
+                href="/terms"
+                className="text-white/80 hover:text-white transition-colors underline"
+              >
+                Terms of Service
+              </Link>
+              <span className="text-white/40">|</span>
+              <Link
+                href="/privacy"
+                className="text-white/80 hover:text-white transition-colors underline"
+              >
+                Privacy Policy
+              </Link>
+            </div>
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-white/60 text-xs">
+              © 2025 SkillAntra. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

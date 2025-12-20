@@ -24,22 +24,27 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const mine = searchParams.get('mine') === 'true';
+  const sent = searchParams.get('sent') === 'true';
+  const received = searchParams.get('received') === 'true';
 
   let query;
 
-  if (mine) {
-    // Return applications made by the user
+  if (sent) {
+    // Return applications made by the user (sent applications)
+    // Include task creator's phone number only if application is accepted
     query = supabase
       .from('task_applications')
       .select(`
         *,
-        task:tasks(*)
+        task:tasks(
+          *,
+          creator:profiles!tasks_creator_profile_id_fkey(id, name, phone_number)
+        )
       `)
       .eq('applicant_profile_id', userProfile.id)
       .order('created_at', { ascending: false });
-  } else {
-    // Return applications for tasks created by the user
+  } else if (received) {
+    // Return applications received on the user's tasks
     const { data: userTasks, error: tasksError } = await supabase
       .from('tasks')
       .select('id')
@@ -60,10 +65,14 @@ export async function GET(request: Request) {
       .select(`
         *,
         task:tasks(*),
-        applicant:profiles!task_applications_applicant_profile_id_fkey(*)
+        applicant:profiles!task_applications_applicant_profile_id_fkey(id, name, phone_number)
       `)
       .in('task_id', taskIds)
       .order('created_at', { ascending: false });
+  } else {
+    // If neither sent nor received is specified, return empty array
+    // Client must specify one of the query parameters
+    return NextResponse.json({ applications: [] });
   }
 
   const { data: applications, error } = await query;
@@ -85,7 +94,30 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ applications: applications || [] });
+  // Filter contact information: only show if application status is 'accepted'
+  const filteredApplications = (applications || []).map((app: any) => {
+    const filtered = { ...app };
+    
+    if (sent) {
+      // For sent applications: hide creator's contact info unless accepted
+      if (filtered.task?.creator) {
+        if (filtered.status !== 'accepted') {
+          filtered.task.creator.phone_number = null;
+        }
+      }
+    } else if (received) {
+      // For received applications: hide applicant's contact info unless accepted
+      if (filtered.applicant) {
+        if (filtered.status !== 'accepted') {
+          filtered.applicant.phone_number = null;
+        }
+      }
+    }
+    
+    return filtered;
+  });
+
+  return NextResponse.json({ applications: filteredApplications });
 }
 
 export async function POST(request: Request) {
@@ -100,14 +132,71 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: userProfile, error: profileError } = await supabase
+  // Get profile with phone_number, handle missing column gracefully
+  let userProfile: any = null;
+  let profileError: any = null;
+  let phoneNumber: string | null = null;
+  
+  const { data: profileWithPhone, error: errorWithPhone } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, phone_number')
     .eq('user_id', user.id)
     .single();
+  
+  if (errorWithPhone) {
+    // Only fall back if the error is specifically about missing column
+    // Other errors (like no rows found) should be handled differently
+    const isColumnError = errorWithPhone.message?.includes('phone_number') || 
+                         errorWithPhone.message?.includes('column') ||
+                         errorWithPhone.code === '42703'; // PostgreSQL undefined column
+    
+    if (isColumnError) {
+      // Try to get profile without phone_number if column doesn't exist
+      const { data: profileBasic, error: errorBasic } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (errorBasic) {
+        userProfile = null;
+        profileError = errorBasic;
+      } else {
+        userProfile = profileBasic;
+        profileError = null;
+        phoneNumber = null;
+      }
+    } else {
+      // For other errors (like profile not found), return the error
+      userProfile = null;
+      profileError = errorWithPhone;
+      phoneNumber = null;
+    }
+  } else {
+    userProfile = profileWithPhone;
+    profileError = null;
+    phoneNumber = profileWithPhone?.phone_number || null;
+  }
 
   if (profileError || !userProfile) {
     return NextResponse.json({ error: 'Profile not found. Please create your profile first.' }, { status: 404 });
+  }
+
+  // Check if phone number is required and present
+  if (!phoneNumber) {
+    return NextResponse.json({ 
+      error: 'Phone number is required to apply to tasks. Please add your phone number in your profile settings.',
+      code: 'PHONE_NUMBER_REQUIRED'
+    }, { status: 400 });
+  }
+
+  // Validate phone number format (10-15 digits, numeric only)
+  const cleanedPhone = phoneNumber.trim();
+  if (!/^[0-9]{10,15}$/.test(cleanedPhone)) {
+    return NextResponse.json({ 
+      error: 'Phone number must be 10-15 digits and contain only numbers. Please update your phone number in your profile settings.',
+      code: 'PHONE_NUMBER_REQUIRED'
+    }, { status: 400 });
   }
 
   const body = await request.json();

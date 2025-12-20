@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 export default function EditProfilePage() {
   const searchParams = useSearchParams();
   const isDemo = searchParams?.get('demo') === 'true';
+  const isSetup = searchParams?.get('setup') === 'true';
+  const phoneRequired = searchParams?.get('phone_required') === 'true';
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(!isDemo);
 
@@ -103,13 +105,24 @@ export default function EditProfilePage() {
           <span className="text-sm font-medium">Back</span>
         </Link>
         <h1 className="text-4xl font-bold text-white mb-3">
-          {profile ? 'Edit Profile' : 'Create Profile'}
+          {phoneRequired ? 'Phone Number Required' : profile ? 'Edit Profile' : isSetup ? 'Complete Your Profile' : 'Create Profile'}
         </h1>
         <p className="text-white/70">
-          {profile
+          {phoneRequired
+            ? 'Phone number is now required to use SkillAntra. Please add your phone number below.'
+            : profile
             ? 'Update your profile information'
+            : isSetup
+            ? 'Welcome to SkillAntra! Please complete your profile to get started.'
             : 'Create your profile to get started'}
         </p>
+        {phoneRequired && (
+          <div className="mt-4 bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+            <p className="text-sm text-blue-200">
+              <strong className="font-semibold">Why we need your phone number:</strong> Your phone number will be displayed to other users (both SkillSeekers and SkillHolders) on the platform to facilitate communication and collaboration. This helps build trust and enables direct contact between users.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-purple-500/30">

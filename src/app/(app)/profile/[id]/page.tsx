@@ -7,18 +7,28 @@ import Link from 'next/link';
 async function getProfile(profileId: string) {
   const supabase = await createClient();
   
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', profileId)
-    .maybeSingle();
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', profileId)
+      .maybeSingle();
 
-  if (error) {
-    console.error('Error fetching profile:', error);
+    if (error) {
+      console.error('Error fetching profile:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Unexpected error fetching profile:', err);
     return null;
   }
-
-  return data;
 }
 
 async function getCurrentUserProfile() {
@@ -45,6 +55,34 @@ async function getCurrentUserProfile() {
   return data;
 }
 
+async function getProfileEmail(profileId: string) {
+  const supabase = await createClient();
+  
+  // Get the profile to find user_id
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('user_id')
+    .eq('id', profileId)
+    .single();
+
+  if (!profile) {
+    return null;
+  }
+
+  // Get current user to check if this is their profile
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+
+  if (!currentUser || currentUser.id !== profile.user_id) {
+    // Not the owner, don't return email
+    return null;
+  }
+
+  // Return the email for the profile owner
+  return currentUser.email;
+}
+
 async function hasPendingRequest(senderId: string, receiverId: string) {
   const supabase = await createClient();
   
@@ -67,7 +105,7 @@ async function hasPendingRequest(senderId: string, receiverId: string) {
 export default async function ProfileViewPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }> | { id: string };
 }) {
   const supabase = await createClient();
   const {
@@ -78,7 +116,27 @@ export default async function ProfileViewPage({
     redirect('/login');
   }
 
-  const profile = await getProfile(params.id);
+  // Handle params - can be a Promise in Next.js 15+ or object in earlier versions
+  const resolvedParams = params instanceof Promise ? await params : params;
+  const profileId = resolvedParams.id;
+
+  if (!profileId) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <p className="text-gray-600 mb-4">Profile ID is required</p>
+          <Link
+            href="/dashboard"
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Return to dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const profile = await getProfile(profileId);
 
   if (!profile) {
     return (
@@ -104,6 +162,14 @@ export default async function ProfileViewPage({
 
   const skills = parseSkills(profile.skills);
 
+  // Get email for own profile only
+  const profileEmail = isOwnProfile ? await getProfileEmail(profileId) : null;
+
+  // Hide phone_number from non-owners
+  if (!isOwnProfile) {
+    profile.phone_number = null;
+  }
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="bg-white rounded-lg shadow-md p-8">
@@ -115,6 +181,14 @@ export default async function ProfileViewPage({
             ← Back to dashboard
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.name}</h1>
+          {profile.college && (
+            <p className="text-gray-600 text-sm mb-2">{profile.college}</p>
+          )}
+          {profileEmail && (
+            <p className="text-gray-600 text-sm mb-3">
+              ✉️ {profileEmail}
+            </p>
+          )}
           {profile.bio && (
             <p className="text-gray-700 text-lg mb-4 whitespace-pre-wrap">{profile.bio}</p>
           )}

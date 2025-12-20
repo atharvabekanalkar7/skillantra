@@ -18,6 +18,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -26,29 +27,102 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true);
     setError(null);
 
-    if (mode === 'signup' && !agreeToTerms) {
-      setError('Please agree to the Terms of Service and Privacy Policy');
-      setLoading(false);
-      return;
+    if (mode === 'signup') {
+      if (!agreeToTerms) {
+        setError('Please agree to the Terms of Service and Privacy Policy');
+        setLoading(false);
+        return;
+      }
+
+      if (!fullName || fullName.trim().length === 0) {
+        setError('Full name is required');
+        setLoading(false);
+        return;
+      }
+
+      if (!college || college.trim().length === 0) {
+        setError('Please select a college');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
       if (mode === 'signup') {
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Store name and college in user metadata for profile creation after email confirmation
+        const emailRedirectUrl = `${window.location.origin}/auth/callback`;
+        
+        console.log('Signing up with:', { email, emailRedirectUrl });
+        
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: emailRedirectUrl,
+            data: {
+              full_name: fullName.trim(),
+              college: college.trim(),
+            },
+          },
+        });
+
+        console.log('Signup response:', { 
+          user: signUpData?.user ? 'exists' : 'null',
+          session: signUpData?.session ? 'exists' : 'null',
+          error: signUpError?.message 
         });
 
         if (signUpError) {
+          console.error('Signup error:', signUpError);
           setError(signUpError.message);
           setLoading(false);
           return;
         }
 
-        router.push('/dashboard');
-        router.refresh();
+        // Check if email confirmation is required
+        // If user exists but no session, email confirmation is required
+        if (signUpData.user && !signUpData.session) {
+          console.log('Email confirmation required - user created but no session');
+          // Email confirmation required - show message to user
+          setEmailSent(true);
+          setLoading(false);
+          return;
+        }
+
+        // If no user was returned, something went wrong
+        if (!signUpData.user) {
+          console.error('No user returned from signup');
+          setError('Failed to create account. Please try again or check if email confirmations are enabled in Supabase.');
+          setLoading(false);
+          return;
+        }
+
+        // If email confirmation is disabled and user is immediately authenticated
+        if (signUpData.user && signUpData.session) {
+          // Create profile immediately
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: signUpData.user.id,
+              name: fullName.trim(),
+              college: college.trim(),
+            });
+
+          if (profileError) {
+            console.error('Error creating profile:', profileError);
+            // Don't block signup - profile will be created on first login
+          }
+
+          router.push('/dashboard');
+          router.refresh();
+          return;
+        }
+
+        // Fallback: if we get here, something unexpected happened
+        setError('An unexpected error occurred during signup');
+        setLoading(false);
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -57,6 +131,48 @@ export default function AuthForm({ mode }: AuthFormProps) {
           setError(signInError.message);
           setLoading(false);
           return;
+        }
+
+        // After successful login, check if profile exists
+        if (signInData.user) {
+          try {
+            const { data: existingProfile, error: checkError } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('user_id', signInData.user.id)
+              .maybeSingle();
+
+            // Only redirect if it's actually a table not found error (very specific check)
+            const errorMessage = checkError?.message?.toLowerCase() || '';
+            const isTableNotFound = checkError && (
+              checkError.code === '42P01' ||
+              checkError.code === 'PGRST116' ||
+              (errorMessage.includes('relation') && errorMessage.includes('profiles') && errorMessage.includes('does not exist'))
+            );
+
+            if (isTableNotFound) {
+              // Database tables not initialized - redirect to profile creation
+              router.push('/profile/edit?setup=true');
+              router.refresh();
+              return;
+            }
+
+            // If no profile exists (and no error, or error is not table not found), redirect to profile creation
+            if (!existingProfile) {
+              // No profile exists - redirect to profile creation
+              router.push('/profile/edit?setup=true');
+              router.refresh();
+              return;
+            }
+
+            // Profile exists or error is not critical - proceed to dashboard
+          } catch (err) {
+            // Silently handle errors - redirect to profile creation as fallback
+            console.error('Error during profile check:', err);
+            router.push('/profile/edit?setup=true');
+            router.refresh();
+            return;
+          }
         }
 
         router.push('/dashboard');
@@ -91,6 +207,49 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
         {/* Form Card */}
         <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-purple-500/30">
+          {emailSent ? (
+            <div className="space-y-6 text-center">
+              <div className="mb-6">
+                <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Check your email</h2>
+                <p className="text-white/70 mb-4">
+                  We've sent a confirmation email to <span className="font-semibold text-white">{email}</span>
+                </p>
+                <p className="text-white/60 text-sm mb-6">
+                  Please click the confirmation link in the email to verify your account and complete your signup.
+                </p>
+                <div className="bg-blue-500/20 border border-blue-500/50 text-blue-300 px-4 py-3 rounded-lg text-sm mb-4">
+                  <p className="font-medium mb-2">Didn't receive the email?</p>
+                  <ul className="text-left list-disc list-inside space-y-1 text-xs mb-2">
+                    <li>Check your spam/junk folder</li>
+                    <li>Make sure you entered the correct email address</li>
+                    <li>Wait a few minutes and try again</li>
+                    <li>Verify email confirmations are enabled in Supabase dashboard</li>
+                  </ul>
+                </div>
+                <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 px-4 py-3 rounded-lg text-sm mb-6">
+                  <p className="font-medium mb-1">⚠️ Important:</p>
+                  <p className="text-xs">
+                    If you still don't receive emails, check your Supabase dashboard:
+                    <br />
+                    <strong>Authentication → Settings → Enable email confirmations</strong>
+                    <br />
+                    Also verify redirect URLs are configured correctly.
+                  </p>
+                </div>
+                <Link
+                  href="/login"
+                  className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all transform hover:scale-[1.02]"
+                >
+                  Go to Login
+                </Link>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
@@ -101,7 +260,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             {mode === 'signup' && (
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-white mb-2">
-                  Full Name
+                  Full Name <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
@@ -114,6 +273,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
+                    required
                     className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
                     placeholder="Enter your full name"
                   />
@@ -123,7 +283,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-                {mode === 'signup' ? 'College Email' : 'Email'}
+                Email
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
@@ -138,7 +298,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
-                  placeholder={mode === 'signup' ? 'you@college.edu' : 'you@example.com'}
+                  placeholder="you@example.com"
                 />
               </div>
             </div>
@@ -146,22 +306,31 @@ export default function AuthForm({ mode }: AuthFormProps) {
             {mode === 'signup' && (
               <div>
                 <label htmlFor="college" className="block text-sm font-medium text-white mb-2">
-                  College/University
+                  College/University <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400 z-10">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                   </div>
-                  <input
+                  <select
                     id="college"
-                    type="text"
                     value={college}
                     onChange={(e) => setCollege(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
-                    placeholder="Enter your college"
-                  />
+                    required
+                    className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
+                  >
+                    <option value="" className="bg-gray-900">Select your college</option>
+                    <option value="Indian Institute of Technology (IIT) Mandi" className="bg-gray-900">Indian Institute of Technology (IIT) Mandi</option>
+                    <option value="IIIT Una" disabled className="bg-gray-900 text-gray-500">IIIT Una (Coming Soon)</option>
+                    <option value="NIT Hamirpur" disabled className="bg-gray-900 text-gray-500">NIT Hamirpur (Coming Soon)</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 pointer-events-none">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             )}
@@ -213,11 +382,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 />
                 <label htmlFor="agreeToTerms" className="text-sm text-white/90 leading-relaxed">
                   I agree to the{' '}
-                  <Link href="/terms" className="text-purple-400 hover:text-purple-300 font-medium">
+                  <Link href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
                     Terms of Service
                   </Link>
                   {' '}and{' '}
-                  <Link href="/privacy" className="text-purple-400 hover:text-purple-300 font-medium">
+                  <Link href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
                     Privacy Policy
                   </Link>
                 </label>
@@ -233,24 +402,39 @@ export default function AuthForm({ mode }: AuthFormProps) {
               {!loading && mode === 'signup' && <span>→</span>}
             </button>
           </form>
+          )}
 
-          <div className="mt-6 text-center text-sm">
-            {mode === 'login' ? (
-              <p className="text-white/70">
-                Don't have an account?{' '}
-                <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium">
-                  Sign up
-                </Link>
-              </p>
-            ) : (
-              <p className="text-white/70">
-                Already have an account?{' '}
-                <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
-                  Log in
-                </Link>
-              </p>
-            )}
-          </div>
+          {!emailSent && (
+            <div className="mt-6 text-center text-sm space-y-2">
+              {mode === 'login' && (
+                <p className="text-white/70 text-xs">
+                  By logging in, you agree to our{' '}
+                  <Link href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
+                    Privacy Policy
+                  </Link>
+                </p>
+              )}
+              {mode === 'login' ? (
+                <p className="text-white/70">
+                  Don't have an account?{' '}
+                  <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium">
+                    Sign up
+                  </Link>
+                </p>
+              ) : (
+                <p className="text-white/70">
+                  Already have an account?{' '}
+                  <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+                    Log in
+                  </Link>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

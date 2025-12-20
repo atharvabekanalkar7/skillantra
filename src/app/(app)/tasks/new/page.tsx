@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import PhoneNumberModal from '@/components/PhoneNumberModal';
 
 export default function NewTaskPage() {
   const router = useRouter();
@@ -10,9 +11,10 @@ export default function NewTaskPage() {
   const [skillsRequired, setSkillsRequired] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitTask = async (throwOnError: boolean = false) => {
     setLoading(true);
     setError(null);
 
@@ -32,17 +34,42 @@ export default function NewTaskPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Failed to create task');
+        if (data.code === 'CONTACT_REQUIRED' || data.code === 'PHONE_NUMBER_REQUIRED') {
+          setLoading(false);
+          setShowPhoneModal(true);
+          if (throwOnError) {
+            throw new Error('Contact information required');
+          }
+          return;
+        }
+        const errorMsg = data.error || 'Failed to create task';
+        setError(errorMsg);
         setLoading(false);
+        if (throwOnError) {
+          throw new Error(errorMsg);
+        }
         return;
       }
 
+      // Success - reset loading before redirect
+      setLoading(false);
       router.push('/tasks/mine');
       router.refresh();
-    } catch (err) {
-      setError('An unexpected error occurred');
+    } catch (err: any) {
+      const errorMsg = err.message || 'An unexpected error occurred';
+      setError(errorMsg);
       setLoading(false);
+      if (throwOnError) {
+        throw err;
+      }
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPendingSubmit(true);
+    await submitTask();
+    setPendingSubmit(false);
   };
 
   return (
@@ -122,6 +149,54 @@ export default function NewTaskPage() {
           </div>
         </form>
       </div>
+
+      <PhoneNumberModal
+        isOpen={showPhoneModal}
+        onClose={() => setShowPhoneModal(false)}
+        context="create_task"
+        onSave={async (phoneNumber) => {
+          try {
+            const response = await fetch('/api/profile', {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                phone_number: phoneNumber,
+              }),
+            });
+
+            if (!response.ok) {
+              const data = await response.json();
+              throw new Error(data.error || 'Failed to save phone number');
+            }
+
+            // Verify the phone number was actually saved by fetching the profile
+            const verifyResponse = await fetch('/api/profile');
+            if (verifyResponse.ok) {
+              const verifyData = await verifyResponse.json();
+              if (!verifyData.profile?.phone_number) {
+                throw new Error('Phone number was not saved. Please try again.');
+              }
+            }
+
+            // Wait a bit to ensure the database update is committed
+            // This helps avoid race conditions where the task creation API
+            // might read stale profile data
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Retry task creation after saving phone number
+            // Pass throwOnError=true so errors are propagated to the modal
+            await submitTask(true);
+            
+            // Only close modal if task creation succeeded
+            setShowPhoneModal(false);
+          } catch (err: any) {
+            // Error will be shown in the modal
+            throw err;
+          }
+        }}
+      />
     </div>
   );
 }

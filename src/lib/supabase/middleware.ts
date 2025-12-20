@@ -32,10 +32,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/auth/callback');
   const isApiRoute = pathname.startsWith('/api');
   const isLandingPage = pathname === '/';
   const isDemoMode = request.nextUrl.searchParams.get('demo') === 'true';
+  const isProfileEditRoute = pathname.startsWith('/profile/edit');
+  const isLogoutRoute = pathname.startsWith('/logout');
 
   // If user is logged in and visits landing page, redirect to dashboard (don't log them out)
   if (user && isLandingPage) {
@@ -59,6 +61,29 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard';
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Check if user has phone number - redirect to profile edit if missing
+  if (user && !isApiRoute && !isProfileEditRoute && !isLogoutRoute && !isDemoMode) {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('phone_number')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // If profile doesn't exist or phone_number is missing, redirect to profile edit
+      if (!profile || !profile.phone_number) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = '/profile/edit';
+        redirectUrl.searchParams.set('phone_required', 'true');
+        return NextResponse.redirect(redirectUrl);
+      }
+    } catch (error) {
+      // If there's an error (like table doesn't exist), allow through
+      // The app will handle it gracefully
+      console.error('Error checking phone number in middleware:', error);
+    }
   }
 
   return supabaseResponse;

@@ -37,12 +37,26 @@ A campus-first skill and project collaboration platform built with Next.js 15+, 
      SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
      ```
 
-4. **Set up the database**:
+4. **Set up the database** (REQUIRED):
    - Open your Supabase project dashboard
-   - Go to SQL Editor
-   - Run the SQL from `supabase-migration.sql` to create tables and RLS policies
+   - Go to **SQL Editor** → Click **"New query"**
+   - **Option A (Recommended)**: Copy and paste the entire contents of `supabase-migration-complete.sql` and click **"Run"**
+   - **Option B**: Run migrations individually in this order:
+     1. `supabase-migration.sql` (core tables)
+     2. `supabase-migration-user-type.sql` (user_type column)
+     3. `supabase-migration-college.sql` (college column)
+     4. `supabase-migration-profile-trigger.sql` (auto-create profiles)
+   - See `DATABASE_SETUP_GUIDE.md` for detailed instructions
 
-5. **Run the development server**:
+5. **Configure Email Authentication** (IMPORTANT):
+   - Go to **Authentication** → **Settings** in your Supabase dashboard
+   - Enable **"Enable email confirmations"** toggle
+   - Set **Site URL** to `http://localhost:3000` (for development)
+   - Add redirect URL: `http://localhost:3000/**`
+   - For production, configure custom SMTP or use Supabase's email service
+   - See `SUPABASE_EMAIL_SETUP.md` for detailed email configuration guide
+
+6. **Run the development server**:
    ```bash
    npm run dev
    ```

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { formatTimeAgo } from '@/lib/utils/timeAgo';
 
 interface Task {
   id: string;
@@ -11,8 +12,24 @@ interface Task {
   title: string;
   description: string | null;
   skills_required: string | null;
+  stipend_min: number | null;
+  stipend_max: number | null;
   status: 'open' | 'closed';
   created_at: string;
+}
+
+interface Application {
+  id: string;
+  task_id: string;
+  applicant_profile_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+  applicant?: {
+    id: string;
+    name: string;
+    college: string | null;
+    phone_number: string | null;
+  };
 }
 
 export default function MyTasksPage() {
@@ -21,7 +38,10 @@ export default function MyTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [applications, setApplications] = useState<Record<string, number>>({});
+  const [applicationsByTask, setApplicationsByTask] = useState<Record<string, Application[]>>({});
+  const [updatingApplicationId, setUpdatingApplicationId] = useState<string | null>(null);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
@@ -40,11 +60,29 @@ export default function MyTasksPage() {
           title: 'My Demo Task',
           description: 'This is a demo task created by you.',
           skills_required: 'React, Node.js',
+          stipend_min: 4000,
+          stipend_max: 7000,
           status: 'open',
           created_at: new Date().toISOString(),
         },
       ]);
-      setApplications({ 'demo-mine-1': 2 });
+      setApplicationsByTask({ 
+        'demo-mine-1': [
+          {
+            id: 'demo-app-1',
+            task_id: 'demo-mine-1',
+            applicant_profile_id: 'demo-applicant-1',
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            applicant: {
+              id: 'demo-applicant-1',
+              name: 'Demo Applicant',
+              college: 'IIT Mandi',
+              phone_number: null,
+            },
+          },
+        ]
+      });
       setLoading(false);
       return;
     }
@@ -78,18 +116,92 @@ export default function MyTasksPage() {
 
   const loadApplications = async () => {
     try {
-      const response = await fetch('/api/applications');
+      const response = await fetch('/api/applications?received=true');
       const data = await response.json();
 
       if (response.ok && data.applications) {
-        const counts: Record<string, number> = {};
-        data.applications.forEach((app: { task_id: string }) => {
-          counts[app.task_id] = (counts[app.task_id] || 0) + 1;
+        // Group applications by task_id
+        const grouped: Record<string, Application[]> = {};
+        data.applications.forEach((app: Application) => {
+          if (!grouped[app.task_id]) {
+            grouped[app.task_id] = [];
+          }
+          grouped[app.task_id].push(app);
         });
-        setApplications(counts);
+        setApplicationsByTask(grouped);
       }
     } catch (err) {
       console.error('Error loading applications:', err);
+    }
+  };
+
+  const handleUpdateApplicationStatus = async (applicationId: string, status: 'accepted' | 'rejected') => {
+    if (isDemo) {
+      alert('Demo mode: Cannot update application status. Sign up to manage applications!');
+      return;
+    }
+
+    setUpdatingApplicationId(applicationId);
+    try {
+      const response = await fetch(`/api/applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to update application status');
+        return;
+      }
+
+      // Reload applications to reflect the update
+      await loadApplications();
+    } catch (err) {
+      alert('An unexpected error occurred');
+      console.error('Error updating application status:', err);
+    } finally {
+      setUpdatingApplicationId(null);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (isDemo) {
+      alert('Demo mode: Cannot delete tasks. Sign up to manage tasks!');
+      return;
+    }
+
+    if (confirmDeleteId !== taskId) {
+      setConfirmDeleteId(taskId);
+      return;
+    }
+
+    setDeletingTaskId(taskId);
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete task');
+        setConfirmDeleteId(null);
+        return;
+      }
+
+      // Reload tasks
+      await loadTasks();
+      setConfirmDeleteId(null);
+    } catch (err) {
+      alert('An unexpected error occurred');
+      console.error('Error deleting task:', err);
+      setConfirmDeleteId(null);
+    } finally {
+      setDeletingTaskId(null);
     }
   };
 
@@ -150,9 +262,9 @@ export default function MyTasksPage() {
                       {task.status}
                     </span>
                   </div>
-                  {applications[task.id] > 0 && (
+                  {applicationsByTask[task.id] && applicationsByTask[task.id].length > 0 && (
                     <p className="text-sm text-blue-300 font-semibold">
-                      {applications[task.id]} application{applications[task.id] !== 1 ? 's' : ''} received
+                      {applicationsByTask[task.id].length} application{applicationsByTask[task.id].length !== 1 ? 's' : ''} received
                     </p>
                   )}
                 </div>
@@ -180,16 +292,116 @@ export default function MyTasksPage() {
                 </div>
               )}
 
+              {(task.stipend_min !== null || task.stipend_max !== null) && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
+                  <p className="text-green-300 font-semibold">
+                    {task.stipend_min !== null && task.stipend_max !== null
+                      ? `₹${task.stipend_min.toLocaleString()} - ₹${task.stipend_max.toLocaleString()}`
+                      : task.stipend_min !== null
+                      ? `₹${task.stipend_min.toLocaleString()}+`
+                      : `Up to ₹${task.stipend_max?.toLocaleString()}`}
+                  </p>
+                </div>
+              )}
+
+              {/* Applications Section */}
+              {applicationsByTask[task.id] && applicationsByTask[task.id].length > 0 && (
+                <div className="mt-4 pt-4 border-t border-purple-400/20">
+                  <h4 className="text-sm font-semibold text-white mb-3">Applications:</h4>
+                  <div className="space-y-3">
+                    {applicationsByTask[task.id].map((application) => (
+                      <div
+                        key={application.id}
+                        className="bg-slate-800/60 rounded-lg p-4 border border-purple-400/20"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-medium">
+                                {application.applicant?.name || 'Unknown User'}
+                              </p>
+                              {application.applicant?.id && (
+                                <Link
+                                  href={`/profile/${application.applicant.id}`}
+                                  className="text-xs text-purple-300 hover:text-purple-200 font-semibold hover:underline"
+                                >
+                                  👤 View Profile
+                                </Link>
+                              )}
+                            </div>
+                            {application.applicant?.college && (
+                              <p className="text-xs text-white/60">{application.applicant.college}</p>
+                            )}
+                            {application.status === 'accepted' && application.applicant?.phone_number && (
+                              <p className="text-xs text-green-300 font-semibold mt-1">
+                                📞 +91 {application.applicant.phone_number}
+                              </p>
+                            )}
+                          </div>
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-semibold ${
+                              application.status === 'accepted'
+                                ? 'bg-green-500/20 text-green-300 border border-green-400/50'
+                                : application.status === 'rejected'
+                                ? 'bg-red-500/20 text-red-300 border border-red-400/50'
+                                : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+                            }`}
+                          >
+                            {application.status}
+                          </span>
+                        </div>
+                        {application.status === 'pending' && (
+                          <div className="flex gap-2 mt-3">
+                            <button
+                              onClick={() => handleUpdateApplicationStatus(application.id, 'accepted')}
+                              disabled={updatingApplicationId === application.id}
+                              className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {updatingApplicationId === application.id ? 'Updating...' : 'Accept'}
+                            </button>
+                            <button
+                              onClick={() => handleUpdateApplicationStatus(application.id, 'rejected')}
+                              disabled={updatingApplicationId === application.id}
+                              className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {updatingApplicationId === application.id ? 'Updating...' : 'Reject'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between items-center mt-4 pt-4 border-t border-purple-400/20">
                 <div className="text-xs text-white/50">
-                  Created {new Date(task.created_at).toLocaleDateString()}
+                  {formatTimeAgo(task.created_at)}
                 </div>
-                <Link
-                  href={`/tasks/${task.id}`}
-                  className="text-purple-300 hover:text-purple-200 text-sm font-semibold group inline-flex items-center gap-1"
-                >
-                  View Details <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/tasks/${task.id}`}
+                    className="text-purple-300 hover:text-purple-200 text-sm font-semibold group inline-flex items-center gap-1"
+                  >
+                    View Details <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    disabled={deletingTaskId === task.id}
+                    className={`text-sm font-semibold px-3 py-1 rounded-lg transition-colors ${
+                      confirmDeleteId === task.id
+                        ? 'bg-red-600 hover:bg-red-500 text-white'
+                        : 'text-red-400 hover:text-red-300'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {deletingTaskId === task.id
+                      ? 'Deleting...'
+                      : confirmDeleteId === task.id
+                      ? 'Confirm Delete'
+                      : 'Delete'}
+                  </button>
+                </div>
               </div>
             </div>
           ))}

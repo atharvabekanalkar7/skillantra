@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface DashboardStats {
@@ -12,6 +12,7 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const isDemo = searchParams?.get('demo') === 'true';
   const [stats, setStats] = useState<DashboardStats>({
     tasksCreated: 0,
@@ -21,8 +22,27 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isDemo) {
+      checkProfile();
+    }
     loadStats();
   }, [isDemo]);
+
+  const checkProfile = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      const data = await response.json();
+      
+      if (!data.profile) {
+        // No profile exists - redirect to profile creation
+        router.push('/profile/edit?setup=true');
+        return;
+      }
+    } catch (error) {
+      // Silently handle errors - don't block dashboard
+      console.error('Error checking profile:', error);
+    }
+  };
 
   const loadStats = async () => {
     if (isDemo) {
@@ -42,13 +62,13 @@ export default function DashboardPage() {
       const tasksData = await tasksResponse.json();
       const tasksCreated = tasksData.tasks?.length || 0;
 
-      // Fetch my applications
-      const applicationsResponse = await fetch('/api/applications?mine=true');
+      // Fetch my applications (sent)
+      const applicationsResponse = await fetch('/api/applications?sent=true');
       const applicationsData = await applicationsResponse.json();
       const applicationsSent = applicationsData.applications?.length || 0;
 
       // Fetch applications received on my tasks
-      const receivedApplicationsResponse = await fetch('/api/applications');
+      const receivedApplicationsResponse = await fetch('/api/applications?received=true');
       const receivedApplicationsData = await receivedApplicationsResponse.json();
       const applicationsReceived = receivedApplicationsData.applications?.length || 0;
 

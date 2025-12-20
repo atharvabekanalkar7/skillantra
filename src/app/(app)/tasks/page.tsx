@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import PhoneNumberModal from '@/components/PhoneNumberModal';
+import { formatTimeAgo } from '@/lib/utils/timeAgo';
 
 interface Task {
   id: string;
@@ -11,6 +13,8 @@ interface Task {
   title: string;
   description: string | null;
   skills_required: string | null;
+  stipend_min: number | null;
+  stipend_max: number | null;
   status: 'open' | 'closed';
   created_at: string;
   creator_profile?: {
@@ -26,9 +30,15 @@ export default function BrowseTasksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [applyingTaskId, setApplyingTaskId] = useState<string | null>(null);
+  const [appliedTaskIds, setAppliedTaskIds] = useState<Set<string>>(new Set());
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
+    if (!isDemo) {
+      loadAppliedTasks();
+    }
   }, [isDemo]);
 
   const loadTasks = async () => {
@@ -41,6 +51,8 @@ export default function BrowseTasksPage() {
           title: 'Build a React Dashboard',
           description: 'Looking for a frontend developer to help build a modern dashboard with React and TypeScript.',
           skills_required: 'React, TypeScript, Tailwind CSS',
+          stipend_min: 5000,
+          stipend_max: 10000,
           status: 'open',
           created_at: new Date().toISOString(),
         },
@@ -50,6 +62,8 @@ export default function BrowseTasksPage() {
           title: 'Design Mobile App UI',
           description: 'Need a UI/UX designer for a mobile app project.',
           skills_required: 'Figma, UI/UX Design',
+          stipend_min: 3000,
+          stipend_max: 8000,
           status: 'open',
           created_at: new Date().toISOString(),
         },
@@ -85,12 +99,38 @@ export default function BrowseTasksPage() {
     }
   };
 
-  const handleApply = async (taskId: string) => {
-    if (isDemo) {
-      alert('Demo mode: Application feature not available. Sign up to apply to tasks!');
-      return;
+  const loadAppliedTasks = async () => {
+    try {
+      const response = await fetch('/api/applications?sent=true');
+      const data = await response.json();
+      
+      if (response.ok && data.applications) {
+        const appliedIds = new Set<string>(data.applications.map((app: { task_id: string }) => app.task_id));
+        setAppliedTaskIds(appliedIds);
+      }
+    } catch (err) {
+      console.error('Error loading applied tasks:', err);
     }
+  };
 
+  const handleSavePhoneNumber = async (phoneNumber: string) => {
+    const response = await fetch('/api/profile', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone_number: phoneNumber,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to save phone number');
+    }
+  };
+
+  const applyToTask = async (taskId: string) => {
     setApplyingTaskId(taskId);
     try {
       const response = await fetch('/api/applications', {
@@ -104,11 +144,20 @@ export default function BrowseTasksPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        if (data.code === 'PHONE_NUMBER_REQUIRED') {
+          setApplyingTaskId(null);
+          setPendingTaskId(taskId);
+          setShowPhoneModal(true);
+          return;
+        }
         alert(data.error || 'Failed to apply to task');
         return;
       }
 
       alert('Application submitted successfully!');
+      // Update applied tasks list
+      setAppliedTaskIds(prev => new Set([...prev, taskId]));
+      // Reload tasks to refresh UI
       await loadTasks();
     } catch (err) {
       alert('An unexpected error occurred');
@@ -116,6 +165,15 @@ export default function BrowseTasksPage() {
     } finally {
       setApplyingTaskId(null);
     }
+  };
+
+  const handleApply = async (taskId: string) => {
+    if (isDemo) {
+      alert('Demo mode: Application feature not available. Sign up to apply to tasks!');
+      return;
+    }
+
+    await applyToTask(taskId);
   };
 
   if (loading) {
@@ -196,21 +254,74 @@ export default function BrowseTasksPage() {
                 </div>
               )}
 
+              {(task.stipend_min !== null || task.stipend_max !== null) && (
+                <div className="mb-4">
+                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
+                  <p className="text-green-300 font-semibold">
+                    {task.stipend_min !== null && task.stipend_max !== null
+                      ? `₹${task.stipend_min.toLocaleString()} - ₹${task.stipend_max.toLocaleString()}`
+                      : task.stipend_min !== null
+                      ? `₹${task.stipend_min.toLocaleString()}+`
+                      : `Up to ₹${task.stipend_max?.toLocaleString()}`}
+                  </p>
+                </div>
+              )}
+
+              {task.creator_profile && (
+                <div className="text-xs text-white/50 mb-2">
+                  Created by{' '}
+                  <Link
+                    href={`/profile/${task.creator_profile.id}`}
+                    className="text-purple-300 hover:text-purple-200 font-semibold hover:underline"
+                  >
+                    {task.creator_profile.name}
+                  </Link>
+                </div>
+              )}
+
               <div className="text-xs text-white/50 mb-4">
-                Posted {new Date(task.created_at).toLocaleDateString()}
+                {formatTimeAgo(task.created_at)}
               </div>
 
               <button
                 onClick={() => handleApply(task.id)}
-                disabled={applyingTaskId === task.id || task.status !== 'open'}
+                disabled={
+                  applyingTaskId === task.id || 
+                  task.status !== 'open' || 
+                  appliedTaskIds.has(task.id)
+                }
                 className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] font-semibold shadow-lg shadow-blue-900/30"
               >
-                {isDemo ? 'Sign Up to Apply' : applyingTaskId === task.id ? 'Applying...' : 'Apply'}
+                {isDemo 
+                  ? 'Sign Up to Apply' 
+                  : appliedTaskIds.has(task.id)
+                  ? 'Already Applied'
+                  : applyingTaskId === task.id 
+                  ? 'Applying...' 
+                  : 'Apply'}
               </button>
             </div>
           ))}
         </div>
       )}
+
+      <PhoneNumberModal
+        isOpen={showPhoneModal}
+        onClose={() => {
+          setShowPhoneModal(false);
+          setPendingTaskId(null);
+        }}
+        context="apply_task"
+        onSave={async (phoneNumber) => {
+          await handleSavePhoneNumber(phoneNumber);
+          setShowPhoneModal(false);
+          // Retry application after saving phone number
+          if (pendingTaskId) {
+            await applyToTask(pendingTaskId);
+            setPendingTaskId(null);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { formatTimeAgo } from '@/lib/utils/timeAgo';
 
 interface Task {
   id: string;
@@ -20,7 +21,13 @@ interface Application {
   applicant_profile_id: string;
   status: 'pending' | 'accepted' | 'rejected';
   created_at: string;
-  task?: Task;
+  task?: Task & {
+    creator?: {
+      id: string;
+      name: string;
+      phone_number: string | null;
+    };
+  };
 }
 
 export default function MyApplicationsPage() {
@@ -61,7 +68,7 @@ export default function MyApplicationsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/applications?mine=true');
+      const response = await fetch('/api/applications?sent=true');
       const data = await response.json();
 
       if (!response.ok) {
@@ -180,9 +187,32 @@ export default function MyApplicationsPage() {
                     </div>
                   )}
 
+                  {application.task?.creator && (
+                    <div className="mb-4 p-3 bg-purple-500/10 border border-purple-400/30 rounded-lg">
+                      <p className="text-xs font-semibold text-purple-300 mb-1">Task Creator:</p>
+                      <Link
+                        href={`/profile/${application.task.creator.id}`}
+                        className="text-sm text-purple-300 hover:text-purple-200 font-semibold hover:underline"
+                      >
+                        👤 View {application.task.creator.name}'s Profile
+                      </Link>
+                    </div>
+                  )}
+                  {application.status === 'accepted' && application.task?.creator?.phone_number && (
+                    <div className="mb-4 p-3 bg-green-500/10 border border-green-400/30 rounded-lg">
+                      <p className="text-xs font-semibold text-green-300 mb-1">Contact Information:</p>
+                      <p className="text-sm text-white font-medium">
+                        {application.task.creator.name}
+                      </p>
+                      <p className="text-sm text-green-300 font-semibold">
+                        📞 +91 {application.task.creator.phone_number}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center mt-4 pt-4 border-t border-purple-400/20">
                     <div className="text-xs text-white/50">
-                      Applied {new Date(application.created_at).toLocaleDateString()}
+                      Applied {formatTimeAgo(application.created_at)}
                     </div>
                     <Link
                       href={`/tasks/${application.task.id}`}
