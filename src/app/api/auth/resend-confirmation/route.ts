@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { createAuthError, AuthErrorCode } from '@/lib/auth-errors';
 import { isValidEmail, checkRateLimit, getClientIP, isEmailConfirmed } from '@/lib/auth-utils';
 
@@ -54,23 +54,25 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check if user exists using Admin API
     const adminSupabase = createServiceRoleClient();
-
-    // Find user by email
     const { data: usersData } = await adminSupabase.auth.admin.listUsers();
     const user = usersData?.users?.find(
       (u) => u.email?.toLowerCase() === email.toLowerCase() && u.deleted_at === null
     );
 
+    // If user does NOT exist → return error
     if (!user) {
-      // Don't reveal if email exists - return success message anyway
-      return NextResponse.json({
-        success: true,
-        message: 'If an account with this email exists and is unconfirmed, a confirmation email has been sent.',
-      });
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.EMAIL_NOT_CONFIRMED,
+          'No account found with this email address.'
+        ),
+        { status: 404 }
+      );
     }
 
-    // Check if email is already confirmed
+    // If email_confirmed_at IS NOT NULL → return error
     if (isEmailConfirmed(user)) {
       return NextResponse.json(
         createAuthError(
@@ -85,38 +87,25 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const emailRedirectUrl = `${baseUrl}/auth/callback?next=/login`;
 
-    // Resend confirmation email by creating a new confirmation link
-    // We'll use inviteUserByEmail which sends a confirmation email
-    // Note: This requires the user to not be confirmed yet (which we already checked)
-    const { data: linkData, error: resendError } = await adminSupabase.auth.admin.generateLink({
-      type: 'invite',
+    // Use regular client for resend (resend works with regular client)
+    const supabase = await createClient();
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
       email,
       options: {
-        redirectTo: emailRedirectUrl,
+        emailRedirectTo: emailRedirectUrl,
       },
     });
 
     if (resendError) {
       console.error('Resend confirmation error:', resendError);
-      
-      // Try alternative method: use recovery link type (works for unconfirmed users)
-      const { error: recoveryError } = await adminSupabase.auth.admin.generateLink({
-        type: 'recovery',
-        email,
-        options: {
-          redirectTo: emailRedirectUrl,
-        },
-      });
-      
-      if (recoveryError) {
-        return NextResponse.json(
-          createAuthError(
-            AuthErrorCode.CONFIRMATION_FAILED,
-            'Failed to resend confirmation email. Please try signing up again.'
-          ),
-          { status: 500 }
-        );
-      }
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.CONFIRMATION_FAILED,
+          'Failed to resend confirmation email. Please try again.'
+        ),
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

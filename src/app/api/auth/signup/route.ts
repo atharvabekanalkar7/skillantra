@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { createAuthError, AuthErrorCode } from '@/lib/auth-errors';
-import { isValidEmail, isValidPassword, checkRateLimit, getClientIP, generateIdempotencyKey } from '@/lib/auth-utils';
+import { isValidEmail, isValidPassword, checkRateLimit, getClientIP, generateIdempotencyKey, isEmailConfirmed } from '@/lib/auth-utils';
 
 // In-memory idempotency store (for production, use Redis)
 const idempotencyStore = new Map<string, { response: any; timestamp: number }>();
@@ -78,10 +78,69 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const emailRedirectUrl = `${baseUrl}/auth/callback?next=/login`;
 
-    // Use regular client for signup (works without service role key)
+    // Use Admin API to check if user exists
+    const adminSupabase = createServiceRoleClient();
+    const { data: usersData } = await adminSupabase.auth.admin.listUsers();
+    const existingUser = usersData?.users?.find(
+      (u) => u.email?.toLowerCase() === email.toLowerCase() && u.deleted_at === null
+    );
+
+    // Case C: Email EXISTS and is confirmed
+    if (existingUser && isEmailConfirmed(existingUser)) {
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.EMAIL_ALREADY_EXISTS,
+          'Account already exists. Please log in.'
+        ),
+        { status: 409 }
+      );
+    }
+
+    // Case B: Email EXISTS but email_confirmed_at IS NULL
+    if (existingUser && !isEmailConfirmed(existingUser)) {
+      // Use regular client for resend (resend works with regular client)
+      const supabase = await createClient();
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: emailRedirectUrl,
+        },
+      });
+
+      if (resendError) {
+        console.error('Resend confirmation error:', resendError);
+        return NextResponse.json(
+          createAuthError(
+            AuthErrorCode.CONFIRMATION_FAILED,
+            'Failed to resend confirmation email. Please try again.'
+          ),
+          { status: 500 }
+        );
+      }
+
+      const response = {
+        success: true,
+        message: 'Confirmation email resent',
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+          email_confirmed: false,
+        },
+      };
+
+      // Cache response for idempotency
+      idempotencyStore.set(idempotencyKey, {
+        response: { data: response, status: 200 },
+        timestamp: Date.now(),
+      });
+
+      return NextResponse.json(response, { status: 200 });
+    }
+
+    // Case A: Email does NOT exist in Supabase
+    // Use regular client for signup
     const supabase = await createClient();
-    
-    // Create user with regular client (Supabase handles duplicate email check)
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -100,23 +159,6 @@ export async function POST(request: Request) {
         status: signUpError.status,
         name: signUpError.name,
       });
-      
-      // Handle specific Supabase errors
-      const errorMessage = signUpError.message?.toLowerCase() || '';
-      if (
-        errorMessage.includes('already registered') || 
-        errorMessage.includes('already exists') ||
-        errorMessage.includes('user already registered') ||
-        errorMessage.includes('email address is already in use')
-      ) {
-        return NextResponse.json(
-          createAuthError(
-            AuthErrorCode.EMAIL_ALREADY_EXISTS,
-            'An account with this email already exists. Please log in or use a different email.'
-          ),
-          { status: 409 }
-        );
-      }
 
       // Return the actual error message for debugging
       return NextResponse.json(
@@ -186,7 +228,7 @@ export async function POST(request: Request) {
 
     const response = {
       success: true,
-      message: 'Account created successfully. Please check your email to confirm your account.',
+      message: 'Please confirm your email',
       user: {
         id: signUpData.user.id,
         email: signUpData.user.email,
