@@ -8,7 +8,20 @@ const idempotencyStore = new Map<string, { response: any; timestamp: number }>()
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseError: any) {
+      console.error('Failed to parse request body:', parseError);
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.MISSING_FIELDS,
+          'Invalid request body. Please ensure all required fields are provided.'
+        ),
+        { status: 400 }
+      );
+    }
+    
     const { email, password, full_name, college, idempotency_key } = body;
 
     // Validate required fields
@@ -79,11 +92,23 @@ export async function POST(request: Request) {
     const emailRedirectUrl = `${baseUrl}/auth/callback?next=/login`;
 
     // Use Admin API to check if user exists
-    const adminSupabase = createServiceRoleClient();
-    const { data: usersData } = await adminSupabase.auth.admin.listUsers();
-    const existingUser = usersData?.users?.find(
-      (u) => u.email?.toLowerCase() === email.toLowerCase() && u.deleted_at === null
-    );
+    let existingUser = null;
+    try {
+      const adminSupabase = createServiceRoleClient();
+      const { data: usersData, error: listUsersError } = await adminSupabase.auth.admin.listUsers();
+      
+      if (listUsersError) {
+        console.error('Error listing users:', listUsersError);
+        // Continue with signup attempt - will handle duplicate email error from Supabase
+      } else {
+        existingUser = usersData?.users?.find(
+          (u) => u.email?.toLowerCase() === email.toLowerCase() && u.deleted_at === null
+        );
+      }
+    } catch (adminError: any) {
+      console.error('Error creating admin client or listing users:', adminError);
+      // Continue with signup attempt - will handle duplicate email error from Supabase
+    }
 
     // Case C: Email EXISTS and is confirmed
     if (existingUser && isEmailConfirmed(existingUser)) {
@@ -257,17 +282,32 @@ export async function POST(request: Request) {
       stack: error?.stack,
       name: error?.name,
       cause: error?.cause,
+      error: error,
     });
     
     // Return more detailed error for debugging
     const errorMessage = error?.message || 'An unexpected error occurred during signup';
-    return NextResponse.json(
-      createAuthError(
-        AuthErrorCode.INTERNAL_ERROR,
-        errorMessage
-      ),
-      { status: 500 }
-    );
+    
+    // Ensure we always return a valid JSON response
+    try {
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.INTERNAL_ERROR,
+          errorMessage
+        ),
+        { status: 500 }
+      );
+    } catch (jsonError) {
+      // Fallback if JSON serialization fails
+      console.error('Failed to serialize error response:', jsonError);
+      return new NextResponse(
+        JSON.stringify({ error: errorMessage, code: AuthErrorCode.INTERNAL_ERROR }),
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
   }
 }
 

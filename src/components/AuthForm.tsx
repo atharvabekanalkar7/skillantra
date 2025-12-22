@@ -121,21 +121,30 @@ export default function AuthForm({ mode }: AuthFormProps) {
           }),
         });
 
-        let data;
+        let data: any = {};
         try {
-          data = await response.json();
+          const responseText = await response.text();
+          if (responseText) {
+            data = JSON.parse(responseText);
+          }
         } catch (parseError) {
-          // If response is not JSON, get text
-          const text = await response.text();
-          setError(text || 'Failed to create account. Please try again.');
+          // If response is not JSON, use the text as error message
+          const text = await response.text().catch(() => '');
+          setError(text || `Failed to create account (Status: ${response.status})`);
           setLoading(false);
           return;
         }
 
         if (!response.ok) {
           // Handle API errors - show the actual error message
-          const errorMessage = data.error || data.message || 'Failed to create account';
-          console.error('Signup API error:', { status: response.status, data });
+          const errorMessage = data?.error || data?.message || `Failed to create account (Status: ${response.status})`;
+          console.error('Signup API error:', { 
+            status: response.status, 
+            statusText: response.statusText,
+            data,
+            hasError: !!data?.error,
+            hasMessage: !!data?.message
+          });
           setError(errorMessage);
           setLoading(false);
           return;
