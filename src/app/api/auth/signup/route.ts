@@ -88,7 +88,24 @@ export async function POST(request: Request) {
     }
 
     // Get base URL for email redirect
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // Try to get from environment variable first, then from request headers, then fallback to localhost
+    let baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!baseUrl) {
+      // Try to get from request headers (for production deployments)
+      const origin = request.headers.get('origin') || request.headers.get('host');
+      if (origin) {
+        // If origin is a full URL, use it; otherwise construct from host
+        if (origin.startsWith('http://') || origin.startsWith('https://')) {
+          baseUrl = origin;
+        } else {
+          // Use https for production domains (not localhost)
+          const protocol = origin.includes('localhost') ? 'http' : 'https';
+          baseUrl = `${protocol}://${origin}`;
+        }
+      } else {
+        baseUrl = 'http://localhost:3000';
+      }
+    }
     const emailRedirectUrl = `${baseUrl}/auth/callback?next=/login`;
 
     // Use Admin API to check if user exists
