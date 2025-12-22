@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { createAuthError, AuthErrorCode } from '@/lib/auth-errors';
 import { isValidEmail, isValidPassword, checkRateLimit, getClientIP, generateIdempotencyKey } from '@/lib/auth-utils';
 
@@ -74,35 +74,23 @@ export async function POST(request: Request) {
       return NextResponse.json(cachedResponse.response.data, { status: cachedResponse.response.status });
     }
 
-    // Use service role client for admin operations
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      console.error('SUPABASE_SERVICE_ROLE_KEY is not set');
-      return NextResponse.json(
-        createAuthError(
-          AuthErrorCode.INTERNAL_ERROR,
-          'Server configuration error. Please contact support.'
-        ),
-        { status: 500 }
-      );
-    }
-
-    const adminSupabase = createServiceRoleClient();
-
-    // Note: We let Supabase handle duplicate email check during createUser
-    // This is more efficient than listing all users
-
     // Get base URL for email redirect
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const emailRedirectUrl = `${baseUrl}/auth/callback?next=/login`;
 
-    // Create user with admin client
-    const { data: signUpData, error: signUpError } = await adminSupabase.auth.admin.createUser({
+    // Use regular client for signup (works without service role key)
+    const supabase = await createClient();
+    
+    // Create user with regular client (Supabase handles duplicate email check)
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: false, // Require email confirmation
-      user_metadata: {
-        full_name: full_name.trim(),
-        college: college.trim(),
+      options: {
+        emailRedirectTo: emailRedirectUrl,
+        data: {
+          full_name: full_name.trim(),
+          college: college.trim(),
+        },
       },
     });
 
@@ -151,26 +139,49 @@ export async function POST(request: Request) {
     // If email sending fails, user can use resend-confirmation endpoint
 
     // Create profile if it doesn't exist (trigger should handle this, but ensure it)
-    try {
-      const { error: profileError } = await adminSupabase.from('profiles').insert({
-        user_id: signUpData.user.id,
-        name: full_name.trim(),
-        college: college.trim(),
-      });
+    // Only create profile if user has a session (email confirmation disabled) or use service role if available
+    if (signUpData.session) {
+      // Email confirmation is disabled - create profile immediately
+      try {
+        const { error: profileError } = await supabase.from('profiles').insert({
+          user_id: signUpData.user.id,
+          name: full_name.trim(),
+          college: college.trim(),
+        });
 
-      if (profileError) {
-        // Check if it's a duplicate key error (profile already exists)
-        if (profileError.code === '23505' || profileError.message?.includes('duplicate')) {
-          // Profile already exists - that's fine, trigger might have created it
-          console.log('Profile already exists (likely created by trigger)');
-        } else {
-          // Other error - log it but don't fail signup
-          console.error('Profile creation error:', profileError);
+        if (profileError) {
+          // Check if it's a duplicate key error (profile already exists)
+          if (profileError.code === '23505' || profileError.message?.includes('duplicate')) {
+            // Profile already exists - that's fine, trigger might have created it
+            console.log('Profile already exists (likely created by trigger)');
+          } else {
+            // Other error - log it but don't fail signup
+            console.error('Profile creation error:', profileError);
+          }
+        }
+      } catch (profileError: any) {
+        // Profile might already exist or will be created by trigger - that's okay
+        console.log('Profile creation note:', profileError?.message || profileError);
+      }
+    } else {
+      // Email confirmation required - profile will be created by trigger when email is confirmed
+      // Or we can try with service role if available
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const adminSupabase = createServiceRoleClient();
+          const { error: profileError } = await adminSupabase.from('profiles').insert({
+            user_id: signUpData.user.id,
+            name: full_name.trim(),
+            college: college.trim(),
+          });
+          if (profileError && profileError.code !== '23505') {
+            console.log('Profile creation note (admin):', profileError.message);
+          }
+        } catch (profileError: any) {
+          // That's okay - trigger will handle it
+          console.log('Profile creation note:', profileError?.message || profileError);
         }
       }
-    } catch (profileError: any) {
-      // Profile might already exist or will be created by trigger - that's okay
-      console.log('Profile creation note:', profileError?.message || profileError);
     }
 
     const response = {
