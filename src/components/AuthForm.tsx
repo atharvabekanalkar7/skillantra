@@ -23,7 +23,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [resendSuccess, setResendSuccess] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  
+  // Check for missing environment variables on mount
+  useEffect(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setError(
+        'Missing Supabase configuration. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your .env.local file.'
+      );
+    }
+  }, []);
 
   // Check for email confirmation success message and error messages
   useEffect(() => {
