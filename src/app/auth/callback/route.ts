@@ -6,7 +6,8 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const token_hash = requestUrl.searchParams.get('token_hash');
   const type = requestUrl.searchParams.get('type');
-  const next = requestUrl.searchParams.get('next') ?? '/dashboard';
+  // Default to login page after email confirmation
+  const next = requestUrl.searchParams.get('next') ?? '/login?confirmed=true';
 
   const supabase = await createClient();
 
@@ -42,8 +43,21 @@ export async function GET(request: Request) {
             });
           }
         }
+
+        // If user is confirmed and has a session, redirect to dashboard
+        // Otherwise redirect to login page
+        if (user.email_confirmed_at) {
+          // Check if we have a session
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            // User is logged in, redirect to dashboard
+            redirect('/dashboard');
+            return;
+          }
+        }
       }
 
+      // Redirect to login page (or the specified next URL)
       redirect(next);
     } else {
       // Error verifying token

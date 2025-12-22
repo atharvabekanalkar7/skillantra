@@ -5,11 +5,11 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <Link
-          href="/dashboard"
+          href="/"
           className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-all mb-8"
         >
           <span>←</span>
-          <span className="text-sm font-medium">Back to Dashboard</span>
+          <span className="text-sm font-medium">Back to Home</span>
         </Link>
 
         <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-purple-400/30">

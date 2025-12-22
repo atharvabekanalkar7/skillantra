@@ -260,79 +260,16 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Get user's profile first
-  const { data: userProfile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (profileError && profileError.code !== 'PGRST116') {
-    // PGRST116 is "not found" - that's okay, profile might not exist
-    console.error('Error fetching profile for deletion:', profileError);
-  }
-
-  // Delete profile if it exists (this will cascade delete related data due to ON DELETE CASCADE)
-  if (userProfile) {
-    const { error: deleteProfileError } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('user_id', user.id);
-
-    if (deleteProfileError) {
-      console.error('Error deleting profile:', deleteProfileError);
-      return NextResponse.json({ 
-        error: 'Failed to delete profile. Please try again.' 
-      }, { status: 500 });
-    }
-  }
-
-  // Delete the auth user account using service role client
-  try {
-    const { createServiceRoleClient } = await import('@/lib/supabase/server');
-    const adminSupabase = createServiceRoleClient();
-    
-    const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(user.id);
-    
-    if (deleteUserError) {
-      console.error('Error deleting auth user:', deleteUserError);
-      // If admin deletion fails, sign out anyway
-      await supabase.auth.signOut();
-      return NextResponse.json({ 
-        success: true,
-        message: 'Profile deleted. Please contact support to fully delete your account.',
-        signedOut: true
-      });
-    }
-  } catch (err) {
-    console.error('Error in account deletion:', err);
-    // Sign out anyway
-    await supabase.auth.signOut();
-    return NextResponse.json({ 
-      success: true,
-      message: 'Profile deleted. Please contact support to fully delete your account.',
-      signedOut: true
-    });
-  }
-
-  // Sign out the user
-  await supabase.auth.signOut();
-
-  return NextResponse.json({ 
-    success: true,
-    message: 'Account deleted successfully.',
-    signedOut: true
+  // Redirect to the dedicated delete-account endpoint for consistency
+  // This endpoint handles all deletion logic including cascade deletes
+  const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/delete-account`, {
+    method: 'DELETE',
+    headers: {
+      'Cookie': '', // Will be handled by server-side session
+    },
   });
+
+  const data = await response.json();
+  return NextResponse.json(data, { status: response.status });
 }
 

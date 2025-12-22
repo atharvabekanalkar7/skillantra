@@ -35,7 +35,10 @@ A campus-first skill and project collaboration platform built with Next.js 15+, 
      NEXT_PUBLIC_SUPABASE_URL=your-project-url
      NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
      SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+     NEXT_PUBLIC_SITE_URL=http://localhost:3000
      ```
+   - **For production**: Set `NEXT_PUBLIC_SITE_URL` to your production domain (e.g., `https://skillantra.com`)
+   - This ensures email confirmation links redirect to the correct URL
 
 4. **Set up the database** (REQUIRED):
    - Open your Supabase project dashboard
@@ -51,8 +54,9 @@ A campus-first skill and project collaboration platform built with Next.js 15+, 
 5. **Configure Email Authentication** (IMPORTANT):
    - Go to **Authentication** → **Settings** in your Supabase dashboard
    - Enable **"Enable email confirmations"** toggle
-   - Set **Site URL** to `http://localhost:3000` (for development)
-   - Add redirect URL: `http://localhost:3000/**`
+   - **For development**: Set **Site URL** to `http://localhost:3000` and add redirect URL: `http://localhost:3000/**`
+   - **For production**: Set **Site URL** to your production domain (e.g., `https://skillantra.com`) and add redirect URL: `https://yourdomain.com/**`
+   - **Important**: The redirect URLs must match your `NEXT_PUBLIC_SITE_URL` environment variable
    - For production, configure custom SMTP or use Supabase's email service
    - See `SUPABASE_EMAIL_SETUP.md` for detailed email configuration guide
 

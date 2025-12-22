@@ -16,3 +16,4 @@ ALTER TABLE profiles ADD CONSTRAINT profiles_phone_number_check
 -- Migration Complete!
 -- ============================================
 
+

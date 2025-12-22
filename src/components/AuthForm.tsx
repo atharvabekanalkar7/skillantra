@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface AuthFormProps {
@@ -19,8 +19,55 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  // Check for email confirmation success message and error messages
+  useEffect(() => {
+    if (mode === 'login') {
+      const confirmed = searchParams?.get('confirmed');
+      const errorParam = searchParams?.get('error');
+      
+      if (confirmed === 'true') {
+        // Show success message for a few seconds
+        const timer = setTimeout(() => {
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('confirmed');
+          window.history.replaceState({}, '', newUrl.toString());
+        }, 5000);
+        return () => clearTimeout(timer);
+      }
+      
+      if (errorParam) {
+        // Handle error messages from query parameters
+        let errorMessage = '';
+        switch (errorParam) {
+          case 'email_not_confirmed':
+            errorMessage = 'Please confirm your email address before logging in. Check your inbox for the confirmation link.';
+            break;
+          case 'account_deleted':
+            errorMessage = 'This account has been deleted. Please sign up again.';
+            break;
+          case 'session_expired':
+            errorMessage = 'Your session has expired. Please log in again.';
+            break;
+          default:
+            errorMessage = 'An error occurred. Please try again.';
+        }
+        
+        if (errorMessage) {
+          setError(errorMessage);
+          // Clear error from URL
+          const newUrl = new URL(window.location.href);
+          newUrl.searchParams.delete('error');
+          window.history.replaceState({}, '', newUrl.toString());
+        }
+      }
+    }
+  }, [mode, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,138 +96,124 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
     try {
       if (mode === 'signup') {
-        // Store name and college in user metadata for profile creation after email confirmation
-        const emailRedirectUrl = `${window.location.origin}/auth/callback`;
-        
-        console.log('Signing up with:', { email, emailRedirectUrl });
-        
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: emailRedirectUrl,
-            data: {
-              full_name: fullName.trim(),
-              college: college.trim(),
-            },
+        // Use new API endpoint for signup
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            email,
+            password,
+            full_name: fullName.trim(),
+            college: college.trim(),
+          }),
         });
 
-        console.log('Signup response:', { 
-          user: signUpData?.user ? 'exists' : 'null',
-          session: signUpData?.session ? 'exists' : 'null',
-          error: signUpError?.message 
-        });
+        const data = await response.json();
 
-        if (signUpError) {
-          console.error('Signup error:', signUpError);
-          setError(signUpError.message);
+        if (!response.ok) {
+          // Handle API errors
+          const errorMessage = data.error || data.message || 'Failed to create account';
+          setError(errorMessage);
           setLoading(false);
           return;
         }
 
-        // Check if email confirmation is required
-        // If user exists but no session, email confirmation is required
-        if (signUpData.user && !signUpData.session) {
-          console.log('Email confirmation required - user created but no session');
-          // Email confirmation required - show message to user
-          setEmailSent(true);
-          setLoading(false);
-          return;
-        }
-
-        // If no user was returned, something went wrong
-        if (!signUpData.user) {
-          console.error('No user returned from signup');
-          setError('Failed to create account. Please try again or check if email confirmations are enabled in Supabase.');
-          setLoading(false);
-          return;
-        }
-
-        // If email confirmation is disabled and user is immediately authenticated
-        if (signUpData.user && signUpData.session) {
-          // Create profile immediately
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              user_id: signUpData.user.id,
-              name: fullName.trim(),
-              college: college.trim(),
-            });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            // Don't block signup - profile will be created on first login
-          }
-
-          router.push('/dashboard');
-          router.refresh();
-          return;
-        }
-
-        // Fallback: if we get here, something unexpected happened
-        setError('An unexpected error occurred during signup');
+        // Signup successful - email confirmation required
+        setEmailSent(true);
         setLoading(false);
       } else {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
+        // Use new API endpoint for login
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         });
 
-        if (signInError) {
-          setError(signInError.message);
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Handle API errors
+          let errorMessage = data.error || data.message || 'Failed to log in';
+          
+          // Handle specific error codes
+          if (data.code === 'EMAIL_NOT_CONFIRMED') {
+            errorMessage = 'Please confirm your email address before logging in. Check your inbox for the confirmation link.';
+          } else if (data.code === 'ACCOUNT_DELETED') {
+            errorMessage = 'This account has been deleted. Please sign up again.';
+          } else if (data.code === 'INVALID_CREDENTIALS') {
+            errorMessage = 'Invalid email or password';
+          }
+          
+          setError(errorMessage);
           setLoading(false);
           return;
         }
 
-        // After successful login, check if profile exists
-        if (signInData.user) {
-          try {
-            const { data: existingProfile, error: checkError } = await supabase
-              .from('profiles')
-              .select('id')
-              .eq('user_id', signInData.user.id)
-              .maybeSingle();
-
-            // Only redirect if it's actually a table not found error (very specific check)
-            const errorMessage = checkError?.message?.toLowerCase() || '';
-            const isTableNotFound = checkError && (
-              checkError.code === '42P01' ||
-              checkError.code === 'PGRST116' ||
-              (errorMessage.includes('relation') && errorMessage.includes('profiles') && errorMessage.includes('does not exist'))
-            );
-
-            if (isTableNotFound) {
-              // Database tables not initialized - redirect to profile creation
-              router.push('/profile/edit?setup=true');
-              router.refresh();
-              return;
-            }
-
-            // If no profile exists (and no error, or error is not table not found), redirect to profile creation
-            if (!existingProfile) {
-              // No profile exists - redirect to profile creation
-              router.push('/profile/edit?setup=true');
-              router.refresh();
-              return;
-            }
-
-            // Profile exists or error is not critical - proceed to dashboard
-          } catch (err) {
-            // Silently handle errors - redirect to profile creation as fallback
-            console.error('Error during profile check:', err);
-            router.push('/profile/edit?setup=true');
-            router.refresh();
-            return;
-          }
-        }
-
+        // Login successful - refresh to get new session
         router.push('/dashboard');
         router.refresh();
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
+    } catch (err: any) {
+      console.error('Auth error:', err);
+      setError(err.message || 'An unexpected error occurred');
       setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!email) {
+      setError('Email address is required');
+      return;
+    }
+
+    setResending(true);
+    setError(null);
+
+    try {
+      // Use new API endpoint for resend confirmation
+      const response = await fetch('/api/auth/resend-confirmation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle API errors
+        let errorMessage = data.error || data.message || 'Failed to resend confirmation email';
+        
+        if (data.code === 'ALREADY_CONFIRMED') {
+          errorMessage = 'This email has already been confirmed. Please try logging in.';
+        } else if (data.code === 'RESEND_RATE_LIMIT' || data.code === 'RATE_LIMIT_EXCEEDED') {
+          errorMessage = data.error || 'Too many requests. Please wait a few minutes before trying again.';
+        }
+        
+        setError(errorMessage);
+        setResending(false);
+        return;
+      }
+
+      // Success - show success message
+      setError(null);
+      setResendSuccess(true);
+      // Clear success message after 5 seconds
+      setTimeout(() => setResendSuccess(false), 5000);
+    } catch (err: any) {
+      console.error('Error resending confirmation email:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
+      setResending(false);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -230,6 +263,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     <li>Wait a few minutes and try again</li>
                     <li>Verify email confirmations are enabled in Supabase dashboard</li>
                   </ul>
+                  <button
+                    type="button"
+                    onClick={handleResendConfirmation}
+                    disabled={resending}
+                    className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {resending ? 'Sending...' : 'Resend Confirmation Email'}
+                  </button>
+                  {resendSuccess && (
+                    <p className="mt-2 text-xs text-green-400 font-medium">
+                      ✅ Confirmation email resent! Please check your inbox.
+                    </p>
+                  )}
+                  {error && error.includes('already been confirmed') && (
+                    <p className="mt-2 text-xs text-green-400">
+                      You can now <Link href="/login" className="underline font-medium">log in</Link> with your confirmed email.
+                    </p>
+                  )}
                 </div>
                 <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 px-4 py-3 rounded-lg text-sm mb-6">
                   <p className="font-medium mb-1">⚠️ Important:</p>
@@ -251,6 +302,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
             </div>
           ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
+            {mode === 'login' && searchParams?.get('confirmed') === 'true' && (
+              <div className="bg-green-500/20 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg text-sm">
+                ✅ Email confirmed successfully! Please log in to continue.
+              </div>
+            )}
             {error && (
               <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
                 {error}

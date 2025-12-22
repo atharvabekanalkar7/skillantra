@@ -1,15 +1,32 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createAuthError, AuthErrorCode } from '@/lib/auth-errors';
 
 export async function POST() {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { error } = await supabase.auth.signOut();
+    // Sign out from Supabase (clears session)
+    const { error } = await supabase.auth.signOut();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('Logout error:', error);
+      // Even if signOut fails, return success (session might already be cleared)
+    }
+
+    return NextResponse.json({ 
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error: any) {
+    console.error('Logout endpoint error:', error);
+    return NextResponse.json(
+      createAuthError(
+        AuthErrorCode.INTERNAL_ERROR,
+        'An unexpected error occurred during logout'
+      ),
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: true });
 }
 
