@@ -11,9 +11,24 @@ export default function RequestsPage() {
   const [sentRequests, setSentRequests] = useState<CollaborationRequestWithProfiles[]>([]);
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
-  const supabase = createClient();
+  const [error, setError] = useState<string | null>(null);
+  
+  // Create client with error handling
+  let supabase;
+  try {
+    supabase = createClient();
+  } catch (clientError: any) {
+    // Error will be handled in useEffect
+    supabase = null as any;
+  }
 
   useEffect(() => {
+    // Check if client was created successfully
+    if (!supabase) {
+      setError('Supabase configuration error. Please check your environment variables.');
+      setLoading(false);
+      return;
+    }
     loadRequests();
   }, []);
 
@@ -98,6 +113,18 @@ export default function RequestsPage() {
       setResponding(null);
     }
   };
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <h2 className="text-red-800 font-semibold mb-2">Configuration Error</h2>
+        <p className="text-red-700">{error}</p>
+        <p className="text-red-600 text-sm mt-2">
+          Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your .env.local file and restart your development server.
+        </p>
+      </div>
+    );
+  }
 
   if (loading) {
     return <LoadingSpinner />;

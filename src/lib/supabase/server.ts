@@ -30,15 +30,27 @@ export async function createClient() {
 }
 
 export function createServiceRoleClient() {
-  return createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    }
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+  if (!supabaseUrl || supabaseUrl === '') {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL. Please set it in your .env.local file.'
+    );
+  }
+
+  if (!serviceRoleKey || serviceRoleKey === '') {
+    throw new Error(
+      'Missing SUPABASE_SERVICE_ROLE_KEY. Please set it in your .env.local file. ' +
+      'This key is required for admin operations like checking user status and managing profiles.'
+    );
+  }
+
+  return createServiceClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 }
 

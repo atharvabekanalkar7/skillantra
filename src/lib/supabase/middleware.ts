@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { NextResponse, type NextRequest } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -36,16 +36,7 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     try {
       // Use service role client to check user status
-      const adminSupabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-          },
-        }
-      );
+      const adminSupabase = createServiceRoleClient();
 
       const { data: userData, error: adminError } = await adminSupabase.auth.admin.getUserById(user.id);
 
