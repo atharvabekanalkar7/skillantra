@@ -75,21 +75,21 @@ export async function POST(request: Request) {
     }
 
     // Use service role client for admin operations
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY is not set');
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.INTERNAL_ERROR,
+          'Server configuration error. Please contact support.'
+        ),
+        { status: 500 }
+      );
+    }
+
     const adminSupabase = createServiceRoleClient();
 
-    // Check if email already exists
-    const { data: existingUser } = await adminSupabase.auth.admin.listUsers();
-    const userExists = existingUser?.users?.some(
-      (u) => u.email?.toLowerCase() === email.toLowerCase() && u.deleted_at === null
-    );
-
-    if (userExists) {
-      const errorResponse = createAuthError(
-        AuthErrorCode.EMAIL_ALREADY_EXISTS,
-        'An account with this email already exists. Please log in or use a different email.'
-      );
-      return NextResponse.json(errorResponse, { status: 409 });
-    }
+    // Note: We let Supabase handle duplicate email check during createUser
+    // This is more efficient than listing all users
 
     // Get base URL for email redirect
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -107,23 +107,34 @@ export async function POST(request: Request) {
     });
 
     if (signUpError) {
-      console.error('Signup error:', signUpError);
+      console.error('Signup error details:', {
+        message: signUpError.message,
+        status: signUpError.status,
+        name: signUpError.name,
+      });
       
       // Handle specific Supabase errors
-      if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists')) {
+      const errorMessage = signUpError.message?.toLowerCase() || '';
+      if (
+        errorMessage.includes('already registered') || 
+        errorMessage.includes('already exists') ||
+        errorMessage.includes('user already registered') ||
+        errorMessage.includes('email address is already in use')
+      ) {
         return NextResponse.json(
           createAuthError(
             AuthErrorCode.EMAIL_ALREADY_EXISTS,
-            'An account with this email already exists'
+            'An account with this email already exists. Please log in or use a different email.'
           ),
           { status: 409 }
         );
       }
 
+      // Return the actual error message for debugging
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.SIGNUP_FAILED,
-          signUpError.message || 'Failed to create account'
+          signUpError.message || 'Failed to create account. Please try again.'
         ),
         { status: 500 }
       );
@@ -141,14 +152,25 @@ export async function POST(request: Request) {
 
     // Create profile if it doesn't exist (trigger should handle this, but ensure it)
     try {
-      await adminSupabase.from('profiles').insert({
+      const { error: profileError } = await adminSupabase.from('profiles').insert({
         user_id: signUpData.user.id,
         name: full_name.trim(),
         college: college.trim(),
-      }).select().single();
-    } catch (profileError) {
+      });
+
+      if (profileError) {
+        // Check if it's a duplicate key error (profile already exists)
+        if (profileError.code === '23505' || profileError.message?.includes('duplicate')) {
+          // Profile already exists - that's fine, trigger might have created it
+          console.log('Profile already exists (likely created by trigger)');
+        } else {
+          // Other error - log it but don't fail signup
+          console.error('Profile creation error:', profileError);
+        }
+      }
+    } catch (profileError: any) {
       // Profile might already exist or will be created by trigger - that's okay
-      console.log('Profile creation note:', profileError);
+      console.log('Profile creation note:', profileError?.message || profileError);
     }
 
     const response = {
@@ -177,11 +199,19 @@ export async function POST(request: Request) {
 
     return NextResponse.json(response, { status: 201 });
   } catch (error: any) {
-    console.error('Signup endpoint error:', error);
+    console.error('Signup endpoint error:', {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+      cause: error?.cause,
+    });
+    
+    // Return more detailed error for debugging
+    const errorMessage = error?.message || 'An unexpected error occurred during signup';
     return NextResponse.json(
       createAuthError(
         AuthErrorCode.INTERNAL_ERROR,
-        'An unexpected error occurred during signup'
+        errorMessage
       ),
       { status: 500 }
     );

@@ -110,11 +110,21 @@ export default function AuthForm({ mode }: AuthFormProps) {
           }),
         });
 
-        const data = await response.json();
+        let data;
+        try {
+          data = await response.json();
+        } catch (parseError) {
+          // If response is not JSON, get text
+          const text = await response.text();
+          setError(text || 'Failed to create account. Please try again.');
+          setLoading(false);
+          return;
+        }
 
         if (!response.ok) {
-          // Handle API errors
+          // Handle API errors - show the actual error message
           const errorMessage = data.error || data.message || 'Failed to create account';
+          console.error('Signup API error:', { status: response.status, data });
           setError(errorMessage);
           setLoading(false);
           return;
@@ -162,7 +172,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
       }
     } catch (err: any) {
       console.error('Auth error:', err);
-      setError(err.message || 'An unexpected error occurred');
+      // Show more helpful error messages
+      if (err.message) {
+        setError(err.message);
+      } else if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
       setLoading(false);
     }
   };
