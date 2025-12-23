@@ -15,9 +15,9 @@ export function isProfileComplete(profile: Profile | null | undefined): boolean 
   }
 
   // Check required fields
-  const hasName = profile.name && profile.name.trim().length > 0;
-  const hasPhone = profile.phone_number && profile.phone_number.trim().length > 0;
-  const hasUserType = profile.user_type && ['SkillSeeker', 'SkillHolder', 'Both'].includes(profile.user_type);
+  const hasName = Boolean(profile.name && profile.name.trim().length > 0);
+  const hasPhone = Boolean(profile.phone_number && profile.phone_number.trim().length > 0);
+  const hasUserType = Boolean(profile.user_type && ['SkillSeeker', 'SkillHolder', 'Both'].includes(profile.user_type));
 
   return hasName && hasPhone && hasUserType;
 }
