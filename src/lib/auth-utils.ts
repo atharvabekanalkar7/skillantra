@@ -120,6 +120,30 @@ export function isEmailConfirmed(user: any): boolean {
 }
 
 /**
+ * Verify user email is confirmed using admin client
+ * Returns the user data if confirmed, null otherwise
+ */
+export async function verifyEmailConfirmed(
+  userId: string,
+  adminClient: any
+): Promise<{ confirmed: boolean; user?: any }> {
+  try {
+    const { data, error } = await adminClient.auth.admin.getUserById(userId);
+    
+    if (error || !data?.user) {
+      return { confirmed: false };
+    }
+    
+    return {
+      confirmed: isEmailConfirmed(data.user),
+      user: data.user,
+    };
+  } catch {
+    return { confirmed: false };
+  }
+}
+
+/**
  * Generate idempotency key from request
  */
 export function generateIdempotencyKey(email: string, timestamp: number): string {

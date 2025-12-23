@@ -32,14 +32,34 @@ export async function GET() {
     }
 
     // CRITICAL: Check if email is confirmed
+    // Primary check: use user object from session (most reliable)
     if (!isEmailConfirmed(user)) {
+      // Double-check with admin client as fallback (in case session is stale)
+      try {
+        const { data: userData } = await adminSupabase.auth.admin.getUserById(user.id);
+        if (userData?.user && isEmailConfirmed(userData.user)) {
+          // Admin says confirmed, but session says not - session might be stale
+          // Return user as confirmed (admin is source of truth)
+          return NextResponse.json({
+            user: {
+              id: user.id,
+              email: user.email,
+              email_confirmed: true,
+            },
+          });
+        }
+      } catch (adminError) {
+        console.error('Error checking email with admin client:', adminError);
+      }
+      
+      // Email not confirmed - return user with email_confirmed: false
+      // Client should redirect to login
       return NextResponse.json({
         user: {
           id: user.id,
           email: user.email,
           email_confirmed: false,
         },
-        requires_confirmation: true,
       });
     }
 

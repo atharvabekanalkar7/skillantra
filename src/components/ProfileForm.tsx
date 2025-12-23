@@ -259,7 +259,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           />
         </div>
         <p className="mt-2 text-sm text-white/60">
-          Required for creating tasks and applying to tasks. Your phone number will be visible to other users on the platform.
+          Required for creating tasks and applying to tasks. Your phone number will only be displayed to users who have either accepted your task (if you are a SkillSeeker) or to users whose task you have applied to (if you are a SkillHolder).
         </p>
       </div>
 

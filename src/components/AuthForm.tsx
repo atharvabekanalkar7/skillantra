@@ -21,6 +21,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [emailSent, setEmailSent] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -43,11 +44,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
       const errorParam = searchParams?.get('error');
       
       if (confirmed === 'true') {
-        // Show success message for a few seconds
+        setEmailConfirmed(true);
+        // Clear URL parameter and hide message after 5 seconds
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.delete('confirmed');
+        window.history.replaceState({}, '', newUrl.toString());
+        
         const timer = setTimeout(() => {
-          const newUrl = new URL(window.location.href);
-          newUrl.searchParams.delete('confirmed');
-          window.history.replaceState({}, '', newUrl.toString());
+          setEmailConfirmed(false);
         }, 5000);
         return () => clearTimeout(timer);
       }
@@ -57,7 +61,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         let errorMessage = '';
         switch (errorParam) {
           case 'email_not_confirmed':
-            errorMessage = 'Please confirm your email address before logging in. Check your inbox for the confirmation link.';
+            errorMessage = 'Please verify email before signing in';
             break;
           case 'account_deleted':
             errorMessage = 'This account has been deleted. Please sign up again.';
@@ -137,13 +141,20 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
         if (!response.ok) {
           // Handle API errors - show the actual error message
-          const errorMessage = data?.error || data?.message || `Failed to create account (Status: ${response.status})`;
+          let errorMessage = data?.error || data?.message || `Failed to create account (Status: ${response.status})`;
+          
+          // Handle specific error codes
+          if (data?.code === 'EMAIL_ALREADY_EXISTS' || response.status === 409) {
+            errorMessage = 'Email address already in use';
+          }
+          
           console.error('Signup API error:', { 
             status: response.status, 
             statusText: response.statusText,
             data,
             hasError: !!data?.error,
-            hasMessage: !!data?.message
+            hasMessage: !!data?.message,
+            errorCode: data?.code
           });
           setError(errorMessage);
           setLoading(false);
@@ -174,7 +185,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           
           // Handle specific error codes
           if (data.code === 'EMAIL_NOT_CONFIRMED') {
-            errorMessage = 'Please confirm your email address before logging in. Check your inbox for the confirmation link.';
+            errorMessage = 'Please verify email before signing in';
           } else if (data.code === 'ACCOUNT_DELETED') {
             errorMessage = 'This account has been deleted. Please sign up again.';
           } else if (data.code === 'INVALID_CREDENTIALS') {
@@ -186,8 +197,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        // Login successful - refresh to get new session
-        router.push('/dashboard');
+        // Login successful - redirect to profile edit page
+        router.push('/profile/edit?setup=true');
         router.refresh();
       }
     } catch (err: any) {
@@ -319,16 +330,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     </p>
                   )}
                 </div>
-                <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-300 px-4 py-3 rounded-lg text-sm mb-6">
-                  <p className="font-medium mb-1">⚠️ Important:</p>
-                  <p className="text-xs">
-                    If you still don't receive emails, check your Supabase dashboard:
-                    <br />
-                    <strong>Authentication → Settings → Enable email confirmations</strong>
-                    <br />
-                    Also verify redirect URLs are configured correctly.
-                  </p>
-                </div>
                 <Link
                   href="/login"
                   className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all transform hover:scale-[1.02]"
@@ -339,9 +340,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
             </div>
           ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {mode === 'login' && searchParams?.get('confirmed') === 'true' && (
+            {mode === 'login' && emailConfirmed && (
               <div className="bg-green-500/20 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg text-sm">
-                ✅ Email confirmed successfully! Please log in to continue.
+                ✅ Email verified successfully! Please log in to proceed.
               </div>
             )}
             {error && (

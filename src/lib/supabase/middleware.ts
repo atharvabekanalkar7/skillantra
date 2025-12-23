@@ -34,32 +34,73 @@ export async function updateSession(request: NextRequest) {
 
   // CRITICAL: Check if user is deleted or email not confirmed
   if (user) {
+    // PRIMARY CHECK: Use user object from session (most reliable)
+    const isEmailConfirmedFromSession = user.email_confirmed_at !== null && user.email_confirmed_at !== undefined;
+    
     try {
-      // Use service role client to check user status
-      const adminSupabase = createServiceRoleClient();
-
-      const { data: userData, error: adminError } = await adminSupabase.auth.admin.getUserById(user.id);
-
-      if (adminError || !userData?.user) {
-        // User doesn't exist or error - clear session
-        await supabase.auth.signOut();
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = '/login';
-        redirectUrl.searchParams.set('error', 'session_expired');
-        return NextResponse.redirect(redirectUrl);
+      // Use service role client to check user status (as fallback/verification)
+      // Wrap in try-catch to handle missing service role key gracefully
+      let adminSupabase;
+      try {
+        adminSupabase = createServiceRoleClient();
+      } catch (adminClientError: any) {
+        // If service role key is missing, skip admin checks and use session data
+        console.warn('Service role client not available in middleware:', adminClientError?.message);
+        adminSupabase = null;
       }
 
-      // CRITICAL: Check if user is deleted
-      if (userData.user.deleted_at !== null && userData.user.deleted_at !== undefined) {
-        // User is deleted - clear session and redirect to login
-        await supabase.auth.signOut();
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = '/login';
-        redirectUrl.searchParams.set('error', 'account_deleted');
-        return NextResponse.redirect(redirectUrl);
-      }
+      if (adminSupabase) {
+        const { data: userData, error: adminError } = await adminSupabase.auth.admin.getUserById(user.id);
 
-      // CRITICAL: Check if email is confirmed (only for protected routes)
+        if (adminError || !userData?.user) {
+          // If admin check fails but session says user exists, trust session
+          // Only clear session if we're certain user doesn't exist
+          if (adminError && adminError.message?.includes('not found')) {
+            await supabase.auth.signOut();
+            const redirectUrl = request.nextUrl.clone();
+            redirectUrl.pathname = '/login';
+            redirectUrl.searchParams.set('error', 'session_expired');
+            return NextResponse.redirect(redirectUrl);
+          }
+          // Otherwise, continue with session user
+        } else {
+          // CRITICAL: Check if user is deleted (from admin data - source of truth)
+          if (userData.user.deleted_at !== null && userData.user.deleted_at !== undefined) {
+            // User is deleted - clear session and redirect to login
+            await supabase.auth.signOut();
+            const redirectUrl = request.nextUrl.clone();
+            redirectUrl.pathname = '/login';
+            redirectUrl.searchParams.set('error', 'account_deleted');
+            return NextResponse.redirect(redirectUrl);
+          }
+
+          // Use admin data for email confirmation if available (more reliable)
+          const isEmailConfirmed = userData.user.email_confirmed_at !== null && userData.user.email_confirmed_at !== undefined;
+          
+          // CRITICAL: Check if email is confirmed (only for protected routes)
+          const pathname = request.nextUrl.pathname;
+          const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/auth/callback');
+          const isApiRoute = pathname.startsWith('/api');
+          const isPublicRoute = pathname === '/terms' || pathname === '/privacy';
+          const isLandingPage = pathname === '/';
+
+          if (!isAuthRoute && !isApiRoute && !isPublicRoute && !isLandingPage) {
+            // Protected route - require email confirmation
+            if (!isEmailConfirmed) {
+              // Email not confirmed - redirect to login with message
+              const redirectUrl = request.nextUrl.clone();
+              redirectUrl.pathname = '/login';
+              redirectUrl.searchParams.set('error', 'email_not_confirmed');
+              return NextResponse.redirect(redirectUrl);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // On error, use session user data as fallback
+      console.error('Middleware user check error:', error);
+      
+      // If admin check fails, use session data
       const pathname = request.nextUrl.pathname;
       const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/auth/callback');
       const isApiRoute = pathname.startsWith('/api');
@@ -67,8 +108,8 @@ export async function updateSession(request: NextRequest) {
       const isLandingPage = pathname === '/';
 
       if (!isAuthRoute && !isApiRoute && !isPublicRoute && !isLandingPage) {
-        // Protected route - require email confirmation
-        if (!userData.user.email_confirmed_at) {
+        // Protected route - check from session
+        if (!isEmailConfirmedFromSession) {
           // Email not confirmed - redirect to login with message
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = '/login';
@@ -76,10 +117,6 @@ export async function updateSession(request: NextRequest) {
           return NextResponse.redirect(redirectUrl);
         }
       }
-    } catch (error) {
-      // On error, log but don't block (might be rate limiting or network issue)
-      console.error('Middleware user check error:', error);
-      // Continue with request - API routes will handle validation
     }
   }
 
@@ -92,7 +129,7 @@ export async function updateSession(request: NextRequest) {
   const isLogoutRoute = pathname.startsWith('/logout');
   const isPublicRoute = pathname === '/terms' || pathname === '/privacy';
 
-  // If user is logged in and visits landing page, redirect to dashboard (don't log them out)
+  // If user is logged in and visits landing page, redirect to dashboard (they should stay logged in)
   if (user && isLandingPage) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/dashboard';
@@ -116,26 +153,50 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check if user has phone number - redirect to profile edit if missing
+  // Check if profile is complete - redirect to profile edit if incomplete
+  // Required fields: name, phone_number, user_type
   if (user && !isApiRoute && !isProfileEditRoute && !isLogoutRoute && !isDemoMode) {
     try {
-      const { data: profile, error } = await supabase
+      // Try to get profile with all required fields
+      let profile: any = null;
+      const { data: profileWithPhone, error: errorWithPhone } = await supabase
         .from('profiles')
-        .select('phone_number')
+        .select('name, phone_number, user_type')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      // If profile doesn't exist or phone_number is missing, redirect to profile edit
-      if (!profile || !profile.phone_number) {
+      if (errorWithPhone && errorWithPhone.message?.includes('phone_number')) {
+        // phone_number column doesn't exist - select without it
+        const { data: profileWithoutPhone, error: errorWithoutPhone } = await supabase
+          .from('profiles')
+          .select('name, user_type')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        profile = profileWithoutPhone;
+        if (profile) {
+          profile.phone_number = null;
+        }
+      } else {
+        profile = profileWithPhone;
+      }
+
+      // Check if profile is complete
+      const hasName = profile?.name && profile.name.trim().length > 0;
+      const hasPhone = profile?.phone_number && profile.phone_number.trim().length > 0;
+      const hasUserType = profile?.user_type && ['SkillSeeker', 'SkillHolder', 'Both'].includes(profile.user_type);
+
+      // If profile doesn't exist or any required field is missing, redirect to profile edit
+      if (!profile || !hasName || !hasPhone || !hasUserType) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = '/profile/edit';
-        redirectUrl.searchParams.set('phone_required', 'true');
+        redirectUrl.searchParams.set('setup', 'true');
         return NextResponse.redirect(redirectUrl);
       }
     } catch (error) {
       // If there's an error (like table doesn't exist), allow through
       // The app will handle it gracefully
-      console.error('Error checking phone number in middleware:', error);
+      console.error('Error checking profile completeness in middleware:', error);
     }
   }
 

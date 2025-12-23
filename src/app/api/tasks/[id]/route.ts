@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { enforceEmailConfirmed } from '@/lib/api-helpers';
 
 export async function GET(
   request: Request,
@@ -14,6 +15,12 @@ export async function GET(
 
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // CRITICAL: Enforce email confirmation (check from user object first, then admin as fallback)
+  const emailCheck = await enforceEmailConfirmed(user, user.id);
+  if (emailCheck) {
+    return emailCheck;
   }
 
   const { data: userProfile, error: profileError } = await supabase
@@ -75,6 +82,12 @@ export async function DELETE(
 
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // CRITICAL: Enforce email confirmation (check from user object first, then admin as fallback)
+  const emailCheck = await enforceEmailConfirmed(user, user.id);
+  if (emailCheck) {
+    return emailCheck;
   }
 
   const { data: userProfile, error: profileError } = await supabase

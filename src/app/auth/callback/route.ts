@@ -7,9 +7,8 @@ export async function GET(request: Request) {
   const code = url.searchParams.get('code');
   const token_hash = url.searchParams.get('token_hash');
   const type = url.searchParams.get('type');
-  const next = url.searchParams.get('next') ?? '/login?confirmed=true';
 
-  const supabase = await createClient();
+  const supabase: Awaited<ReturnType<typeof createClient>> = await createClient();
 
   // ✅ PKCE flow (modern Supabase email confirmation)
   if (code) {
@@ -21,7 +20,8 @@ export async function GET(request: Request) {
       return;
     }
 
-    redirect(next);
+    // Always redirect to login page after successful confirmation
+    redirect('/login?confirmed=true');
     return;
   }
 
@@ -38,7 +38,8 @@ export async function GET(request: Request) {
       return;
     }
 
-    redirect(next);
+    // Always redirect to login page after successful confirmation
+    redirect('/login?confirmed=true');
     return;
   }
 

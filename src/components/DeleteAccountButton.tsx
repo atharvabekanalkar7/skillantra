@@ -24,10 +24,59 @@ export default function DeleteAccountButton() {
         method: 'DELETE',
       });
 
-      const data = await response.json();
+      // Get response as text first to handle both JSON and non-JSON responses
+      const responseText = await response.text();
+      
+      // Log the raw response for debugging
+      console.log('Delete account response:', {
+        status: response.status,
+        statusText: response.statusText,
+        responseTextLength: responseText.length,
+        responseTextPreview: responseText.substring(0, 200),
+      });
+      
+      let data: any = null;
+      
+      try {
+        if (responseText.trim()) {
+          data = JSON.parse(responseText);
+        } else {
+          data = {};
+        }
+      } catch (parseError) {
+        // If response is not JSON, use the text as error message
+        console.error('Failed to parse response as JSON:', parseError);
+        const errorMsg = responseText || `Failed to delete account (Status: ${response.status})`;
+        setError(errorMsg);
+        setDeleting(false);
+        return;
+      }
 
       if (!response.ok) {
-        setError(data.error || 'Failed to delete account');
+        // Handle API errors - show the actual error message
+        const errorMessage = data?.error || 
+                           data?.message || 
+                           data?.details ||
+                           responseText || 
+                           `Failed to delete account (Status: ${response.status})`;
+        
+        console.error('Delete account API error:', { 
+          status: response.status, 
+          statusText: response.statusText,
+          responseText: responseText,
+          parsedData: data,
+          dataType: typeof data,
+          dataKeys: data ? Object.keys(data) : [],
+          hasError: !!data?.error,
+          hasMessage: !!data?.message,
+          hasDetails: !!data?.details,
+          errorField: data?.error,
+          messageField: data?.message,
+          detailsField: data?.details,
+          finalErrorMessage: errorMessage
+        });
+        
+        setError(errorMessage);
         setDeleting(false);
         return;
       }

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { enforceEmailConfirmed } from '@/lib/api-helpers';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -11,6 +12,12 @@ export async function GET(request: Request) {
 
   if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // CRITICAL: Enforce email confirmation (check from user object first, then admin as fallback)
+  const emailCheck = await enforceEmailConfirmed(user, user.id);
+  if (emailCheck) {
+    return emailCheck;
   }
 
   const { searchParams } = new URL(request.url);
