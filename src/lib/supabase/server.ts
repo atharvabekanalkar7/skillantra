@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 76798d6 (ok)
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -5,6 +9,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js';
 export async function createClient() {
   const cookieStore = await cookies();
 
+<<<<<<< HEAD
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -21,6 +26,35 @@ export async function createClient() {
       },
     }
   );
+=======
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    const missingVars = [];
+    if (!supabaseUrl) missingVars.push('NEXT_PUBLIC_SUPABASE_URL');
+    if (!supabaseAnonKey) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+
+    throw new Error(
+      `Missing Supabase environment variables on the server: ${missingVars.join(
+        ', '
+      )}. Please ensure these are set in your .env.local file at the project root (same folder as package.json), then fully restart your dev server (Ctrl+C then "npm run dev").`
+    );
+  }
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          cookieStore.set(name, value, options);
+        });
+      },
+    },
+  });
+>>>>>>> 76798d6 (ok)
 }
 
 export function createServiceRoleClient() {

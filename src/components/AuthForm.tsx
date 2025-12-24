@@ -125,6 +125,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           }),
         });
 
+<<<<<<< HEAD
         let data: any = {};
         try {
           const responseText = await response.text();
@@ -137,6 +138,28 @@ export default function AuthForm({ mode }: AuthFormProps) {
           setError(text || `Failed to create account (Status: ${response.status})`);
           setLoading(false);
           return;
+=======
+        // Get response text first
+        const responseText = await response.text();
+        let data: any = {};
+        
+        // Try to parse as JSON
+        if (responseText) {
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            // If response is not JSON, use the text as error message
+            console.error('Failed to parse signup response as JSON:', {
+              status: response.status,
+              statusText: response.statusText,
+              responseText,
+              parseError
+            });
+            setError(responseText || `Failed to create account (Status: ${response.status})`);
+            setLoading(false);
+            return;
+          }
+>>>>>>> 76798d6 (ok)
         }
 
         if (!response.ok) {
@@ -151,6 +174,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             errorMessage = data?.error || 'Failed to create account. Please try again.';
           }
           
+<<<<<<< HEAD
           console.error('Signup API error:', { 
             status: response.status, 
             statusText: response.statusText,
@@ -158,6 +182,19 @@ export default function AuthForm({ mode }: AuthFormProps) {
             hasError: !!data?.error,
             hasMessage: !!data?.message,
             errorCode: data?.code
+=======
+          // Log full error details for debugging
+          console.error('Signup API error:', { 
+            status: response.status, 
+            statusText: response.statusText,
+            responseText,
+            parsedData: data,
+            hasError: !!data?.error,
+            hasMessage: !!data?.message,
+            errorCode: data?.code,
+            errorMessage: data?.error,
+            fullData: JSON.stringify(data, null, 2)
+>>>>>>> 76798d6 (ok)
           });
           setError(errorMessage);
           setLoading(false);
