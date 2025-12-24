@@ -125,20 +125,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
           }),
         });
 
-<<<<<<< HEAD
-        let data: any = {};
-        try {
-          const responseText = await response.text();
-          if (responseText) {
-            data = JSON.parse(responseText);
-          }
-        } catch (parseError) {
-          // If response is not JSON, use the text as error message
-          const text = await response.text().catch(() => '');
-          setError(text || `Failed to create account (Status: ${response.status})`);
-          setLoading(false);
-          return;
-=======
         // Get response text first
         const responseText = await response.text();
         let data: any = {};
@@ -159,7 +145,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
             setLoading(false);
             return;
           }
->>>>>>> 76798d6 (ok)
         }
 
         if (!response.ok) {
@@ -174,15 +159,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
             errorMessage = data?.error || 'Failed to create account. Please try again.';
           }
           
-<<<<<<< HEAD
-          console.error('Signup API error:', { 
-            status: response.status, 
-            statusText: response.statusText,
-            data,
-            hasError: !!data?.error,
-            hasMessage: !!data?.message,
-            errorCode: data?.code
-=======
           // Log full error details for debugging
           console.error('Signup API error:', { 
             status: response.status, 
@@ -194,7 +170,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
             errorCode: data?.code,
             errorMessage: data?.error,
             fullData: JSON.stringify(data, null, 2)
->>>>>>> 76798d6 (ok)
           });
           setError(errorMessage);
           setLoading(false);
