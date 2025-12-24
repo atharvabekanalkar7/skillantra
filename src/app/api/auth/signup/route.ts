@@ -57,7 +57,9 @@ export async function POST(request: Request) {
     const supabase: Awaited<ReturnType<typeof createClient>> = await createClient();
 
     // Get the site URL for email redirect
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    // Use the request origin as fallback for production
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                    (typeof request.headers.get('origin') === 'string' ? request.headers.get('origin') : 'http://localhost:3000');
     const emailRedirectTo = `${siteUrl}/auth/callback`;
 
     const { data, error } = await supabase.auth.signUp({
@@ -74,10 +76,20 @@ export async function POST(request: Request) {
 
     // 4️⃣ Hard failure
     if (error) {
+      // Provide more helpful error messages for common issues
+      let errorMessage = error.message;
+      
+      // Check for redirect URL errors
+      if (error.message?.includes('redirect') || error.message?.includes('redirect_to') || error.message?.includes('redirect URL')) {
+        errorMessage = 'Email confirmation redirect URL is not configured. Please contact support at skillantra0511@gmail.com.';
+      } else if (error.message?.includes('email') && error.message?.includes('send')) {
+        errorMessage = 'Unable to send confirmation email. Please check your email address and try again, or contact support at skillantra0511@gmail.com.';
+      }
+      
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.SIGNUP_FAILED,
-          error.message
+          errorMessage
         ),
         { status: 400 }
       );

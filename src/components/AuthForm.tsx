@@ -146,6 +146,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
           // Handle specific error codes
           if (data?.code === 'EMAIL_ALREADY_EXISTS' || response.status === 409) {
             errorMessage = 'Email address already in use';
+          } else if (data?.code === 'SIGNUP_FAILED') {
+            // Use the error message from the API, which should already be user-friendly
+            errorMessage = data?.error || 'Failed to create account. Please try again.';
           }
           
           console.error('Signup API error:', { 
