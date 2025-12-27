@@ -79,6 +79,16 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
+ * Validate IIT Mandi email domain
+ * Only allows @students.iitmandi.ac.in and @iitmandi.ac.in
+ */
+export function isValidIITMandiEmail(email: string): boolean {
+  const normalizedEmail = email.toLowerCase().trim();
+  const allowedDomains = ['@students.iitmandi.ac.in', '@iitmandi.ac.in'];
+  return allowedDomains.some(domain => normalizedEmail.endsWith(domain));
+}
+
+/**
  * Validate password strength
  */
 export function isValidPassword(password: string): { valid: boolean; error?: string } {

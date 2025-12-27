@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAuthError, AuthErrorCode } from "@/lib/auth-errors";
-import { isValidEmail, isValidPassword } from "@/lib/auth-utils";
+import { isValidEmail, isValidPassword, isValidIITMandiEmail } from "@/lib/auth-utils";
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +37,17 @@ export async function POST(request: Request) {
         createAuthError(
           AuthErrorCode.INVALID_EMAIL,
           "Invalid email format"
+        ),
+        { status: 400 }
+      );
+    }
+
+    // Validate IIT Mandi email domain
+    if (!isValidIITMandiEmail(email)) {
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.INVALID_EMAIL,
+          "Only @students.iitmandi.ac.in and @iitmandi.ac.in email addresses are allowed to verify that student is actually from IIT Mandi."
         ),
         { status: 400 }
       );

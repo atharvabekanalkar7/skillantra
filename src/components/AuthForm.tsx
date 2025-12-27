@@ -107,6 +107,17 @@ export default function AuthForm({ mode }: AuthFormProps) {
         setLoading(false);
         return;
       }
+
+      // Validate IIT Mandi email domain
+      const normalizedEmail = email.toLowerCase().trim();
+      const allowedDomains = ['@students.iitmandi.ac.in', '@iitmandi.ac.in'];
+      const isValidDomain = allowedDomains.some(domain => normalizedEmail.endsWith(domain));
+      
+      if (email && !isValidDomain) {
+        setError('Only @students.iitmandi.ac.in and @iitmandi.ac.in email addresses are allowed to verify that student is actually from IIT Mandi.');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -394,6 +405,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
               <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
                 Email <span className="text-red-400">*</span>
               </label>
+              {mode === 'signup' && (
+                <p className="text-xs text-white/60 mb-2">
+                  Only @students.iitmandi.ac.in and @iitmandi.ac.in email addresses are allowed to verify that student is actually from IIT Mandi.
+                </p>
+              )}
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
