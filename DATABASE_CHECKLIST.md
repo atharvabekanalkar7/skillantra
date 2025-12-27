@@ -17,7 +17,7 @@ This checklist documents all required database components for SkillAntra to func
 - `skills` (TEXT, nullable) - User skills
 - `college` (TEXT, nullable) - User's college/institution
 - `user_type` (TEXT, nullable) - User type: 'SkillSeeker', 'SkillHolder', or 'Both'
-- `phone_number` (TEXT, nullable) - Phone number (10-15 digits, numeric only)
+- `phone_number` (TEXT, nullable) - Phone number (10-15 digits, numeric only). Note: the client UI prefixes with `+91 ` for display, but the application sends/stores only the numeric digits (no `+`, no spaces).
 - `created_at` (TIMESTAMPTZ, NOT NULL, DEFAULT NOW()) - Profile creation timestamp
 - `updated_at` (TIMESTAMPTZ, NOT NULL, DEFAULT NOW()) - Profile last update timestamp
 
@@ -406,8 +406,8 @@ All foreign keys must have `ON DELETE CASCADE`:
 6. **Test Profile Creation:** Sign up a user and verify profile is auto-created
 7. **Test Cascade Delete:** Delete a user and verify profile is cascade deleted
 8. **Test RLS:** Verify users can only access/modify their own data
+9. **Test Phone Storage:** Ensure the client UI prefixes phone input with `+91 ` for display, but the database stores only numeric digits (10-15 digits) — verify stored `phone_number` matches `^[0-9]{10,15}$`.
 
 ---
 
 **Last Updated:** Based on codebase analysis of SkillAntra project
-
