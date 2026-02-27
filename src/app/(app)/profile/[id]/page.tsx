@@ -122,12 +122,12 @@ export default async function ProfileViewPage({
 
   if (!profileId) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-600 mb-4">Profile ID is required</p>
+      <div className="max-w-2xl mx-auto opacity-0 animate-fade-in-up">
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 text-center border border-purple-400/30">
+          <p className="text-white/80 mb-4">Profile ID is required</p>
           <Link
             href="/dashboard"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-purple-300 hover:text-purple-200 font-semibold"
           >
             Return to dashboard
           </Link>
@@ -140,12 +140,12 @@ export default async function ProfileViewPage({
 
   if (!profile) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-gray-600 mb-4">Profile not found</p>
+      <div className="max-w-2xl mx-auto opacity-0 animate-fade-in-up">
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 text-center border border-purple-400/30">
+          <p className="text-white/80 mb-4">Profile not found</p>
           <Link
             href="/dashboard"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-purple-300 hover:text-purple-200 font-semibold"
           >
             Return to dashboard
           </Link>
@@ -171,33 +171,33 @@ export default async function ProfileViewPage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="bg-white rounded-lg shadow-md p-8">
+    <div className="max-w-3xl mx-auto opacity-0 animate-fade-in-up">
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
         <div className="mb-6">
           <Link
             href="/dashboard"
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-4 inline-block"
+            className="text-purple-300 hover:text-purple-200 text-sm font-semibold mb-4 inline-flex items-center gap-1 min-h-[44px] py-2 touch-manipulation"
           >
             ← Back to dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile.name}</h1>
           {profile.college && (
-            <p className="text-gray-600 text-sm mb-2">{profile.college}</p>
+            <p className="text-white/70 text-sm mb-2">{profile.college}</p>
           )}
           {profileEmail && (
-            <p className="text-gray-600 text-sm mb-3">
+            <p className="text-white/70 text-sm mb-3">
               ✉️ {profileEmail}
             </p>
           )}
           {profile.bio && (
-            <p className="text-gray-700 text-lg mb-4 whitespace-pre-wrap">{profile.bio}</p>
+            <p className="text-white/90 text-base sm:text-lg mb-4 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
           )}
         </div>
 
         {profile.user_type && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">I am a:</h2>
-            <span className="inline-block bg-purple-50 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+            <h2 className="text-lg font-semibold text-white mb-2">I am a:</h2>
+            <span className="inline-block bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-medium border border-purple-400/30">
               {profile.user_type}
             </span>
           </div>
@@ -205,12 +205,12 @@ export default async function ProfileViewPage({
 
         {skills.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Skills</h2>
+            <h2 className="text-lg font-semibold text-white mb-3">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {skills.map((skill, index) => (
                 <span
                   key={index}
-                  className="inline-block bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                  className="inline-block bg-blue-500/20 text-blue-200 px-3 py-1 rounded-full text-sm border border-blue-400/30"
                 >
                   {skill}
                 </span>
@@ -219,15 +219,15 @@ export default async function ProfileViewPage({
           </div>
         )}
 
-        <div className="pt-6 border-t border-gray-200">
-          <div className="text-sm text-gray-500 mb-4">
+        <div className="pt-6 border-t border-purple-400/20">
+          <div className="text-sm text-white/60 mb-4">
             Member since {new Date(profile.created_at).toLocaleDateString()}
           </div>
 
           {!isOwnProfile && currentUserProfile && (
             <div>
               {hasPending ? (
-                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
+                <div className="bg-yellow-500/20 border border-yellow-400/50 text-yellow-300 px-4 py-3 rounded-lg">
                   You have a pending collaboration request with this user.
                 </div>
               ) : (
@@ -239,7 +239,7 @@ export default async function ProfileViewPage({
           {isOwnProfile && (
             <Link
               href="/profile/edit"
-              className="inline-block bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all active:scale-[0.98] font-semibold touch-manipulation"
             >
               Edit Profile
             </Link>

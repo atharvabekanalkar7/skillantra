@@ -73,23 +73,23 @@ export default function NewTaskPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Create New Task</h1>
-        <p className="text-gray-600">Post a task to find skilled collaborators</p>
+    <div className="max-w-2xl mx-auto opacity-0 animate-fade-in-up">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">Create New Task</h1>
+        <p className="text-white/80 text-sm sm:text-base">Post a task to find skilled collaborators</p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-8">
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Title <span className="text-red-500">*</span>
+            <label htmlFor="title" className="block text-sm font-medium text-white mb-2">
+              Title <span className="text-red-400">*</span>
             </label>
             <input
               id="title"
@@ -97,27 +97,27 @@ export default function NewTaskPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
               placeholder="e.g., Build a React dashboard"
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-white mb-2">
               Description
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              rows={5}
+              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
               placeholder="Describe the task in detail..."
             />
           </div>
 
           <div>
-            <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="skills" className="block text-sm font-medium text-white mb-2">
               Skills Required
             </label>
             <input
@@ -125,26 +125,26 @@ export default function NewTaskPage() {
               type="text"
               value={skillsRequired}
               onChange={(e) => setSkillsRequired(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
               placeholder="React, TypeScript, Node.js (comma-separated)"
             />
-            <p className="mt-1 text-sm text-gray-500">Separate skills with commas</p>
+            <p className="mt-2 text-sm text-white/60">Separate skills with commas</p>
           </div>
 
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Creating...' : 'Create Task'}
-            </button>
+          <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4 pt-2">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              className="flex-1 px-6 py-3 sm:py-4 min-h-[44px] border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors touch-manipulation font-semibold"
             >
               Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 min-h-[44px] bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 sm:py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] font-semibold touch-manipulation"
+            >
+              {loading ? 'Creating...' : 'Create Task'}
             </button>
           </div>
         </form>

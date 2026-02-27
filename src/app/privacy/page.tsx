@@ -2,18 +2,18 @@ import Link from 'next/link';
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950">
-      <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950 overflow-x-hidden">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-all mb-8"
+          className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-3 min-h-[44px] rounded-lg transition-all mb-8 touch-manipulation"
         >
           <span>←</span>
           <span className="text-sm font-medium">Back to Home</span>
         </Link>
 
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-purple-400/30">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">🔒 Privacy Policy</h1>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 md:p-12 border border-purple-400/30">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">🔒 Privacy Policy</h1>
           <p className="text-white/60 mb-8">Last updated: 21-12-2025</p>
 
           <div className="prose prose-invert max-w-none space-y-8 text-white/90">

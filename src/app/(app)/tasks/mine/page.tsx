@@ -211,14 +211,14 @@ export default function MyTasksPage() {
 
   return (
     <div className="opacity-0 animate-fade-in-up">
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 md:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">My Tasks</h1>
-          <p className="text-white/80">Manage tasks you've created</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">My Tasks</h1>
+          <p className="text-white/80 text-sm sm:text-base">Manage tasks you've created</p>
         </div>
         <Link
           href="/tasks/new"
-          className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 hover:scale-105 font-semibold shadow-lg shadow-green-900/30"
+          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 font-semibold shadow-lg shadow-green-900/30 touch-manipulation"
         >
           Create New Task
         </Link>
@@ -245,7 +245,7 @@ export default function MyTasksPage() {
           {tasks.map((task, index) => (
             <div
               key={task.id}
-              className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.01] opacity-0 animate-fade-in-up-delayed"
+              className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.01] opacity-0 animate-fade-in-up-delayed"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex justify-between items-start mb-3">
@@ -352,18 +352,18 @@ export default function MyTasksPage() {
                           </span>
                         </div>
                         {application.status === 'pending' && (
-                          <div className="flex gap-2 mt-3">
+                          <div className="flex flex-col sm:flex-row gap-2 mt-3">
                             <button
                               onClick={() => handleUpdateApplicationStatus(application.id, 'accepted')}
                               disabled={updatingApplicationId === application.id}
-                              className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 min-h-[44px] bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
                             >
                               {updatingApplicationId === application.id ? 'Updating...' : 'Accept'}
                             </button>
                             <button
                               onClick={() => handleUpdateApplicationStatus(application.id, 'rejected')}
                               disabled={updatingApplicationId === application.id}
-                              className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="flex-1 min-h-[44px] bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
                             >
                               {updatingApplicationId === application.id ? 'Updating...' : 'Reject'}
                             </button>
@@ -375,11 +375,11 @@ export default function MyTasksPage() {
                 </div>
               )}
 
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-purple-400/20">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-4 pt-4 border-t border-purple-400/20">
                 <div className="text-xs text-white/50">
                   {formatTimeAgo(task.created_at)}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={`/tasks/${task.id}`}
                     className="text-purple-300 hover:text-purple-200 text-sm font-semibold group inline-flex items-center gap-1"

@@ -87,11 +87,11 @@ export default function TaskDetailsPage() {
         </Link>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 border border-purple-400/30">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3 flex-wrap">
-              <h1 className="text-3xl font-bold text-white">{task.title}</h1>
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">{task.title}</h1>
               <span
                 className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${
                   task.status === 'open'

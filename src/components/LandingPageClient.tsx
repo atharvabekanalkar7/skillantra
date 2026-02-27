@@ -55,7 +55,7 @@ export default function LandingPageClient() {
         ref={heroRef}
         id="hero"
         data-section="hero"
-        className="relative min-h-screen overflow-hidden"
+        className="relative min-h-screen overflow-x-hidden overflow-y-visible"
       >
         {/* Colorful animated background elements */}
         <div className="absolute inset-0">
@@ -69,23 +69,23 @@ export default function LandingPageClient() {
         {/* Colorful gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
         
-        <div className="relative mx-auto max-w-6xl px-6 py-32">
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-28 md:py-32">
           <div className={`flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center text-center transition-opacity duration-700 ${mounted ? "opacity-100" : "opacity-0"}`}>
             <div className={`flex flex-col items-center gap-8 ${mounted ? "animate-fade-in-up" : ""}`}>
               {/* Brand Name - Prominent */}
-              <h1 className="text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl will-change-opacity">
+              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl xl:text-8xl">
                 <span className="bg-gradient-to-r from-cyan-300 via-blue-400 via-indigo-400 to-blue-500 bg-clip-text text-transparent drop-shadow-2xl [text-shadow:0_0_40px_rgba(59,130,246,0.3)]">
                   SkillAntra
                 </span>
               </h1>
 
               {/* Tagline */}
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80 sm:text-base will-change-opacity">
+              <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
                 Where skills meet opportunity
               </p>
 
               {/* Main Headline */}
-              <h2 className="max-w-5xl text-4xl font-bold leading-[1.1] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl will-change-opacity">
+              <h2 className="max-w-5xl text-2xl sm:text-3xl md:text-4xl font-bold leading-[1.15] tracking-tight text-white lg:text-5xl xl:text-6xl 2xl:text-7xl">
                 Connect with skilled students.{" "}
                 <span className="block mt-3 bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 bg-clip-text text-transparent drop-shadow-lg">
                   Build real projects.
@@ -93,17 +93,16 @@ export default function LandingPageClient() {
               </h2>
 
               {/* Supporting Description */}
-              <p className="max-w-2xl text-lg leading-8 text-white/90 sm:text-xl md:text-2xl will-change-opacity">
+              <p className="max-w-2xl text-base sm:text-lg leading-7 sm:leading-8 text-white/90 md:text-xl lg:text-2xl">
                 The campus platform where students find teammates, collaborate on projects, and build portfolios together.
               </p>
             </div>
 
             {/* CTAs */}
-            <div className="mt-14 flex flex-col items-center gap-5 sm:flex-row sm:justify-center">
+            <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row items-center gap-4 sm:gap-5 w-full sm:w-auto sm:justify-center">
               <Link
                 href="/dashboard?demo=true"
-                className="group flex h-19 min-w-[216px] items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-14 font-bold text-slate-900 shadow-2xl shadow-amber-900/50 transition-all duration-300 hover:scale-105 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-500 hover:shadow-amber-900/60 sm:w-auto text-lg"
-                style={{ height: 'calc(3.5rem * 1.35)', minWidth: 'calc(160px * 1.35)', paddingLeft: 'calc(2.5rem * 1.35)', paddingRight: 'calc(2.5rem * 1.35)' }}
+                className="group flex min-h-[48px] w-full sm:w-auto sm:min-w-[200px] items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-8 py-4 font-bold text-slate-900 shadow-2xl shadow-amber-900/50 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 md:hover:from-amber-400 md:hover:via-yellow-400 md:hover:to-amber-500 hover:shadow-amber-900/60 text-base sm:text-lg touch-manipulation"
               >
                 <span 
                   className="inline-block animate-bounce mr-3 text-2xl" 
@@ -120,8 +119,7 @@ export default function LandingPageClient() {
               </Link>
               <Link
                 href="/signup"
-                className="group flex h-19 min-w-[216px] items-center justify-center rounded-xl bg-white px-14 font-bold text-indigo-700 shadow-2xl shadow-indigo-900/30 transition-all duration-300 hover:scale-105 hover:bg-indigo-50 hover:shadow-indigo-900/40 sm:w-auto text-lg"
-                style={{ height: 'calc(3.5rem * 1.35)', minWidth: 'calc(160px * 1.35)', paddingLeft: 'calc(2.5rem * 1.35)', paddingRight: 'calc(2.5rem * 1.35)' }}
+                className="group flex min-h-[48px] w-full sm:w-auto sm:min-w-[200px] items-center justify-center rounded-xl bg-white px-8 py-4 font-bold text-indigo-700 shadow-2xl shadow-indigo-900/30 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 hover:bg-indigo-50 hover:shadow-indigo-900/40 text-base sm:text-lg touch-manipulation"
               >
                 Sign Up
               </Link>
@@ -145,19 +143,19 @@ export default function LandingPageClient() {
         <div className={`relative mx-auto max-w-7xl px-6 transition-opacity duration-1000 ${visibleSections.has('features') ? 'opacity-100' : 'opacity-60'}`}>
           {/* How It Works Section */}
           <div className={`mb-24 text-center ${visibleSections.has('features') ? 'animate-slide-in-up' : ''}`}>
-            <h2 className="text-5xl font-bold sm:text-6xl md:text-7xl mb-4 will-change-opacity">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold lg:text-6xl xl:text-7xl mb-4">
               <span className="bg-gradient-to-r from-amber-400 via-yellow-400 via-orange-400 to-amber-500 bg-clip-text text-transparent drop-shadow-2xl [text-shadow:0_0_40px_rgba(251,191,36,0.5)]">
                 How SkillAntra Works
               </span>
             </h2>
-            <p className="text-xl text-slate-300 sm:text-2xl will-change-opacity">
+            <p className="text-base sm:text-lg md:text-xl text-slate-300 lg:text-2xl">
               Three simple steps to start collaborating
             </p>
           </div>
 
           <div className={`grid gap-8 md:grid-cols-3 mb-32 ${visibleSections.has('features') ? 'animate-fade-in-scale' : ''}`}>
             {/* Card 1 */}
-            <div className="group relative rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-10 transition-all duration-500 hover:border-blue-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-blue-500/10 will-change-transform">
+            <div className="group relative rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-6 sm:p-10 transition-all duration-300 hover:border-blue-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-blue-500/10">
               <div className="mb-6 text-5xl">📚</div>
               <h3 className="mb-4 text-2xl font-bold text-white">Discover Skills</h3>
               <p className="text-slate-300 leading-relaxed text-lg">
@@ -166,7 +164,7 @@ export default function LandingPageClient() {
             </div>
 
             {/* Card 2 */}
-            <div className="group relative rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-10 transition-all duration-500 hover:border-indigo-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-indigo-500/10 will-change-transform">
+            <div className="group relative rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-6 sm:p-10 transition-all duration-300 hover:border-indigo-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-indigo-500/10">
               <div className="mb-6 text-5xl">🤝</div>
               <h3 className="mb-4 text-2xl font-bold text-white">Collaborate</h3>
               <p className="text-slate-300 leading-relaxed text-lg">
@@ -175,7 +173,7 @@ export default function LandingPageClient() {
             </div>
 
             {/* Card 3 */}
-            <div className="group relative rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-10 transition-all duration-500 hover:border-purple-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-purple-500/10 will-change-transform">
+            <div className="group relative rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-6 sm:p-10 transition-all duration-300 hover:border-purple-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-purple-500/10">
               <div className="mb-6 text-5xl">⚡</div>
               <h3 className="mb-4 text-2xl font-bold text-white">Build Portfolio</h3>
               <p className="text-slate-300 leading-relaxed text-lg">
@@ -186,18 +184,18 @@ export default function LandingPageClient() {
 
           {/* Why SkillAntra Section */}
           <div className={`mb-20 text-center ${visibleSections.has('features') ? 'animate-slide-in-up delay-400' : ''}`}>
-            <h2 className="text-5xl font-bold sm:text-6xl md:text-7xl mb-4 will-change-opacity">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold lg:text-6xl xl:text-7xl mb-4">
               <span className="bg-gradient-to-r from-purple-400 via-pink-400 via-indigo-400 to-purple-500 bg-clip-text text-transparent drop-shadow-2xl [text-shadow:0_0_40px_rgba(147,51,234,0.4)]">
                 Why SkillAntra Exists
               </span>
             </h2>
-            <p className="text-xl text-slate-300 sm:text-2xl will-change-opacity">
+            <p className="text-base sm:text-lg md:text-xl text-slate-300 lg:text-2xl">
               Built for students, by students
             </p>
           </div>
 
           <div className={`grid gap-8 md:grid-cols-2 ${visibleSections.has('features') ? 'animate-fade-in-scale delay-600' : ''}`}>
-            <div className="rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-10 transition-all duration-500 hover:border-indigo-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-indigo-500/10 will-change-transform">
+            <div className="rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-6 sm:p-10 transition-all duration-300 hover:border-indigo-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-indigo-500/10">
               <div className="mb-6 text-5xl">🏫</div>
               <h3 className="mb-4 text-2xl font-bold text-white">Campus-Focused Trust</h3>
               <p className="text-slate-300 leading-relaxed text-lg">
@@ -205,7 +203,7 @@ export default function LandingPageClient() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-10 transition-all duration-500 hover:border-purple-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-purple-500/10 will-change-transform">
+            <div className="rounded-2xl sm:rounded-3xl border border-slate-700/50 bg-slate-900/30 backdrop-blur-xl p-6 sm:p-10 transition-all duration-300 hover:border-purple-500/50 hover:bg-slate-900/50 hover:shadow-2xl hover:shadow-purple-500/10">
               <div className="mb-6 text-5xl">🤝</div>
               <h3 className="mb-4 text-2xl font-bold text-white">Peer Collaboration</h3>
               <p className="text-slate-300 leading-relaxed text-lg">

@@ -292,7 +292,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950 relative overflow-hidden flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950 relative overflow-x-hidden flex items-start justify-center px-4 py-8 sm:py-12">
       {/* Subtle background glows */}
       <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-purple-500/15 rounded-full blur-[100px]"></div>
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[120px]"></div>
@@ -302,18 +302,18 @@ export default function AuthForm({ mode }: AuthFormProps) {
         <div className="mb-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-all mb-6"
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-3 min-h-[44px] rounded-lg transition-all mb-6 touch-manipulation"
           >
             <span>←</span>
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="text-4xl font-bold text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
             {mode === 'signup' ? 'Create your SkillAntra account' : 'Log in to SkillAntra'}
           </h1>
         </div>
 
         {/* Form Card */}
-        <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-purple-500/30">
+        <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-500/30 w-full max-w-lg mx-auto">
           {emailSent ? (
             <div className="space-y-6 text-center">
               <div className="mb-6">

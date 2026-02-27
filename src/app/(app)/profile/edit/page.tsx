@@ -65,7 +65,7 @@ export default function EditProfilePage() {
             <span>←</span>
             <span className="text-sm font-medium">Back</span>
           </Link>
-          <h1 className="text-4xl font-bold text-white mb-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 md:mb-3">
             {profile ? 'Edit Profile' : 'Create Profile'}
           </h1>
           <p className="text-white/70">
@@ -104,7 +104,7 @@ export default function EditProfilePage() {
           <span>←</span>
           <span className="text-sm font-medium">Back</span>
         </Link>
-        <h1 className="text-4xl font-bold text-white mb-3">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 md:mb-3">
           {phoneRequired ? 'Phone Number Required' : profile ? 'Edit Profile' : isSetup ? 'Complete Your Profile' : 'Create Profile'}
         </h1>
         <p className="text-white/70">

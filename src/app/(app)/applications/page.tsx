@@ -109,9 +109,9 @@ export default function MyApplicationsPage() {
 
   return (
     <div className="opacity-0 animate-fade-in-up">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">My Applications</h1>
-        <p className="text-white/80">Track your task applications</p>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">My Applications</h1>
+        <p className="text-white/80 text-sm sm:text-base">Track your task applications</p>
       </div>
 
       {error && (
@@ -135,7 +135,7 @@ export default function MyApplicationsPage() {
           {applications.map((application, index) => (
             <div
               key={application.id}
-              className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.01] opacity-0 animate-fade-in-up-delayed"
+              className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.01] opacity-0 animate-fade-in-up-delayed"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               {application.task && (

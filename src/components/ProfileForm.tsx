@@ -263,20 +263,20 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         </p>
       </div>
 
-      <div className="flex gap-4">
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] font-semibold"
-        >
-          {loading ? 'Saving...' : 'Save Profile'}
-        </button>
+      <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-4 border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors"
+          className="flex-1 min-h-[44px] px-6 py-4 border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors font-semibold touch-manipulation"
         >
           Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex-1 min-h-[44px] bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] md:hover:scale-[1.02] font-semibold touch-manipulation"
+        >
+          {loading ? 'Saving...' : 'Save Profile'}
         </button>
       </div>
 

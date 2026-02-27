@@ -116,10 +116,10 @@ export default function RequestsPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h2 className="text-red-800 font-semibold mb-2">Configuration Error</h2>
-        <p className="text-red-700">{error}</p>
-        <p className="text-red-600 text-sm mt-2">
+      <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-6 opacity-0 animate-fade-in-up">
+        <h2 className="text-red-300 font-semibold mb-2">Configuration Error</h2>
+        <p className="text-red-200 text-sm">{error}</p>
+        <p className="text-red-200/80 text-sm mt-2">
           Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in your .env.local file and restart your development server.
         </p>
       </div>
@@ -131,18 +131,18 @@ export default function RequestsPage() {
   }
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Collaboration Requests</h1>
-        <p className="text-gray-600">Manage your incoming and sent requests</p>
+    <div className="opacity-0 animate-fade-in-up">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Collaboration Requests</h1>
+        <p className="text-white/80 text-sm sm:text-base">Manage your incoming and sent requests</p>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         <section>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Incoming Requests</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">Incoming Requests</h2>
           {incomingRequests.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600">No incoming requests</p>
+            <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
+              <p className="text-white/80">No incoming requests</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -160,10 +160,10 @@ export default function RequestsPage() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Sent Requests</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">Sent Requests</h2>
           {sentRequests.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center">
-              <p className="text-gray-600">No sent requests</p>
+            <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
+              <p className="text-white/80">No sent requests</p>
             </div>
           ) : (
             <div className="space-y-4">

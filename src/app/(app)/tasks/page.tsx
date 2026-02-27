@@ -182,14 +182,14 @@ export default function BrowseTasksPage() {
 
   return (
     <div className="opacity-0 animate-fade-in-up">
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 md:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-4xl font-bold text-white mb-2">Browse Tasks</h1>
-          <p className="text-white/80">Find tasks that match your skills</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">Browse Tasks</h1>
+          <p className="text-white/80 text-sm sm:text-base">Find tasks that match your skills</p>
         </div>
         <Link
           href="/tasks/new"
-          className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 hover:scale-105 font-semibold shadow-lg shadow-green-900/30"
+          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 font-semibold shadow-lg shadow-green-900/30 touch-manipulation"
         >
           Create Task
         </Link>
@@ -290,7 +290,7 @@ export default function BrowseTasksPage() {
                   task.status !== 'open' || 
                   appliedTaskIds.has(task.id)
                 }
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-[1.02] font-semibold shadow-lg shadow-blue-900/30"
+                className="w-full min-h-[44px] bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] font-semibold shadow-lg shadow-blue-900/30 touch-manipulation"
               >
                 {isDemo 
                   ? 'Sign Up to Apply' 

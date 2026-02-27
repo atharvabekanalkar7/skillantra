@@ -18,6 +18,18 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
     if (isOpen) {
       setPhoneNumber('+91 ');
       setError(null);
+      // Lock body scroll while modal is open
+      const prevOverflow = document.body.style.overflow;
+      const prevPadding = document.body.style.paddingRight;
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        document.body.style.paddingRight = prevPadding;
+      };
     }
   }, [isOpen]);
 
@@ -79,8 +91,16 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
     : 'create tasks';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-slate-900 rounded-2xl p-6 w-full max-w-md border border-purple-400/30 shadow-xl">
+    <div 
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm overscroll-contain"
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)', 
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)',
+      }}
+    >
+      <div className="bg-slate-900 rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-purple-400/30 shadow-xl">
         <h2 className="text-2xl font-bold text-white mb-4">Phone Number Required</h2>
         <p className="text-white/80 mb-4">
           A phone number is required to {contextMessage}. 
@@ -125,18 +145,18 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors"
+              className="flex-1 min-h-[44px] px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors touch-manipulation disabled:opacity-50"
               disabled={saving}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 min-h-[44px] px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
               disabled={saving}
             >
               {saving ? 'Saving...' : 'Save'}

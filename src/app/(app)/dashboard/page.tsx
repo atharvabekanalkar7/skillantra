@@ -97,15 +97,15 @@ export default function DashboardPage() {
 
   return (
     <div className="opacity-0 animate-fade-in-up">
-      <div className="mb-10">
-        <h1 className="text-5xl font-black mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+      <div className="mb-6 md:mb-10">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
           Dashboard
         </h1>
-        <p className="text-xl text-white font-normal">Overview of your activity on SkillAntra</p>
+        <p className="text-base sm:text-lg md:text-xl text-white/90 font-normal">Overview of your activity on SkillAntra</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 border border-blue-400/40 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-10">
+        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-blue-400/40 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed">
           <h3 className="text-lg font-bold text-blue-300 mb-3">Tasks Created</h3>
           <p className="text-5xl font-black text-blue-400 mb-4">{stats.tasksCreated}</p>
           <Link
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 border border-green-400/40 hover:border-green-400 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed-2">
+        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-green-400/40 hover:border-green-400 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed-2">
           <h3 className="text-lg font-bold text-green-300 mb-3">Applications Sent</h3>
           <p className="text-5xl font-black text-green-400 mb-4">{stats.applicationsSent}</p>
           <Link
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 border border-purple-400/40 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed-3">
+        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/40 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed-3">
           <h3 className="text-lg font-bold text-purple-300 mb-3">Applications Received</h3>
           <p className="text-5xl font-black text-purple-400 mb-4">{stats.applicationsReceived}</p>
           <Link
@@ -139,27 +139,27 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 border border-cyan-400/40 transition-all duration-300 opacity-0 animate-fade-in-up-delayed-4">
-          <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
-          <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-cyan-400/40 transition-all duration-300 opacity-0 animate-fade-in-up-delayed-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Quick Actions</h2>
+          <div className="space-y-3 sm:space-y-4">
             <Link
               href="/tasks"
-              className="block w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl hover:from-blue-500 hover:to-cyan-500 text-center font-bold text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-blue-900/30"
+              className="block w-full min-h-[44px] flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl hover:from-blue-500 hover:to-cyan-500 font-bold text-base sm:text-lg transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] shadow-lg shadow-blue-900/30 touch-manipulation"
             >
               Browse Tasks
             </Link>
             <Link
               href="/tasks/new"
-              className="block w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl hover:from-green-500 hover:to-emerald-500 text-center font-bold text-lg transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-green-900/30"
+              className="block w-full min-h-[44px] flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl hover:from-green-500 hover:to-emerald-500 font-bold text-base sm:text-lg transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] shadow-lg shadow-green-900/30 touch-manipulation"
             >
               Create New Task
             </Link>
           </div>
         </div>
 
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 border border-purple-400/40 transition-all duration-300 opacity-0 animate-fade-in-up-delayed-4">
-          <h2 className="text-2xl font-bold text-white mb-6">Recent Activity</h2>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/40 transition-all duration-300 opacity-0 animate-fade-in-up-delayed-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Recent Activity</h2>
           <p className="text-white/90 text-base mb-6 leading-relaxed">
             View your tasks and applications to see your recent activity on SkillAntra.
           </p>
