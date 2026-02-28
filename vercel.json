@@ -1,8 +1,1 @@
-{
-    "crons": [
-        {
-            "path": "/api/cron/delete-expired-tasks",
-            "schedule": "0 * * * *"
-        }
-    ]
-}
+{}
