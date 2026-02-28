@@ -1,12 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import SendRequestForm from '@/components/SendRequestForm';
 import { parseSkills } from '@/lib/utils';
 import Link from 'next/link';
+import SendDMButton from '@/components/SendDMButton';
 
 async function getProfile(profileId: string) {
   const supabase = await createClient();
-  
+
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -57,7 +57,7 @@ async function getCurrentUserProfile() {
 
 async function getProfileEmail(profileId: string) {
   const supabase = await createClient();
-  
+
   // Get the profile to find user_id
   const { data: profile } = await supabase
     .from('profiles')
@@ -83,24 +83,6 @@ async function getProfileEmail(profileId: string) {
   return currentUser.email;
 }
 
-async function hasPendingRequest(senderId: string, receiverId: string) {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase
-    .from('collaboration_requests')
-    .select('id')
-    .eq('sender_id', senderId)
-    .eq('receiver_id', receiverId)
-    .eq('status', 'pending')
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error checking pending request:', error);
-    return false;
-  }
-
-  return !!data;
-}
 
 export default async function ProfileViewPage({
   params,
@@ -156,9 +138,6 @@ export default async function ProfileViewPage({
 
   const currentUserProfile = await getCurrentUserProfile();
   const isOwnProfile = currentUserProfile?.id === profile.id;
-  const hasPending = currentUserProfile
-    ? await hasPendingRequest(currentUserProfile.id, profile.id)
-    : false;
 
   const skills = parseSkills(profile.skills);
 
@@ -225,14 +204,12 @@ export default async function ProfileViewPage({
           </div>
 
           {!isOwnProfile && currentUserProfile && (
-            <div>
-              {hasPending ? (
-                <div className="bg-yellow-500/20 border border-yellow-400/50 text-yellow-300 px-4 py-3 rounded-lg">
-                  You have a pending collaboration request with this user.
-                </div>
-              ) : (
-                <SendRequestForm receiverId={profile.id} receiverName={profile.name} />
-              )}
+            <div className="bg-purple-500/10 border border-purple-400/30 text-purple-200 px-5 py-4 rounded-xl flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold mb-1">Collaborate with {profile.name}</h3>
+                <p className="text-sm text-purple-300">Direct messages have arrived!</p>
+              </div>
+              <SendDMButton receiverId={profile.id} receiverName={profile.name} />
             </div>
           )}
 

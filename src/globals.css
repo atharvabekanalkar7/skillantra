@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 /* === Mobile-first base styles: prevent glitches, ensure stability === */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -27,6 +29,7 @@ main {
   overflow-x: hidden;
   overflow-y: visible;
 }
+
 @supports (overflow-x: clip) {
   main {
     overflow-x: clip;
@@ -34,7 +37,11 @@ main {
 }
 
 /* Touch-friendly tap targets minimum 44x44px */
-button, a, [role="button"], input[type="submit"], input[type="button"] {
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"] {
   touch-action: manipulation;
 }
 
@@ -42,7 +49,10 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -51,6 +61,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 
 /* Disable heavy animations on mobile for performance (optional: enable for low-end devices) */
 @media (max-width: 768px) {
+
   .animate-float,
   .animate-float-delayed,
   .animate-float-slow {
@@ -63,6 +74,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -70,43 +82,57 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(30px, -30px) scale(1.1);
   }
+
   66% {
     transform: translate(-20px, 20px) scale(0.9);
   }
 }
 
 @keyframes float-delayed {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(-30px, 30px) scale(0.9);
   }
+
   66% {
     transform: translate(20px, -20px) scale(1.1);
   }
 }
 
 @keyframes float-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   50% {
     transform: translate(40px, 40px) scale(1.15);
   }
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     filter: brightness(1);
   }
+
   50% {
     opacity: 0.9;
     filter: brightness(1.2);
@@ -114,10 +140,13 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 }
 
 @keyframes pulse-slow-delayed {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     filter: brightness(1);
   }
+
   50% {
     opacity: 0.85;
     filter: brightness(1.3);
@@ -125,9 +154,12 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 }
 
 @keyframes glow {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: drop-shadow(0 0 20px rgba(251, 146, 60, 0.6));
   }
+
   50% {
     filter: drop-shadow(0 0 40px rgba(251, 146, 60, 0.9));
   }
@@ -138,6 +170,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -149,6 +182,7 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -160,9 +194,24 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
@@ -252,4 +301,3 @@ button, a, [role="button"], input[type="submit"], input[type="button"] {
 .delay-1000 {
   animation-delay: 1s;
 }
-

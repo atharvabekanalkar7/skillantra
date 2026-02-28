@@ -97,13 +97,6 @@ export default function EditProfilePage() {
   return (
     <div className="max-w-2xl mx-auto animate-fade-in-up">
       <div className="mb-8">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-all mb-6"
-        >
-          <span>←</span>
-          <span className="text-sm font-medium">Back</span>
-        </Link>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 md:mb-3">
           {phoneRequired ? 'Phone Number Required' : profile ? 'Edit Profile' : isSetup ? 'Complete Your Profile' : 'Create Profile'}
         </h1>

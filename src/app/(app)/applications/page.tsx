@@ -5,14 +5,20 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
+import { useCountdown } from '@/lib/utils/useCountdown';
+import type { Task } from '@/lib/types';
 
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  skills_required: string | null;
-  status: 'open' | 'closed';
-  created_at: string;
+function DeadlineCountdown({ deadline }: { deadline: string }) {
+  const countdown = useCountdown(deadline);
+  if (!countdown) return null;
+  return (
+    <span className={`px-2 py-1 rounded text-xs font-semibold ${countdown.expired
+      ? 'bg-red-500/20 text-red-300 border border-red-400/50'
+      : 'bg-amber-500/20 text-amber-300 border border-amber-400/50'
+      }`}>
+      ⏰ {countdown.text}
+    </span>
+  );
 }
 
 interface Application {
@@ -43,7 +49,6 @@ export default function MyApplicationsPage() {
 
   const loadApplications = async () => {
     if (isDemo) {
-      // Demo mode: use mock data
       setApplications([
         {
           id: 'demo-app-1',
@@ -53,9 +58,17 @@ export default function MyApplicationsPage() {
           created_at: new Date().toISOString(),
           task: {
             id: 'demo-task-1',
+            creator_profile_id: 'demo-creator',
             title: 'Build a React Dashboard',
             description: 'Looking for a frontend developer to help build a modern dashboard.',
             skills_required: 'React, TypeScript',
+            payment_type: 'stipend',
+            stipend_min: 5000,
+            stipend_max: 10000,
+            payment_other_details: null,
+            application_deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+            mode_of_work: 'remote',
+            attachments: [],
             status: 'open',
             created_at: new Date().toISOString(),
           },
@@ -72,7 +85,6 @@ export default function MyApplicationsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle table not found gracefully
         if (data.error?.includes('schema cache') || data.error?.includes('does not exist')) {
           setApplications([]);
           setError('Applications feature is not available yet. Database tables need to be initialized.');
@@ -150,14 +162,17 @@ export default function MyApplicationsPage() {
                           {application.status}
                         </span>
                         <span
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                            application.task.status === 'open'
-                              ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-                              : 'bg-gray-500/20 text-gray-300 border border-gray-400/50'
-                          }`}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold ${application.task.status === 'open'
+                            ? 'bg-green-500/20 text-green-300 border border-green-400/50'
+                            : 'bg-gray-500/20 text-gray-300 border border-gray-400/50'
+                            }`}
                         >
                           Task: {application.task.status}
                         </span>
+                        {/* Deadline status */}
+                        {application.task.application_deadline && (
+                          <DeadlineCountdown deadline={application.task.application_deadline} />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -175,9 +190,9 @@ export default function MyApplicationsPage() {
                         {application.task.skills_required
                           .split(',')
                           .slice(0, 5)
-                          .map((skill, index) => (
+                          .map((skill, i) => (
                             <span
-                              key={index}
+                              key={i}
                               className="inline-block bg-blue-500/20 text-blue-200 text-xs px-3 py-1 rounded-lg border border-blue-400/30 font-medium"
                             >
                               {skill.trim()}
@@ -194,7 +209,7 @@ export default function MyApplicationsPage() {
                         href={`/profile/${application.task.creator.id}`}
                         className="text-sm text-purple-300 hover:text-purple-200 font-semibold hover:underline"
                       >
-                        👤 View {application.task.creator.name}'s Profile
+                        👤 View {application.task.creator.name}&apos;s Profile
                       </Link>
                     </div>
                   )}
@@ -230,4 +245,3 @@ export default function MyApplicationsPage() {
     </div>
   );
 }
-

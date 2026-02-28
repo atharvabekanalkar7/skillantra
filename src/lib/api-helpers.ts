@@ -26,7 +26,7 @@ export async function enforceEmailConfirmed(
   try {
     const adminSupabase = createServiceRoleClient();
     const { data, error } = await adminSupabase.auth.admin.getUserById(userId);
-    
+
     if (error || !data?.user) {
       // If admin check fails, trust the user object from session
       // If user object says not confirmed, block access
@@ -42,14 +42,27 @@ export async function enforceEmailConfirmed(
       // If we can't verify either way, allow (defensive - better UX)
       return null;
     }
-    
+
     // Admin client check
     if (isEmailConfirmed(data.user)) {
       return null; // Email is confirmed
     }
-  } catch (adminError) {
-    // If admin client fails, trust the user object
-    console.error('Error checking email confirmation with admin client:', adminError);
+  } catch (adminError: any) {
+    // If admin client fails due to connection error, trust the user object
+    const msg = (adminError?.message || '').toLowerCase();
+    const causeCode = adminError?.cause?.code || '';
+    const isConnError = (
+      msg.includes('fetch failed') || msg.includes('connect timeout') ||
+      causeCode === 'UND_ERR_CONNECT_TIMEOUT' || causeCode === 'ECONNREFUSED' ||
+      adminError?.name === 'AuthRetryableFetchError'
+    );
+
+    if (isConnError) {
+      console.warn('enforceEmailConfirmed: Supabase unreachable, trusting session data');
+    } else {
+      console.error('Error checking email confirmation with admin client:', adminError?.message);
+    }
+
     if (user && !isEmailConfirmed(user)) {
       return NextResponse.json(
         createAuthError(
@@ -59,10 +72,10 @@ export async function enforceEmailConfirmed(
         { status: 403 }
       );
     }
-    // If we can't verify, allow (defensive)
+    // If session says confirmed or we can't verify, allow (defensive)
     return null;
   }
-  
+
   // Email not confirmed
   return NextResponse.json(
     createAuthError(

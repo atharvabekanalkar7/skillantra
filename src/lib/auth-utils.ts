@@ -60,12 +60,12 @@ export function getClientIP(request: Request): string {
   if (forwarded) {
     return forwarded.split(',')[0].trim();
   }
-  
+
   const realIP = request.headers.get('x-real-ip');
   if (realIP) {
     return realIP;
   }
-  
+
   // Fallback (won't work in production but helps in dev)
   return 'unknown';
 }
@@ -79,10 +79,47 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
+ * Check if the application is running in developer mode
+ * This allows bypassing strict restrictions for testing purposes.
+ * 
+ * SECURITY: Relies strictly on a backend-only environment variable (APP_MODE) 
+ * instead of a NEXT_PUBLIC_ variable. This secures the auth bypass check.
+ * 
+ * SAFETY: Defaults to production mode if APP_MODE is undefined, blank, or any
+ * value other than exactly "development".
+ */
+export function isDeveloperMode(): boolean {
+  const mode = process.env.APP_MODE;
+  // Only log once — compare to avoid log spam (Next.js hot-reload safe)
+  if (typeof process !== 'undefined' && !process.env.__APP_MODE_LOGGED) {
+    console.log('[SkillAntra] APP_MODE:', mode ?? '(undefined — treating as production)');
+    process.env.__APP_MODE_LOGGED = '1';
+  }
+  return mode === 'development';
+}
+
+/**
+ * Return securely determined Auth Callback URL
+ * Used to steer Supabase email redirects back safely depending on active mode.
+ * SECURITY: Hardcoded allowlist inside the function prevents injecting custom endpoints.
+ */
+export function getRedirectUrl(): string {
+  if (isDeveloperMode()) {
+    return 'http://localhost:3000/auth/callback';
+  }
+  return 'https://skillantra.in/auth/callback';
+}
+
+/**
  * Validate IIT Mandi email domain
- * Only allows @students.iitmandi.ac.in and @iitmandi.ac.in
+ * In production mode: Only allows @students.iitmandi.ac.in and @iitmandi.ac.in
+ * In developer mode: Allows any valid email format
  */
 export function isValidIITMandiEmail(email: string): boolean {
+  if (isDeveloperMode()) {
+    return true; // Developer mode bypasses domain restrictions
+  }
+
   const normalizedEmail = email.toLowerCase().trim();
   const allowedDomains = ['@students.iitmandi.ac.in', '@iitmandi.ac.in'];
   return allowedDomains.some(domain => normalizedEmail.endsWith(domain));
@@ -110,11 +147,11 @@ export async function isUserDeleted(
 ): Promise<boolean> {
   try {
     const { data, error } = await adminClient.auth.admin.getUserById(userId);
-    
+
     if (error || !data?.user) {
       return true; // User doesn't exist = deleted
     }
-    
+
     // Check if user has deleted_at timestamp
     return data.user.deleted_at !== null && data.user.deleted_at !== undefined;
   } catch {
@@ -139,11 +176,11 @@ export async function verifyEmailConfirmed(
 ): Promise<{ confirmed: boolean; user?: any }> {
   try {
     const { data, error } = await adminClient.auth.admin.getUserById(userId);
-    
+
     if (error || !data?.user) {
       return { confirmed: false };
     }
-    
+
     return {
       confirmed: isEmailConfirmed(data.user),
       user: data.user,

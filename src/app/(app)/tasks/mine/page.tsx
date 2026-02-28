@@ -5,17 +5,24 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
+import { useCountdown } from '@/lib/utils/useCountdown';
+import type { Task, TaskApplication } from '@/lib/types';
 
-interface Task {
-  id: string;
-  creator_profile_id: string;
-  title: string;
-  description: string | null;
-  skills_required: string | null;
-  stipend_min: number | null;
-  stipend_max: number | null;
-  status: 'open' | 'closed';
-  created_at: string;
+const MODE_LABELS: Record<string, string> = {
+  remote: '🏠 Remote',
+  hybrid: '🔄 Hybrid',
+  'in-person': '🏢 In-person',
+};
+
+// Deadline display component
+function DeadlineCountdown({ deadline }: { deadline: string }) {
+  const countdown = useCountdown(deadline);
+  if (!countdown) return null;
+  return (
+    <span className={`text-xs font-semibold ${countdown.expired ? 'text-red-400' : 'text-amber-300'}`}>
+      ⏰ {countdown.text}
+    </span>
+  );
 }
 
 interface Application {
@@ -52,7 +59,6 @@ export default function MyTasksPage() {
 
   const loadTasks = async () => {
     if (isDemo) {
-      // Demo mode: use mock data
       setTasks([
         {
           id: 'demo-mine-1',
@@ -60,13 +66,18 @@ export default function MyTasksPage() {
           title: 'My Demo Task',
           description: 'This is a demo task created by you.',
           skills_required: 'React, Node.js',
+          payment_type: 'stipend',
           stipend_min: 4000,
           stipend_max: 7000,
+          payment_other_details: null,
+          application_deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          mode_of_work: 'remote',
+          attachments: [],
           status: 'open',
           created_at: new Date().toISOString(),
         },
       ]);
-      setApplicationsByTask({ 
+      setApplicationsByTask({
         'demo-mine-1': [
           {
             id: 'demo-app-1',
@@ -94,7 +105,6 @@ export default function MyTasksPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle table not found gracefully
         if (data.error?.includes('schema cache') || data.error?.includes('does not exist')) {
           setTasks([]);
           setError('Tasks feature is not available yet. Database tables need to be initialized.');
@@ -120,7 +130,6 @@ export default function MyTasksPage() {
       const data = await response.json();
 
       if (response.ok && data.applications) {
-        // Group applications by task_id
         const grouped: Record<string, Application[]> = {};
         data.applications.forEach((app: Application) => {
           if (!grouped[app.task_id]) {
@@ -145,9 +154,7 @@ export default function MyTasksPage() {
     try {
       const response = await fetch(`/api/applications/${applicationId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       });
 
@@ -158,7 +165,6 @@ export default function MyTasksPage() {
         return;
       }
 
-      // Reload applications to reflect the update
       await loadApplications();
     } catch (err) {
       alert('An unexpected error occurred');
@@ -181,10 +187,7 @@ export default function MyTasksPage() {
 
     setDeletingTaskId(taskId);
     try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
       const data = await response.json();
 
       if (!response.ok) {
@@ -193,7 +196,6 @@ export default function MyTasksPage() {
         return;
       }
 
-      // Reload tasks
       await loadTasks();
       setConfirmDeleteId(null);
     } catch (err) {
@@ -253,14 +255,18 @@ export default function MyTasksPage() {
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <h3 className="text-xl font-bold text-white">{task.title}</h3>
                     <span
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${
-                        task.status === 'open'
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${task.status === 'open'
                           ? 'bg-green-500/20 text-green-300 border border-green-400/50'
                           : 'bg-gray-500/20 text-gray-300 border border-gray-400/50'
-                      }`}
+                        }`}
                     >
                       {task.status}
                     </span>
+                    {task.mode_of_work && (
+                      <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-400/30">
+                        {MODE_LABELS[task.mode_of_work] || task.mode_of_work}
+                      </span>
+                    )}
                   </div>
                   {applicationsByTask[task.id] && applicationsByTask[task.id].length > 0 && (
                     <p className="text-sm text-blue-300 font-semibold">
@@ -280,9 +286,9 @@ export default function MyTasksPage() {
                   <div className="flex flex-wrap gap-2">
                     {task.skills_required
                       .split(',')
-                      .map((skill, index) => (
+                      .map((skill, i) => (
                         <span
-                          key={index}
+                          key={i}
                           className="inline-block bg-blue-500/20 text-blue-200 text-xs px-3 py-1 rounded-lg border border-blue-400/30 font-medium"
                         >
                           {skill.trim()}
@@ -292,16 +298,38 @@ export default function MyTasksPage() {
                 </div>
               )}
 
-              {(task.stipend_min !== null || task.stipend_max !== null) && (
-                <div className="mb-4">
+              {/* Payment */}
+              {task.payment_type === 'stipend' && task.stipend_min !== null && task.stipend_max !== null && (
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
+                  <p className="text-green-300 font-semibold">
+                    ₹{task.stipend_min.toLocaleString()} – ₹{task.stipend_max.toLocaleString()}
+                  </p>
+                </div>
+              )}
+              {task.payment_type === 'other' && task.payment_other_details && (
+                <div className="mb-3">
+                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Compensation:</p>
+                  <p className="text-green-300 font-semibold">{task.payment_other_details}</p>
+                </div>
+              )}
+              {!task.payment_type && (task.stipend_min !== null || task.stipend_max !== null) && (
+                <div className="mb-3">
                   <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
                   <p className="text-green-300 font-semibold">
                     {task.stipend_min !== null && task.stipend_max !== null
-                      ? `₹${task.stipend_min.toLocaleString()} - ₹${task.stipend_max.toLocaleString()}`
+                      ? `₹${task.stipend_min.toLocaleString()} – ₹${task.stipend_max.toLocaleString()}`
                       : task.stipend_min !== null
-                      ? `₹${task.stipend_min.toLocaleString()}+`
-                      : `Up to ₹${task.stipend_max?.toLocaleString()}`}
+                        ? `₹${task.stipend_min.toLocaleString()}+`
+                        : `Up to ₹${task.stipend_max?.toLocaleString()}`}
                   </p>
+                </div>
+              )}
+
+              {/* Deadline */}
+              {task.application_deadline && (
+                <div className="mb-3">
+                  <DeadlineCountdown deadline={task.application_deadline} />
                 </div>
               )}
 
@@ -340,13 +368,12 @@ export default function MyTasksPage() {
                             )}
                           </div>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-semibold ${
-                              application.status === 'accepted'
+                            className={`px-2 py-1 rounded text-xs font-semibold ${application.status === 'accepted'
                                 ? 'bg-green-500/20 text-green-300 border border-green-400/50'
                                 : application.status === 'rejected'
-                                ? 'bg-red-500/20 text-red-300 border border-red-400/50'
-                                : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
-                            }`}
+                                  ? 'bg-red-500/20 text-red-300 border border-red-400/50'
+                                  : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+                              }`}
                           >
                             {application.status}
                           </span>
@@ -381,6 +408,12 @@ export default function MyTasksPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
+                    href={`/tasks/${task.id}/edit`}
+                    className="text-amber-300 hover:text-amber-200 text-sm font-semibold group inline-flex items-center gap-1"
+                  >
+                    ✏️ Edit
+                  </Link>
+                  <Link
                     href={`/tasks/${task.id}`}
                     className="text-purple-300 hover:text-purple-200 text-sm font-semibold group inline-flex items-center gap-1"
                   >
@@ -389,17 +422,16 @@ export default function MyTasksPage() {
                   <button
                     onClick={() => handleDeleteTask(task.id)}
                     disabled={deletingTaskId === task.id}
-                    className={`text-sm font-semibold px-3 py-1 rounded-lg transition-colors ${
-                      confirmDeleteId === task.id
+                    className={`text-sm font-semibold px-3 py-1 rounded-lg transition-colors ${confirmDeleteId === task.id
                         ? 'bg-red-600 hover:bg-red-500 text-white'
                         : 'text-red-400 hover:text-red-300'
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {deletingTaskId === task.id
                       ? 'Deleting...'
                       : confirmDeleteId === task.id
-                      ? 'Confirm Delete'
-                      : 'Delete'}
+                        ? 'Confirm Delete'
+                        : 'Delete'}
                   </button>
                 </div>
               </div>
@@ -410,4 +442,3 @@ export default function MyTasksPage() {
     </div>
   );
 }
-

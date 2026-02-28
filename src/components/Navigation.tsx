@@ -2,11 +2,31 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Navigation() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    // Poll every 30 seconds for new messages
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch('/api/conversations');
+      const data = await res.json();
+      if (res.ok) {
+        setUnreadCount(data.totalUnreadCount || 0);
+      }
+    } catch (e) {
+      console.error('Failed to fetch unread count');
+    }
+  };
 
   const handleLogout = async () => {
     setLoading(true);
@@ -61,9 +81,14 @@ export default function Navigation() {
               </Link>
               <Link
                 href="/messages"
-                className="text-gray-700 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-not-allowed"
+                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5"
               >
-                Messages <span className="text-xs">(Coming soon)</span>
+                Messages
+                {unreadCount > 0 && (
+                  <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(239,68,68,0.4)] animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/leaderboard"

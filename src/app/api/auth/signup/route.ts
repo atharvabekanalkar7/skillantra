@@ -1,7 +1,21 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAuthError, AuthErrorCode } from "@/lib/auth-errors";
-import { isValidEmail, isValidPassword, isValidIITMandiEmail } from "@/lib/auth-utils";
+import { isValidEmail, isValidPassword, isValidIITMandiEmail, getRedirectUrl } from "@/lib/auth-utils";
+
+function isConnectionError(error: any): boolean {
+  if (!error) return false;
+  const msg = (error.message || '').toLowerCase();
+  const cause = error.cause;
+  const causeCode = cause?.code || '';
+  return (
+    msg.includes('fetch failed') || msg.includes('connect timeout') ||
+    msg.includes('econnrefused') || msg.includes('enotfound') ||
+    msg.includes('etimedout') || msg.includes('authretryablefetcherror') ||
+    causeCode === 'UND_ERR_CONNECT_TIMEOUT' || causeCode === 'ECONNREFUSED' ||
+    causeCode === 'ENOTFOUND' || error.name === 'AuthRetryableFetchError'
+  );
+}
 
 export async function POST(request: Request) {
   try {
@@ -65,13 +79,23 @@ export async function POST(request: Request) {
     }
 
     // 3️⃣ Supabase signup
-    const supabase: Awaited<ReturnType<typeof createClient>> = await createClient();
+    let supabase: Awaited<ReturnType<typeof createClient>>;
+    try {
+      supabase = await createClient();
+    } catch (clientErr: any) {
+      console.error('Signup: Failed to create Supabase client:', clientErr.message);
+      if (isConnectionError(clientErr)) {
+        return NextResponse.json(
+          createAuthError(AuthErrorCode.INTERNAL_ERROR, 'Unable to reach the authentication server. It may be temporarily unavailable. Please try again in a few minutes.'),
+          { status: 503 }
+        );
+      }
+      throw clientErr;
+    }
 
-    // Get the site URL for email redirect
-    // Use the request origin as fallback for production
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-                    (typeof request.headers.get('origin') === 'string' ? request.headers.get('origin') : 'http://localhost:3000');
-    const emailRedirectTo = `${siteUrl}/auth/callback`;
+    // 🔴 DYNAMIC REDIRECT URL
+    // Use the securely generated centralized redirect dependent purely on APP_MODE
+    const emailRedirectTo = getRedirectUrl();
 
     const { data, error } = await supabase.auth.signUp({
       email: email.toLowerCase().trim(),
@@ -87,16 +111,25 @@ export async function POST(request: Request) {
 
     // 4️⃣ Hard failure
     if (error) {
+      // Check for connection errors first
+      if (isConnectionError(error)) {
+        console.error('Signup: Supabase connection error during signUp:', error.message);
+        return NextResponse.json(
+          createAuthError(AuthErrorCode.INTERNAL_ERROR, 'Unable to reach the authentication server. It may be temporarily unavailable. Please try again in a few minutes.'),
+          { status: 503 }
+        );
+      }
+
       // Provide more helpful error messages for common issues
       let errorMessage = error.message;
-      
+
       // Check for redirect URL errors
       if (error.message?.includes('redirect') || error.message?.includes('redirect_to') || error.message?.includes('redirect URL')) {
         errorMessage = 'Email confirmation redirect URL is not configured. Please contact support at skillantra0511@gmail.com.';
       } else if (error.message?.includes('email') && error.message?.includes('send')) {
         errorMessage = 'Unable to send confirmation email. Please check your email address and try again, or contact support at skillantra0511@gmail.com.';
       }
-      
+
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.SIGNUP_FAILED,
@@ -137,7 +170,14 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (err: any) {
-    console.error("Signup error:", err);
+    console.error('Signup error:', err?.message, err?.cause?.code);
+
+    if (isConnectionError(err)) {
+      return NextResponse.json(
+        createAuthError(AuthErrorCode.INTERNAL_ERROR, 'Unable to reach the authentication server. It may be temporarily unavailable. Please try again in a few minutes.'),
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json(
       createAuthError(

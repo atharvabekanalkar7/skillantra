@@ -24,14 +24,14 @@ export async function GET() {
   // Try to select with phone_number first, fall back if column doesn't exist
   let profile: any = null;
   let error: any = null;
-  
+
   // First try with phone_number
   const { data: profileWithPhone, error: errorWithPhone } = await supabase
     .from('profiles')
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle();
-  
+
   if (errorWithPhone && errorWithPhone.message?.includes('phone_number')) {
     // phone_number column doesn't exist - select without it
     const { data: profileWithoutPhone, error: errorWithoutPhone } = await supabase
@@ -39,7 +39,7 @@ export async function GET() {
       .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at')
       .eq('user_id', user.id)
       .maybeSingle();
-    
+
     profile = profileWithoutPhone;
     error = errorWithoutPhone;
     if (profile) {
@@ -61,19 +61,19 @@ export async function GET() {
 
     // Only check for actual table not found errors - be very specific
     const errorMessage = error.message?.toLowerCase() || '';
-    const isTableNotFound = 
+    const isTableNotFound =
       (error.code === '42P01') || // PostgreSQL relation does not exist
       (error.code === 'PGRST116') || // PostgREST table not found
       (errorMessage.includes('relation') && errorMessage.includes('profiles') && errorMessage.includes('does not exist')) ||
       (errorMessage.includes('table') && errorMessage.includes('profiles') && errorMessage.includes('does not exist'));
-    
+
     if (isTableNotFound) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         profile: null,
-        error: 'Database tables not initialized. Please run the migration SQL in Supabase: supabase-migration-complete.sql' 
+        error: 'Database tables not initialized. Please run the migration SQL in Supabase: supabase-migration-complete.sql'
       }, { status: 200 });
     }
-    
+
     // For other errors, return null profile (user might not have one yet)
     // This is normal - user needs to create their profile
     return NextResponse.json({ profile: null }, { status: 200 });
@@ -113,8 +113,8 @@ export async function PATCH(request: Request) {
     if (phone_number !== null && phone_number !== '') {
       const cleaned = phone_number.trim();
       if (!/^[0-9]{10,15}$/.test(cleaned)) {
-        return NextResponse.json({ 
-          error: 'Phone number must be 10-15 digits and contain only numbers' 
+        return NextResponse.json({
+          error: 'Phone number must be 10-15 digits and contain only numbers'
         }, { status: 400 });
       }
     }
@@ -146,21 +146,21 @@ export async function PATCH(request: Request) {
 
     // Only check for actual table not found errors - be very specific
     const errorMessage = profileCheckError.message?.toLowerCase() || '';
-    const isTableNotFound = 
+    const isTableNotFound =
       (profileCheckError.code === '42P01') || // PostgreSQL relation does not exist
       (profileCheckError.code === 'PGRST116') || // PostgREST table not found
       (errorMessage.includes('relation') && errorMessage.includes('profiles') && errorMessage.includes('does not exist')) ||
       (errorMessage.includes('table') && errorMessage.includes('profiles') && errorMessage.includes('does not exist'));
-    
+
     if (isTableNotFound) {
-      return NextResponse.json({ 
-        error: 'Database tables not initialized. Please run the migration SQL in Supabase: supabase-migration-complete.sql' 
+      return NextResponse.json({
+        error: 'Database tables not initialized. Please run the migration SQL in Supabase: supabase-migration-complete.sql'
       }, { status: 500 });
     }
-    
+
     // For other errors (like RLS policy issues), return the actual error
-    return NextResponse.json({ 
-      error: profileCheckError.message || 'Database error. Check server logs for details.' 
+    return NextResponse.json({
+      error: profileCheckError.message || 'Database error. Check server logs for details.'
     }, { status: 500 });
   }
 
@@ -171,12 +171,12 @@ export async function PATCH(request: Request) {
   }
 
   // Check if this is a phone-only update (only phone_number provided, profile exists)
-  const isPhoneOnlyUpdate = existingProfile && 
-    phone_number !== undefined && 
-    name === undefined && 
-    bio === undefined && 
-    skills === undefined && 
-    user_type === undefined && 
+  const isPhoneOnlyUpdate = existingProfile &&
+    phone_number !== undefined &&
+    name === undefined &&
+    bio === undefined &&
+    skills === undefined &&
+    user_type === undefined &&
     college === undefined;
 
   // If not a phone-only update, validate required fields
@@ -193,16 +193,16 @@ export async function PATCH(request: Request) {
   // Phone number is now required for all profiles (new and existing)
   // Check if phone_number is provided and valid
   if (phone_number === undefined || phone_number === null || phone_number === '') {
-    return NextResponse.json({ 
-      error: 'Phone number is required. Please enter your phone number with +91 prefix.' 
+    return NextResponse.json({
+      error: 'Phone number is required. Please enter your phone number with +91 prefix.'
     }, { status: 400 });
   }
 
   // Validate phone number format
   const cleanedPhone = phone_number.trim();
   if (!/^[0-9]{10,15}$/.test(cleanedPhone)) {
-    return NextResponse.json({ 
-      error: 'Phone number must be 10-15 digits and contain only numbers (after +91 prefix)' 
+    return NextResponse.json({
+      error: 'Phone number must be 10-15 digits and contain only numbers (after +91 prefix)'
     }, { status: 400 });
   }
 
@@ -234,11 +234,13 @@ export async function PATCH(request: Request) {
     (updateData as any).phone_number = cleanedPhone;
   } else {
     // Column doesn't exist - return helpful error message
-    return NextResponse.json({ 
-      error: 'phone_number column does not exist. Please run the migration: supabase-migration-phase-3-phone.sql' 
+    return NextResponse.json({
+      error: 'phone_number column does not exist. Please run the migration: supabase-migration-phase-3-phone.sql'
     }, { status: 400 });
   }
 
+  // Set the profile as complete because it passed the required fields validation
+  (updateData as any).is_profile_complete = true;
 
   let result;
   if (existingProfile) {
@@ -279,15 +281,15 @@ export async function DELETE() {
   try {
     const supabase = await createClient();
     let adminSupabase;
-    
+
     try {
       adminSupabase = createServiceRoleClient();
     } catch (adminClientError: any) {
       // Extract error message safely
-      const errorMessage = adminClientError?.message || 
-                          String(adminClientError) || 
-                          'Failed to initialize admin client. Please check your environment variables.';
-      
+      const errorMessage = adminClientError?.message ||
+        String(adminClientError) ||
+        'Failed to initialize admin client. Please check your environment variables.';
+
       console.error('Error creating admin client for delete:', {
         message: errorMessage,
         errorType: typeof adminClientError,
@@ -295,17 +297,17 @@ export async function DELETE() {
         hasMessage: !!adminClientError?.message,
         errorString: String(adminClientError),
       });
-      
+
       // Return the actual error message to help with debugging
       // Make sure the response is properly formatted
-      const errorResponse = { 
+      const errorResponse = {
         error: errorMessage,
         code: 'ADMIN_CLIENT_INIT_FAILED',
         details: 'The service role key may be missing or invalid. Please check your .env.local file and restart the server.'
       };
-      
+
       console.log('Returning error response:', errorResponse);
-      
+
       return NextResponse.json(errorResponse, { status: 500 });
     }
 
@@ -364,11 +366,11 @@ export async function DELETE() {
         .select('id')
         .eq('user_id', userId)
         .maybeSingle();
-      
+
       if (profileData?.id) {
         profileId = profileData.id;
       }
-      
+
       if (profileFetchError && !profileFetchError.message?.includes('does not exist')) {
         console.error('Error fetching profile for deletion:', profileFetchError);
       }
@@ -468,7 +470,7 @@ export async function DELETE() {
       name: error?.name,
       error: error,
     });
-    
+
     // Provide more specific error messages
     let errorMessage = 'An unexpected error occurred during account deletion';
     if (error?.message) {
@@ -480,7 +482,7 @@ export async function DELETE() {
         errorMessage = `Failed to delete account: ${error.message}`;
       }
     }
-    
+
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }

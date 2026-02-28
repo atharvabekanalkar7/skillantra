@@ -31,7 +31,10 @@ export async function GET(request: Request) {
     .eq('user_id', user.id)
     .single();
 
-  let query = supabase.from('profiles').select('*', { count: 'exact' }).order('created_at', { ascending: false });
+  let query = supabase
+    .from('profiles')
+    .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at', { count: 'exact' })
+    .order('created_at', { ascending: false });
 
   if (userProfile) {
     query = query.neq('id', userProfile.id);

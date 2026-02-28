@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import SidebarButton from './SidebarButton';
 
 interface SidebarProps {
   isDemo?: boolean;
@@ -15,10 +16,29 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    if (!isDemo) {
+      fetchUnreadCount();
+      // Poll every 30 seconds for new messages
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isDemo]);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const res = await fetch('/api/conversations');
+      const data = await res.json();
+      if (res.ok) {
+        setUnreadCount(data.totalUnreadCount || 0);
+      }
+    } catch (e) {
+      console.error('Failed to fetch unread count');
+    }
+  };
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -54,7 +74,8 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse Tasks', icon: '🔍' },
     { href: isDemo ? '/tasks/mine?demo=true' : '/tasks/mine', label: 'My Tasks', icon: '📋' },
     { href: isDemo ? '/applications?demo=true' : '/applications', label: 'My Applications', icon: '📝' },
-    { href: isDemo ? '/messages?demo=true' : '/messages', label: 'Messages', icon: '💬', comingSoon: true },
+    { href: isDemo ? '/messages?demo=true' : '/messages', label: 'Messages', icon: '💬', unread: unreadCount },
+    { href: '#', label: 'Skill-based Matchmaking', icon: '🎯', comingSoon: true },
     { href: isDemo ? '/leaderboard?demo=true' : '/leaderboard', label: 'Leaderboard', icon: '🏆', comingSoon: true },
     { href: isDemo ? '/profile/edit?demo=true' : '/profile/edit', label: 'Profile', icon: '👤' },
     { href: isDemo ? '/settings?demo=true' : '/settings', label: 'Settings', icon: '⚙️' },
@@ -82,25 +103,15 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
             const isActive = pathname === baseHref || pathname?.startsWith(baseHref + '/');
             return (
               <li key={item.href} className="animate-slide-in-right" style={{ animationDelay: `${index * 0.05}s`, opacity: 0 }}>
-                {item.comingSoon ? (
-                  <div className="flex items-center gap-3 px-4 py-3 text-gray-500 cursor-not-allowed rounded-xl bg-gray-900/30 border border-gray-700/50">
-                    <span className="text-lg shrink-0">{item.icon}</span>
-                    <span className="text-sm font-medium truncate">{item.label}</span>
-                    <span className="text-xs ml-auto bg-gray-800 px-2 py-0.5 rounded shrink-0">Soon</span>
-                  </div>
-                ) : (
-                  <Link
-                    href={item.href}
-                    className={`group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 active:scale-[0.98] min-h-[44px] ${
-                      isActive
-                        ? 'bg-purple-500/20 text-purple-300 font-bold border border-purple-400/50'
-                        : 'text-gray-300 hover:bg-purple-500/10 hover:text-purple-300'
-                    }`}
-                  >
-                    <span className="text-lg group-hover:scale-110 transition-transform shrink-0">{item.icon}</span>
-                    <span className="text-sm font-semibold truncate">{item.label}</span>
-                  </Link>
-                )}
+                <SidebarButton
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={isActive}
+                  comingSoon={item.comingSoon}
+                  unreadCount={item.unread}
+                  onClick={onClose}
+                />
               </li>
             );
           })}
@@ -133,9 +144,8 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
       {/* Mobile: overlay when open */}
       {mounted && (
         <div
-          className={`md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
-            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
           onClick={onClose}
           onTouchEnd={onClose}
           aria-hidden="true"
@@ -144,9 +154,8 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
 
       {/* Mobile sidebar - slide-in drawer */}
       <aside
-        className={`md:hidden fixed left-0 top-0 h-full w-[min(280px,85vw)] max-w-[280px] bg-gradient-to-b from-purple-950 via-indigo-950 to-black z-50 flex flex-col transform transition-transform duration-300 ease-out overscroll-contain ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`md:hidden fixed left-0 top-0 h-full w-[min(280px,85vw)] max-w-[280px] bg-gradient-to-b from-purple-950 via-indigo-950 to-black z-50 flex flex-col transform transition-transform duration-300 ease-out overscroll-contain ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',

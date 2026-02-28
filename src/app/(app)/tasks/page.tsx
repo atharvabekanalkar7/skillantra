@@ -6,22 +6,25 @@ import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import PhoneNumberModal from '@/components/PhoneNumberModal';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
+import { useCountdown } from '@/lib/utils/useCountdown';
+import type { Task } from '@/lib/types';
 
-interface Task {
-  id: string;
-  creator_profile_id: string;
-  title: string;
-  description: string | null;
-  skills_required: string | null;
-  stipend_min: number | null;
-  stipend_max: number | null;
-  status: 'open' | 'closed';
-  created_at: string;
-  creator_profile?: {
-    id: string;
-    name: string;
-  };
+// Small component for deadline countdown on each card
+function DeadlineCountdown({ deadline }: { deadline: string }) {
+  const countdown = useCountdown(deadline);
+  if (!countdown) return null;
+  return (
+    <span className={`text-xs font-semibold ${countdown.expired ? 'text-red-400' : 'text-amber-300'}`}>
+      ⏰ {countdown.text}
+    </span>
+  );
 }
+
+const MODE_LABELS: Record<string, string> = {
+  remote: '🏠 Remote',
+  hybrid: '🔄 Hybrid',
+  'in-person': '🏢 In-person',
+};
 
 export default function BrowseTasksPage() {
   const searchParams = useSearchParams();
@@ -43,7 +46,6 @@ export default function BrowseTasksPage() {
 
   const loadTasks = async () => {
     if (isDemo) {
-      // Demo mode: use mock data
       setTasks([
         {
           id: 'demo-1',
@@ -51,10 +53,15 @@ export default function BrowseTasksPage() {
           title: 'Build a React Dashboard',
           description: 'Looking for a frontend developer to help build a modern dashboard with React and TypeScript.',
           skills_required: 'React, TypeScript, Tailwind CSS',
+          payment_type: 'stipend',
           stipend_min: 5000,
           stipend_max: 10000,
+          payment_other_details: null,
+          application_deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          mode_of_work: 'remote',
+          attachments: [{ category: 'GitHub', link: 'https://github.com/example/repo' }],
           status: 'open',
-          created_at: new Date().toISOString(),
+          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
         },
         {
           id: 'demo-2',
@@ -62,10 +69,15 @@ export default function BrowseTasksPage() {
           title: 'Design Mobile App UI',
           description: 'Need a UI/UX designer for a mobile app project.',
           skills_required: 'Figma, UI/UX Design',
-          stipend_min: 3000,
-          stipend_max: 8000,
+          payment_type: 'other',
+          stipend_min: null,
+          stipend_max: null,
+          payment_other_details: 'Certificate + LOR',
+          application_deadline: null,
+          mode_of_work: 'hybrid',
+          attachments: [],
           status: 'open',
-          created_at: new Date().toISOString(),
+          created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
         },
       ]);
       setLoading(false);
@@ -79,7 +91,6 @@ export default function BrowseTasksPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle table not found gracefully
         if (data.error?.includes('schema cache') || data.error?.includes('does not exist')) {
           setTasks([]);
           setError('Tasks feature is not available yet. Database tables need to be initialized.');
@@ -103,7 +114,7 @@ export default function BrowseTasksPage() {
     try {
       const response = await fetch('/api/applications?sent=true');
       const data = await response.json();
-      
+
       if (response.ok && data.applications) {
         const appliedIds = new Set<string>(data.applications.map((app: { task_id: string }) => app.task_id));
         setAppliedTaskIds(appliedIds);
@@ -116,12 +127,8 @@ export default function BrowseTasksPage() {
   const handleSavePhoneNumber = async (phoneNumber: string) => {
     const response = await fetch('/api/profile', {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phone_number: phoneNumber,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number: phoneNumber }),
     });
 
     if (!response.ok) {
@@ -135,9 +142,7 @@ export default function BrowseTasksPage() {
     try {
       const response = await fetch('/api/applications', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ task_id: taskId }),
       });
 
@@ -155,9 +160,7 @@ export default function BrowseTasksPage() {
       }
 
       alert('Application submitted successfully!');
-      // Update applied tasks list
       setAppliedTaskIds(prev => new Set([...prev, taskId]));
-      // Reload tasks to refresh UI
       await loadTasks();
     } catch (err) {
       alert('An unexpected error occurred');
@@ -172,8 +175,13 @@ export default function BrowseTasksPage() {
       alert('Demo mode: Application feature not available. Sign up to apply to tasks!');
       return;
     }
-
     await applyToTask(taskId);
+  };
+
+  // Check if deadline has passed (for disabling Apply button)
+  const isDeadlinePassed = (task: Task): boolean => {
+    if (!task.application_deadline) return false;
+    return new Date(task.application_deadline).getTime() <= Date.now();
   };
 
   if (loading) {
@@ -213,95 +221,129 @@ export default function BrowseTasksPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tasks.map((task, index) => (
-            <div
-              key={task.id}
-              className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="text-xl font-bold text-white pr-2">{task.title}</h3>
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${
-                    task.status === 'open'
+          {tasks.map((task, index) => {
+            const deadlinePassed = isDeadlinePassed(task);
+
+            return (
+              <div
+                key={task.id}
+                className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed flex flex-col"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-xl font-bold text-white pr-2">{task.title}</h3>
+                  <span
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${task.status === 'open'
                       ? 'bg-green-500/20 text-green-300 border border-green-400/50'
                       : 'bg-gray-500/20 text-gray-300 border border-gray-400/50'
-                  }`}
-                >
-                  {task.status}
-                </span>
-              </div>
-
-              {task.description && (
-                <p className="text-white/70 text-sm mb-4 line-clamp-3 leading-relaxed">{task.description}</p>
-              )}
-
-              {task.skills_required && (
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Skills Required:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {task.skills_required
-                      .split(',')
-                      .map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-block bg-blue-500/20 text-blue-200 text-xs px-3 py-1 rounded-lg border border-blue-400/30 font-medium"
-                        >
-                          {skill.trim()}
-                        </span>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              {(task.stipend_min !== null || task.stipend_max !== null) && (
-                <div className="mb-4">
-                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
-                  <p className="text-green-300 font-semibold">
-                    {task.stipend_min !== null && task.stipend_max !== null
-                      ? `₹${task.stipend_min.toLocaleString()} - ₹${task.stipend_max.toLocaleString()}`
-                      : task.stipend_min !== null
-                      ? `₹${task.stipend_min.toLocaleString()}+`
-                      : `Up to ₹${task.stipend_max?.toLocaleString()}`}
-                  </p>
-                </div>
-              )}
-
-              {task.creator_profile && (
-                <div className="text-xs text-white/50 mb-2">
-                  Created by{' '}
-                  <Link
-                    href={`/profile/${task.creator_profile.id}`}
-                    className="text-purple-300 hover:text-purple-200 font-semibold hover:underline"
+                      }`}
                   >
-                    {task.creator_profile.name}
-                  </Link>
+                    {task.status}
+                  </span>
                 </div>
-              )}
 
-              <div className="text-xs text-white/50 mb-4">
-                {formatTimeAgo(task.created_at)}
+                {task.description && (
+                  <p className="text-white/70 text-sm mb-4 line-clamp-3 leading-relaxed">{task.description}</p>
+                )}
+
+                {task.skills_required && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Skills Required:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {task.skills_required
+                        .split(',')
+                        .map((skill, i) => (
+                          <span
+                            key={i}
+                            className="inline-block bg-blue-500/20 text-blue-200 text-xs px-3 py-1 rounded-lg border border-blue-400/30 font-medium"
+                          >
+                            {skill.trim()}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mode of Work */}
+                {task.mode_of_work && (
+                  <div className="mb-3">
+                    <span className="inline-block bg-purple-500/20 text-purple-200 text-xs px-3 py-1 rounded-lg border border-purple-400/30 font-medium">
+                      {MODE_LABELS[task.mode_of_work] || task.mode_of_work}
+                    </span>
+                  </div>
+                )}
+
+                {/* Payment Info */}
+                {task.payment_type === 'stipend' && task.stipend_min !== null && task.stipend_max !== null && (
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
+                    <p className="text-green-300 font-semibold">
+                      ₹{task.stipend_min.toLocaleString()} – ₹{task.stipend_max.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+                {task.payment_type === 'other' && task.payment_other_details && (
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Compensation:</p>
+                    <p className="text-green-300 font-semibold">{task.payment_other_details}</p>
+                  </div>
+                )}
+                {/* Backward compat: no payment_type but has stipend fields */}
+                {!task.payment_type && (task.stipend_min !== null || task.stipend_max !== null) && (
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
+                    <p className="text-green-300 font-semibold">
+                      {task.stipend_min !== null && task.stipend_max !== null
+                        ? `₹${task.stipend_min.toLocaleString()} – ₹${task.stipend_max.toLocaleString()}`
+                        : task.stipend_min !== null
+                          ? `₹${task.stipend_min.toLocaleString()}+`
+                          : `Up to ₹${task.stipend_max?.toLocaleString()}`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Deadline Countdown */}
+                {task.application_deadline && (
+                  <div className="mb-3">
+                    <DeadlineCountdown deadline={task.application_deadline} />
+                  </div>
+                )}
+
+                {(task.creator || task.creator_profile) && (
+                  <div className="text-xs text-white/50 mb-2 truncate">
+                    Posted by {(task.creator?.name || task.creator_profile?.name)}
+                  </div>
+                )}
+
+                <div className="text-xs text-white/50 mb-4">
+                  {formatTimeAgo(task.created_at)}
+                </div>
+
+                <div className="mt-auto">
+                  <button
+                    onClick={() => handleApply(task.id)}
+                    disabled={
+                      applyingTaskId === task.id ||
+                      task.status !== 'open' ||
+                      appliedTaskIds.has(task.id) ||
+                      deadlinePassed
+                    }
+                    className="w-full min-h-[44px] bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] font-semibold shadow-lg shadow-blue-900/30 touch-manipulation"
+                  >
+                    {isDemo
+                      ? 'Sign Up to Apply'
+                      : deadlinePassed
+                        ? 'Applications Closed'
+                        : appliedTaskIds.has(task.id)
+                          ? 'Already Applied'
+                          : applyingTaskId === task.id
+                            ? 'Applying...'
+                            : 'Apply'}
+                  </button>
+                </div>
               </div>
-
-              <button
-                onClick={() => handleApply(task.id)}
-                disabled={
-                  applyingTaskId === task.id || 
-                  task.status !== 'open' || 
-                  appliedTaskIds.has(task.id)
-                }
-                className="w-full min-h-[44px] bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] font-semibold shadow-lg shadow-blue-900/30 touch-manipulation"
-              >
-                {isDemo 
-                  ? 'Sign Up to Apply' 
-                  : appliedTaskIds.has(task.id)
-                  ? 'Already Applied'
-                  : applyingTaskId === task.id 
-                  ? 'Applying...' 
-                  : 'Apply'}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -315,7 +357,6 @@ export default function BrowseTasksPage() {
         onSave={async (phoneNumber) => {
           await handleSavePhoneNumber(phoneNumber);
           setShowPhoneModal(false);
-          // Retry application after saving phone number
           if (pendingTaskId) {
             await applyToTask(pendingTaskId);
             setPendingTaskId(null);
@@ -325,4 +366,3 @@ export default function BrowseTasksPage() {
     </div>
   );
 }
-

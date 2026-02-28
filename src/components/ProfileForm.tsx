@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Profile } from '@/lib/types';
 import { parseSkills, formatSkills } from '@/lib/utils';
@@ -17,12 +17,36 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [phoneNumber, setPhoneNumber] = useState('+91 ');
   const [userType, setUserType] = useState<'SkillSeeker' | 'SkillHolder' | 'Both'>('Both');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSetup = searchParams?.get('setup') === 'true';
+  const mountedRef = useRef(true);
 
   const [email, setEmail] = useState<string | null>(null);
+
+  // Track component mount state to prevent state updates after unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const isPhoneMissing = !phoneNumber || phoneNumber.replace(/^\+91\s*/, '').trim() === '';
+      if (!success && isPhoneMissing) {
+        e.preventDefault();
+        e.returnValue = 'Phone number is required to continue.';
+        return 'Phone number is required to continue.';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [success, phoneNumber]);
 
   useEffect(() => {
     if (initialProfile) {
@@ -62,16 +86,16 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
   const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-    
+
     // Ensure +91 prefix is always present
     if (!value.startsWith('+91')) {
       value = '+91 ' + value.replace(/^\+91\s*/, '');
     }
-    
+
     // Only allow digits after +91
     const afterPrefix = value.substring(4);
     const digitsOnly = afterPrefix.replace(/\D/g, '');
-    
+
     if (digitsOnly.length <= 15) {
       setPhoneNumber('+91 ' + digitsOnly);
       setError(null);
@@ -80,8 +104,13 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double-submit
+    if (loading) return;
+
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     // Validate phone number
     const cleaned = phoneNumber.replace(/^\+91\s*/, '').trim();
@@ -115,29 +144,86 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Failed to save profile');
-        setLoading(false);
+        if (mountedRef.current) {
+          setError(data.error || 'Failed to save profile');
+          setLoading(false);
+        }
         return;
       }
 
+      // SUCCESS: Show success state before navigating
+      if (mountedRef.current) {
+        setLoading(false);
+        setSuccess(true);
+      }
+
+      // Brief delay to show success feedback, then navigate
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
       if (isSetup && !initialProfile) {
-        // First time profile creation - show success message briefly
         router.push('/dashboard?profile_created=true');
       } else {
         router.push('/dashboard');
       }
       router.refresh();
     } catch (err) {
-      setError('An unexpected error occurred');
-      setLoading(false);
+      if (mountedRef.current) {
+        setError('An unexpected error occurred. Please try again.');
+        setLoading(false);
+        setSuccess(false);
+      }
     }
+  };
+
+  // Derive button text and style from state
+  const getButtonContent = () => {
+    if (loading) {
+      return (
+        <span className="flex items-center justify-center gap-2">
+          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Saving…
+        </span>
+      );
+    }
+    if (success) {
+      return (
+        <span className="flex items-center justify-center gap-2">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path>
+          </svg>
+          Profile Saved Successfully
+        </span>
+      );
+    }
+    return 'Save Profile';
+  };
+
+  const getButtonClasses = () => {
+    const base = 'flex-1 min-h-[44px] text-white py-4 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed transition-all active:scale-[0.98] md:hover:scale-[1.02] font-semibold touch-manipulation';
+
+    if (success) {
+      return `${base} bg-gradient-to-r from-green-600 to-emerald-600 focus:ring-green-500`;
+    }
+    return `${base} bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:ring-purple-500 disabled:opacity-50`;
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm animate-fade-in">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-500/20 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg text-sm flex items-center gap-2 animate-fade-in">
+          <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          Profile saved successfully! Redirecting…
         </div>
       )}
 
@@ -185,7 +271,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+          disabled={loading || success}
+          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
           placeholder="Your name"
         />
       </div>
@@ -199,7 +286,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           value={userType}
           onChange={(e) => setUserType(e.target.value as 'SkillSeeker' | 'SkillHolder' | 'Both')}
           required
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+          disabled={loading || success}
+          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
         >
           <option value="">Select...</option>
           <option value="SkillSeeker" className="bg-gray-900">SkillSeeker</option>
@@ -218,7 +306,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={4}
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+          disabled={loading || success}
+          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
           placeholder="Tell us about yourself..."
         />
       </div>
@@ -232,7 +321,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           type="text"
           value={skills}
           onChange={(e) => setSkills(e.target.value)}
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+          disabled={loading || success}
+          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
           placeholder="React, TypeScript, Node.js (comma-separated)"
         />
         <p className="mt-2 text-sm text-white/60">Separate skills with commas</p>
@@ -252,7 +342,8 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
             value={phoneNumber}
             onChange={handlePhoneInputChange}
             required
-            className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+            disabled={loading || success}
+            className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
             placeholder="+91 1234567890"
             maxLength={20}
             inputMode="numeric"
@@ -267,16 +358,17 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex-1 min-h-[44px] px-6 py-4 border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors font-semibold touch-manipulation"
+          disabled={loading}
+          className="flex-1 min-h-[44px] px-6 py-4 border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors font-semibold touch-manipulation disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           type="submit"
-          disabled={loading}
-          className="flex-1 min-h-[44px] bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] md:hover:scale-[1.02] font-semibold touch-manipulation"
+          disabled={loading || success}
+          className={getButtonClasses()}
         >
-          {loading ? 'Saving...' : 'Save Profile'}
+          {getButtonContent()}
         </button>
       </div>
 
@@ -292,4 +384,3 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
     </form>
   );
 }
-

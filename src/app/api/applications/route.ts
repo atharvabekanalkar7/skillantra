@@ -86,25 +86,25 @@ export async function GET(request: Request) {
 
   if (error) {
     // Handle table not found gracefully
-    const isTableNotFound = 
-      error.message?.includes('schema cache') || 
+    const isTableNotFound =
+      error.message?.includes('schema cache') ||
       error.message?.includes('does not exist') ||
       error.code === '42P01';
-    
+
     if (isTableNotFound) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         applications: [],
-        error: 'Applications table not found. Please run the migration SQL in Supabase.' 
+        error: 'Applications table not found. Please run the migration SQL in Supabase.'
       }, { status: 200 });
     }
-    
+
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   // Filter contact information: only show if application status is 'accepted'
   const filteredApplications = (applications || []).map((app: any) => {
     const filtered = { ...app };
-    
+
     if (sent) {
       // For sent applications: hide creator's contact info unless accepted
       if (filtered.task?.creator) {
@@ -120,7 +120,7 @@ export async function GET(request: Request) {
         }
       }
     }
-    
+
     return filtered;
   });
 
@@ -149,20 +149,20 @@ export async function POST(request: Request) {
   let userProfile: any = null;
   let profileError: any = null;
   let phoneNumber: string | null = null;
-  
+
   const { data: profileWithPhone, error: errorWithPhone } = await supabase
     .from('profiles')
     .select('id, phone_number')
     .eq('user_id', user.id)
     .single();
-  
+
   if (errorWithPhone) {
     // Only fall back if the error is specifically about missing column
     // Other errors (like no rows found) should be handled differently
-    const isColumnError = errorWithPhone.message?.includes('phone_number') || 
-                         errorWithPhone.message?.includes('column') ||
-                         errorWithPhone.code === '42703'; // PostgreSQL undefined column
-    
+    const isColumnError = errorWithPhone.message?.includes('phone_number') ||
+      errorWithPhone.message?.includes('column') ||
+      errorWithPhone.code === '42703'; // PostgreSQL undefined column
+
     if (isColumnError) {
       // Try to get profile without phone_number if column doesn't exist
       const { data: profileBasic, error: errorBasic } = await supabase
@@ -170,7 +170,7 @@ export async function POST(request: Request) {
         .select('id')
         .eq('user_id', user.id)
         .single();
-      
+
       if (errorBasic) {
         userProfile = null;
         profileError = errorBasic;
@@ -197,7 +197,7 @@ export async function POST(request: Request) {
 
   // Check if phone number is required and present
   if (!phoneNumber) {
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Phone number is required to apply to tasks. Please add your phone number in your profile settings.',
       code: 'PHONE_NUMBER_REQUIRED'
     }, { status: 400 });
@@ -206,7 +206,7 @@ export async function POST(request: Request) {
   // Validate phone number format (10-15 digits, numeric only)
   const cleanedPhone = phoneNumber.trim();
   if (!/^[0-9]{10,15}$/.test(cleanedPhone)) {
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Phone number must be 10-15 digits and contain only numbers. Please update your phone number in your profile settings.',
       code: 'PHONE_NUMBER_REQUIRED'
     }, { status: 400 });
@@ -222,29 +222,51 @@ export async function POST(request: Request) {
   // Verify task exists and is open
   const { data: task, error: taskError } = await supabase
     .from('tasks')
-    .select('id, creator_profile_id, status')
+    .select('id, creator_profile_id, status, application_deadline, created_at')
     .eq('id', task_id)
     .single();
 
   if (taskError || !task) {
     // Handle table not found gracefully
-    const isTableNotFound = 
-      taskError?.message?.includes('schema cache') || 
+    const isTableNotFound =
+      taskError?.message?.includes('schema cache') ||
       taskError?.message?.includes('does not exist') ||
       taskError?.code === '42P01';
-    
+
     if (isTableNotFound) {
-      return NextResponse.json({ 
-        error: 'Tasks table not found. Please run the migration SQL in Supabase.' 
+      return NextResponse.json({
+        error: 'Tasks table not found. Please run the migration SQL in Supabase.'
       }, { status: 500 });
     }
-    
+
     return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+  }
+
+  // Check if task is older than 7 days (expired)
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const taskDate = new Date(task.created_at);
+  if (taskDate < sevenDaysAgo) {
+    return NextResponse.json({
+      error: 'This task has expired (older than 7 days) and is no longer accepting applications.',
+      code: 'TASK_EXPIRED'
+    }, { status: 400 });
   }
 
   if (task.status !== 'open') {
     return NextResponse.json({ error: 'Task is not open for applications' }, { status: 400 });
   }
+
+  // Check if application deadline has passed
+  if (task.application_deadline) {
+    const deadline = new Date(task.application_deadline);
+    if (deadline.getTime() <= Date.now()) {
+      return NextResponse.json({
+        error: 'Application deadline has passed. Applications are closed.',
+        code: 'DEADLINE_PASSED'
+      }, { status: 400 });
+    }
+  }
+
 
   // Prevent applying to own task
   if (task.creator_profile_id === userProfile.id) {

@@ -51,7 +51,7 @@ export default function LandingPageClient() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 via-blue-950 to-indigo-950 font-sans antialiased overflow-x-hidden">
       {/* Hero Section - Centered */}
-      <section 
+      <section
         ref={heroRef}
         id="hero"
         data-section="hero"
@@ -68,7 +68,7 @@ export default function LandingPageClient() {
         </div>
         {/* Colorful gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
-        
+
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-28 md:py-32">
           <div className={`flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center text-center transition-opacity duration-700 ${mounted ? "opacity-100" : "opacity-0"}`}>
             <div className={`flex flex-col items-center gap-8 ${mounted ? "animate-fade-in-up" : ""}`}>
@@ -80,7 +80,7 @@ export default function LandingPageClient() {
               </h1>
 
               {/* Tagline */}
-              <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
+              <p className="text-sm sm:text-base font-semibold uppercase tracking-[0.2em] text-white/80">
                 Where skills meet opportunity
               </p>
 
@@ -99,15 +99,15 @@ export default function LandingPageClient() {
             </div>
 
             {/* CTAs */}
-            <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row items-center gap-4 sm:gap-5 w-full sm:w-auto sm:justify-center">
+            <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row items-center gap-5 sm:gap-6 w-full sm:w-auto sm:justify-center">
               <Link
                 href="/dashboard?demo=true"
-                className="group flex min-h-[48px] w-full sm:w-auto sm:min-w-[200px] items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-8 py-4 font-bold text-slate-900 shadow-2xl shadow-amber-900/50 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 md:hover:from-amber-400 md:hover:via-yellow-400 md:hover:to-amber-500 hover:shadow-amber-900/60 text-base sm:text-lg touch-manipulation"
+                className="group flex min-h-[58px] w-full sm:w-auto sm:min-w-[240px] items-center justify-center rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-10 py-5 font-bold text-slate-900 shadow-2xl shadow-amber-900/50 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 md:hover:from-amber-400 md:hover:via-yellow-400 md:hover:to-amber-500 hover:shadow-amber-900/60 text-lg sm:text-xl touch-manipulation"
               >
-                <span 
-                  className="inline-block animate-bounce mr-3 text-2xl" 
-                  style={{ 
-                    animationDuration: '1.5s', 
+                <span
+                  className="inline-block animate-bounce mr-3 text-2xl"
+                  style={{
+                    animationDuration: '1.5s',
                     animationIterationCount: 'infinite',
                     filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 12px rgba(255, 165, 0, 0.6))',
                     textShadow: '0 0 10px rgba(255, 215, 0, 0.9), 0 0 20px rgba(255, 165, 0, 0.7)'
@@ -119,7 +119,7 @@ export default function LandingPageClient() {
               </Link>
               <Link
                 href="/signup"
-                className="group flex min-h-[48px] w-full sm:w-auto sm:min-w-[200px] items-center justify-center rounded-xl bg-white px-8 py-4 font-bold text-indigo-700 shadow-2xl shadow-indigo-900/30 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 hover:bg-indigo-50 hover:shadow-indigo-900/40 text-base sm:text-lg touch-manipulation"
+                className="group flex min-h-[58px] w-full sm:w-auto sm:min-w-[240px] items-center justify-center rounded-2xl bg-white px-10 py-5 font-bold text-indigo-700 shadow-2xl shadow-indigo-900/30 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 hover:bg-indigo-50 hover:shadow-indigo-900/40 text-lg sm:text-xl touch-manipulation"
               >
                 Sign Up
               </Link>
@@ -129,7 +129,7 @@ export default function LandingPageClient() {
       </section>
 
       {/* Combined Section: How It Works & Why SkillAntra */}
-      <section 
+      <section
         ref={sectionRef}
         id="features"
         data-section="features"

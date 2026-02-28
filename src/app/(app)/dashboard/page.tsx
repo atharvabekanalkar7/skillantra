@@ -32,7 +32,7 @@ export default function DashboardPage() {
     try {
       const response = await fetch('/api/profile');
       const data = await response.json();
-      
+
       if (!data.profile) {
         // No profile exists - redirect to profile creation
         router.push('/profile/edit?setup=true');
@@ -96,12 +96,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="opacity-0 animate-fade-in-up">
-      <div className="mb-6 md:mb-10">
-        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-          Dashboard
-        </h1>
-        <p className="text-base sm:text-lg md:text-xl text-white/90 font-normal">Overview of your activity on SkillAntra</p>
+    <div className="opacity-0 animate-fade-in-up relative z-0">
+      <div className="enable-ambient-animation">
+        <div className="ambient-particle ambient-particle-1" />
+        <div className="ambient-particle ambient-particle-2" />
+        <div className="ambient-particle ambient-particle-3" />
+      </div>
+
+      <div className="stack-card bg-slate-900/50 backdrop-blur-md rounded-2xl p-6 sm:p-10 border border-purple-500/30 mb-6 md:mb-10 shadow-xl overflow-hidden relative">
+        <div className="relative z-10">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <p className="text-base sm:text-lg md:text-xl text-white/90 font-normal">Overview of your activity on SkillAntra</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-10">
