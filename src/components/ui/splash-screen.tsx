@@ -47,7 +47,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
                             className="relative w-32 h-32 md:w-40 md:h-40"
                         >
                             <Image
-                                src="/skillantra-logo.svg"
+                                src="/SkillAntra-Logo.svg"
                                 alt="SkillAntra Logo"
                                 fill
                                 priority
