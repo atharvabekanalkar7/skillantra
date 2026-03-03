@@ -285,6 +285,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div className="min-h-screen bg-slate-950 relative overflow-x-hidden flex items-start justify-center px-4 py-8 sm:py-12">
+      <div className="pointer-events-none absolute inset-0 opacity-60">
+        <div className="absolute -top-32 left-1/4 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl" />
+        <div className="absolute -bottom-40 right-1/5 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
+      </div>
       <div className="w-full max-w-lg relative z-10">
         {/* Back button and title */}
         <div className="mb-6">
@@ -301,7 +305,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         {/* Form Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 w-full max-w-lg mx-auto">
+        <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-6 sm:p-8 w-full max-w-lg mx-auto shadow-[0_18px_45px_rgba(15,23,42,0.7)] backdrop-blur-sm">
           {emailSent ? (
             <div className="space-y-6 text-center">
               <div className="mb-6">
@@ -507,10 +511,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
               )}
 
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-              >
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white py-4 px-6 rounded-xl text-lg font-semibold shadow-[0_12px_30px_rgba(79,70,229,0.55)] hover:from-indigo-400 hover:to-violet-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
                 {loading ? 'Processing...' : mode === 'login' ? 'Log In' : 'Create Account'}
                 {!loading && mode === 'signup' && <span>→</span>}
               </button>

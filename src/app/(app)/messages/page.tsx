@@ -217,12 +217,8 @@ export default function MessagesPage() {
   return (
     <div className="opacity-0 animate-fade-in-up h-[calc(100vh-8rem)] flex flex-col">
       <div className="mb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">Messages</h1>
-        <p className="text-white/60 text-sm mb-3">Connect with collaborators and expand your network.</p>
-        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-200/90 px-4 py-2 rounded-xl text-sm flex items-center gap-2 w-fit">
-          <span>⚠️</span>
-          <span>Please refresh the page to load the latest messages.</span>
-        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-100 mb-1">Messages</h1>
+        <p className="text-slate-400 text-sm">Connect with collaborators and expand your network.</p>
       </div>
 
       {error ? (
@@ -241,7 +237,7 @@ export default function MessagesPage() {
           </Link>
         </div>
       ) : (
-        <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex relative min-h-0">
+        <div className="flex-1 bg-slate-900/80 rounded-2xl border border-slate-800/80 shadow-[0_18px_45px_rgba(15,23,42,0.65)] overflow-hidden flex relative min-h-0">
 
           {/* SIDEBAR: CONVERSATION LIST */}
           <div className={`${showThreadOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-slate-800`}>
@@ -352,12 +348,15 @@ export default function MessagesPage() {
 
                       return (
                         <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 ${isMe
-                            ? 'bg-slate-800 text-slate-200'
-                            : 'bg-slate-700 text-slate-200'
-                            }`}>
+                          <div
+                            className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${
+                              isMe
+                                ? 'bg-indigo-600 text-slate-50 rounded-br-sm'
+                                : 'bg-slate-800 text-slate-100 rounded-bl-sm'
+                            }`}
+                          >
                             <p className="text-sm md:text-base whitespace-pre-wrap break-words">{m.content}</p>
-                            <span className="text-[10px] opacity-60 mt-1 block text-right">
+                            <span className="text-[10px] mt-1 block text-right text-slate-200/60">
                               {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>

@@ -93,14 +93,14 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800">
       <div className="p-5 border-b border-slate-800">
         <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} className="flex items-center gap-2 group">
-          <span className="text-xl font-bold text-slate-100">
-            Skill<span className="text-indigo-500">Antra</span>
+          <span className="text-xl font-bold text-slate-100 tracking-tight">
+            Skill<span className="text-indigo-400">Antra</span>
           </span>
         </Link>
         {isDemo && (
-          <div className="mt-3 px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5">
-            <Sparkles className="w-3 h-3 text-indigo-500" />
-            DEMO MODE
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-indigo-500/40 text-xs font-semibold text-indigo-100 shadow-[0_0_18px_rgba(79,70,229,0.45)]">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+            <span>Demo preview</span>
           </div>
         )}
       </div>

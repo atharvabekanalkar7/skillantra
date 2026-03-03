@@ -27,10 +27,14 @@ export default function SidebarButton({
 }: SidebarButtonProps) {
     if (comingSoon) {
         return (
-            <div className={`flex items-center gap-3 px-4 py-3 text-gray-500 cursor-not-allowed rounded-xl bg-gray-900/30 border border-gray-700/50 ${className}`}>
-                <span className="text-lg shrink-0">{icon}</span>
+            <div
+                className={`relative flex items-center gap-3 px-4 py-3 text-slate-500 cursor-not-allowed rounded-2xl bg-slate-900/40 border border-slate-800/70 ${className}`}
+            >
+                <span className="text-[18px] shrink-0 opacity-80">{icon}</span>
                 <span className="text-sm font-medium truncate">{label}</span>
-                <span className="text-xs ml-auto bg-gray-800 px-2 py-0.5 rounded shrink-0">Soon</span>
+                <span className="ml-auto text-[10px] rounded-full px-2 py-0.5 bg-slate-800/80 border border-slate-700 text-slate-300 shrink-0">
+                    Soon
+                </span>
             </div>
         );
     }
@@ -39,20 +43,30 @@ export default function SidebarButton({
         <Link
             href={href}
             onClick={onClick}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg min-h-[44px] transition-colors ${isActive
-                ? 'bg-slate-800 text-slate-100 font-medium'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                } ${className}`}
+            className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[44px] transition-all duration-200 ${
+                isActive
+                    ? 'bg-slate-900/80 text-slate-50 font-medium shadow-[0_0_0_1px_rgba(79,70,229,0.5)]'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
+            } ${className}`}
         >
-            <span className={`text-lg transition-transform shrink-0 ${isActive ? 'text-indigo-400' : ''}`}>{icon}</span>
+            {isActive && (
+                <span className="absolute inset-y-1 left-1 w-0.5 rounded-full bg-gradient-to-b from-indigo-400 via-indigo-500 to-violet-500" />
+            )}
+            <span
+                className={`text-[18px] transition-transform shrink-0 ${
+                    isActive ? 'text-indigo-400 scale-105' : 'text-slate-500 group-hover:text-slate-200'
+                }`}
+            >
+                {icon}
+            </span>
             <span className="text-sm font-medium truncate flex-1">{label}</span>
             {unreadCount > 0 ? (
-                <span className="text-[10px] font-bold bg-rose-600 text-white px-2 py-0.5 rounded-full shrink-0">
+                <span className="text-[10px] font-bold bg-rose-600/90 text-white px-2 py-0.5 rounded-full shrink-0 shadow-[0_0_12px_rgba(248,113,113,0.45)]">
                     {unreadCount}
                 </span>
             ) : isNew ? (
-                <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 px-2 py-0.5 rounded-full shrink-0">
-                    New!
+                <span className="text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full shrink-0">
+                    New
                 </span>
             ) : null}
         </Link>
