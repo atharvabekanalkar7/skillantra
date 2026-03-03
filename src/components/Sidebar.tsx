@@ -14,13 +14,9 @@ import {
   UserCircle,
   Settings,
   LogOut,
-  Sparkles,
-  Sun,
-  Moon
+  Sparkles
 } from 'lucide-react';
 import SidebarButton from './SidebarButton';
-import { useTheme } from 'next-themes';
-import { Switch } from '@/components/ui/switch';
 
 interface SidebarProps {
   isDemo?: boolean;
@@ -31,7 +27,6 @@ interface SidebarProps {
 export default function Sidebar({ isDemo = false, isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { resolvedTheme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -136,19 +131,6 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
       </nav>
 
       <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
-        {mounted && (
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 flex-1">
-              {resolvedTheme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              <span className="font-medium">Dark Mode</span>
-            </div>
-            <Switch
-              checked={resolvedTheme === 'dark'}
-              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-            />
-          </div>
-        )}
-
         <button
           onClick={handleLogout}
           disabled={loading}

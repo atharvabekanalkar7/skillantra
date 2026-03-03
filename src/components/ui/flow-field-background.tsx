@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useTheme } from "next-themes";
 
 interface NeuralBackgroundProps {
     color?: string;
@@ -17,7 +16,6 @@ export function NeuralBackground({
     speed = 0.7,
 }: NeuralBackgroundProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const { theme, resolvedTheme } = useTheme();
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -31,8 +29,8 @@ export function NeuralBackground({
         canvas.width = width;
         canvas.height = height;
 
-        const isDark = resolvedTheme === "dark" || theme === "dark";
-        const rgbColor = color.startsWith("#") ? hexToRgb(color) : "99, 102, 241";
+        const isDark = true;
+        const rgbColor = color.startsWith("#") ? hexToRgb(color) : "100, 116, 139";
 
         const particles: Particle[] = [];
 
@@ -87,7 +85,7 @@ export function NeuralBackground({
         }
 
         const draw = () => {
-            ctx.fillStyle = isDark ? `rgba(2, 6, 23, ${trailOpacity})` : `rgba(240, 243, 247, ${trailOpacity})`;
+            ctx.fillStyle = `rgba(2, 6, 23, ${trailOpacity})`;
             ctx.fillRect(0, 0, width, height);
 
             for (let i = 0; i < particles.length; i++) {
@@ -130,7 +128,7 @@ export function NeuralBackground({
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("resize", handleResize);
         };
-    }, [color, trailOpacity, particleCount, speed, resolvedTheme, theme]);
+    }, [color, trailOpacity, particleCount, speed]);
 
     return (
         <canvas
@@ -144,5 +142,5 @@ function hexToRgb(hex: string) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
         ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
-        : "99, 102, 241";
+        : "100, 116, 139";
 }
