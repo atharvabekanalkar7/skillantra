@@ -306,7 +306,14 @@ input[type="button"] {
   animation-delay: 1s;
 }
 
+/* === Hero heading: premium letter-spacing for large hero titles === */
+.hero-heading {
+  letter-spacing: -0.02em;
+  font-weight: 800;
+}
+
 @theme inline {
+  --font-sans: var(--font-satoshi, 'Satoshi', sans-serif);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

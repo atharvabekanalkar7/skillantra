@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ShieldCheck } from 'lucide-react';
 
 export default function PrivacyPage() {
   return (
@@ -13,7 +14,12 @@ export default function PrivacyPage() {
         </Link>
 
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 md:p-12">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">🔒 Privacy Policy</h1>
+          <h1 className="flex items-center gap-3 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
+            <span className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 shrink-0">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.75} />
+            </span>
+            Privacy Policy
+          </h1>
           <p className="text-white/60 mb-8">Last updated: 21-12-2025</p>
 
           <div className="prose prose-invert max-w-none space-y-8 text-white/90">

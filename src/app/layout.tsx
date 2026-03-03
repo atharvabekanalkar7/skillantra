@@ -1,12 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "../globals.css";
 import { SplashScreen } from "@/components/ui/splash-screen";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const satoshi = localFont({
+  src: [
+    {
+      path: "../../public/fonts/satoshi/Satoshi-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/satoshi/Satoshi-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/satoshi/Satoshi-Variable.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/satoshi/Satoshi-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/satoshi/Satoshi-Black.woff2",
+      weight: "800 900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-satoshi",
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -48,7 +75,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-200 min-h-screen touch-manipulation`}>
+      <body className={`${satoshi.variable} font-sans antialiased bg-slate-950 text-slate-200 min-h-screen touch-manipulation`}>
         <SplashScreen>
           {children}
         </SplashScreen>

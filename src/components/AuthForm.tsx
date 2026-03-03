@@ -511,10 +511,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
               )}
 
               <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white py-4 px-6 rounded-xl text-lg font-semibold shadow-[0_12px_30px_rgba(79,70,229,0.55)] hover:from-indigo-400 hover:to-violet-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-            >
+                type="submit"
+                disabled={loading}
+                className="w-full bg-indigo-600 text-white py-4 px-6 rounded-xl text-lg font-semibold shadow-[0_4px_14px_rgba(79,70,229,0.2)] hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              >
                 {loading ? 'Processing...' : mode === 'login' ? 'Log In' : 'Create Account'}
                 {!loading && mode === 'signup' && <span>→</span>}
               </button>

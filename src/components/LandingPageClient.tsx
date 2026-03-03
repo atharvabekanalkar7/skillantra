@@ -69,7 +69,7 @@ export default function LandingPageClient() {
             <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase mb-2 bg-gradient-to-r from-indigo-300 via-indigo-400 to-sky-400 bg-clip-text text-transparent">
               SkillAntra
             </p>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-100">
+            <h1 className="hero-heading text-5xl md:text-7xl tracking-tight text-slate-100">
               Build Together.
               <span className="block text-indigo-400">Grow Together.</span>
             </h1>
