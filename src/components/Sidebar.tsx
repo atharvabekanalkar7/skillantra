@@ -3,7 +3,24 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import {
+  LayoutDashboard,
+  Search,
+  ClipboardList,
+  FileText,
+  MessageSquare,
+  Target,
+  Trophy,
+  UserCircle,
+  Settings,
+  LogOut,
+  Sparkles,
+  Sun,
+  Moon
+} from 'lucide-react';
 import SidebarButton from './SidebarButton';
+import { useTheme } from 'next-themes';
+import { Switch } from '@/components/ui/switch';
 
 interface SidebarProps {
   isDemo?: boolean;
@@ -14,6 +31,7 @@ interface SidebarProps {
 export default function Sidebar({ isDemo = false, isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -22,7 +40,6 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     setMounted(true);
     if (!isDemo) {
       fetchUnreadCount();
-      // Poll every 30 seconds for new messages
       const interval = setInterval(fetchUnreadCount, 30000);
       return () => clearInterval(interval);
     }
@@ -40,7 +57,6 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     }
   };
 
-  // Close sidebar on route change (mobile)
   useEffect(() => {
     onClose?.();
   }, [pathname]);
@@ -54,10 +70,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
 
     setLoading(true);
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-
+      const response = await fetch('/api/auth/logout', { method: 'POST' });
       if (response.ok) {
         router.push('/');
         router.refresh();
@@ -70,92 +83,107 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
   };
 
   const navItems = [
-    { href: isDemo ? '/dashboard?demo=true' : '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse Tasks', icon: '🔍' },
-    { href: isDemo ? '/tasks/mine?demo=true' : '/tasks/mine', label: 'My Tasks', icon: '📋' },
-    { href: isDemo ? '/applications?demo=true' : '/applications', label: 'My Applications', icon: '📝' },
-    { href: isDemo ? '/messages?demo=true' : '/messages', label: 'Messages', icon: '💬', unread: unreadCount },
-    { href: '#', label: 'Skill-based Matchmaking', icon: '🎯', comingSoon: true },
-    { href: isDemo ? '/leaderboard?demo=true' : '/leaderboard', label: 'Leaderboard', icon: '🏆', comingSoon: true },
-    { href: isDemo ? '/profile/edit?demo=true' : '/profile/edit', label: 'Profile', icon: '👤' },
-    { href: isDemo ? '/settings?demo=true' : '/settings', label: 'Settings', icon: '⚙️' },
+    { href: isDemo ? '/dashboard?demo=true' : '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse Tasks', icon: Search },
+    { href: isDemo ? '/tasks/mine?demo=true' : '/tasks/mine', label: 'My Tasks', icon: ClipboardList },
+    { href: isDemo ? '/applications?demo=true' : '/applications', label: 'My Applications', icon: FileText },
+    { href: isDemo ? '/messages?demo=true' : '/messages', label: 'Messages', icon: MessageSquare, unread: unreadCount },
+    { href: '#', label: 'Matchmaking', icon: Target, comingSoon: true },
+    { href: isDemo ? '/leaderboard?demo=true' : '/leaderboard', label: 'Leaderboard', icon: Trophy, comingSoon: true },
+    { href: isDemo ? '/profile/edit?demo=true' : '/profile/edit', label: 'Profile', icon: UserCircle },
+    { href: isDemo ? '/settings?demo=true' : '/settings', label: 'Settings', icon: Settings },
   ];
 
   const sidebarContent = (
-    <>
-      <div className="p-5 border-b-2 border-cyan-500/20">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800">
+      <div className="p-5 border-b border-slate-200 dark:border-slate-800">
         <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} className="flex items-center gap-2 group">
-          <span className="text-2xl font-black bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">
-            SkillAntra
+          <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Skill<span className="text-indigo-600 dark:text-indigo-400">Antra</span>
           </span>
         </Link>
         {isDemo && (
-          <div className="mt-3 px-3 py-1.5 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/50 text-yellow-300 text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(250,204,21,0.4)] animate-pulse">
-            ⚡ DEMO MODE
+          <div className="mt-3 px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3 text-indigo-500" />
+            DEMO MODE
           </div>
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-4 overscroll-contain">
-        <ul className="space-y-2">
-          {navItems.map((item, index) => {
-            const baseHref = item.href.split('?')[0];
-            const isActive = pathname === baseHref || pathname?.startsWith(baseHref + '/');
-            return (
-              <li key={item.href} className="animate-slide-in-right" style={{ animationDelay: `${index * 0.05}s`, opacity: 0 }}>
-                <SidebarButton
-                  href={item.href}
-                  icon={item.icon}
-                  label={item.label}
-                  isActive={isActive}
-                  comingSoon={item.comingSoon}
-                  unreadCount={item.unread}
-                  onClick={onClose}
-                />
-              </li>
-            );
-          })}
-        </ul>
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 overscroll-contain">
+        <div className="mb-4">
+          <p className="px-3 text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">Main Menu</p>
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const baseHref = item.href.split('?')[0];
+              const isActive = pathname === baseHref || pathname?.startsWith(baseHref + '/');
+              return (
+                <li key={item.href + item.label}>
+                  <SidebarButton
+                    href={item.href}
+                    icon={<item.icon className="w-[18px] h-[18px]" />}
+                    label={item.label}
+                    isActive={isActive}
+                    comingSoon={item.comingSoon}
+                    unreadCount={item.unread}
+                    onClick={onClose}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </nav>
 
-      <div className="p-4 border-t-2 border-cyan-500/20 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+        {mounted && (
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 flex-1">
+              {resolvedTheme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              <span className="font-medium">Dark Mode</span>
+            </div>
+            <Switch
+              checked={resolvedTheme === 'dark'}
+              onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            />
+          </div>
+        )}
+
         <button
           onClick={handleLogout}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 min-h-[44px] text-white bg-red-500/20 border border-red-400/50 rounded-xl hover:bg-red-500/30 hover:border-red-400 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 font-semibold touch-manipulation"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 font-medium text-sm touch-manipulation shadow-sm"
         >
-          <span className="text-lg shrink-0">🚪</span>
-          <span className="text-sm truncate">{isDemo ? 'Exit Demo' : loading ? 'Logging out...' : 'Logout'}</span>
+          <LogOut className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
+          <span className="truncate">{isDemo ? 'Exit Demo' : loading ? 'Logging out...' : 'Logout'}</span>
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
     <>
-      {/* Desktop sidebar - fixed left, visible on md and up */}
+      {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-purple-950/95 via-indigo-950/95 to-black/95 backdrop-blur-md border-r border-purple-500/30 z-40 flex-col"
+        className="hidden md:flex fixed left-0 top-0 h-full w-64 z-40 flex-col"
         aria-label="Main navigation"
       >
         {sidebarContent}
       </aside>
 
-      {/* Mobile: overlay when open */}
+      {/* Mobile overlay */}
       {mounted && (
         <div
-          className={`md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-            }`}
+          className={`md:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
           onClick={onClose}
           onTouchEnd={onClose}
           aria-hidden="true"
         />
       )}
 
-      {/* Mobile sidebar - slide-in drawer */}
+      {/* Mobile sidebar */}
       <aside
-        className={`md:hidden fixed left-0 top-0 h-full w-[min(280px,85vw)] max-w-[280px] bg-gradient-to-b from-purple-950 via-indigo-950 to-black z-50 flex flex-col transform transition-transform duration-300 ease-out overscroll-contain ${isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`md:hidden fixed left-0 top-0 h-full w-[min(280px,85vw)] max-w-[280px] z-50 flex flex-col transform transition-transform duration-300 ease-out overscroll-contain ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingLeft: 'env(safe-area-inset-left, 0px)',
