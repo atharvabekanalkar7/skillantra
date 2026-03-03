@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ClipboardList, FileText, Send, Search, Plus, ArrowRight } from 'lucide-react';
 
 interface DashboardStats {
   tasksCreated: number;
@@ -34,19 +35,16 @@ export default function DashboardPage() {
       const data = await response.json();
 
       if (!data.profile) {
-        // No profile exists - redirect to profile creation
         router.push('/profile/edit?setup=true');
         return;
       }
     } catch (error) {
-      // Silently handle errors - don't block dashboard
       console.error('Error checking profile:', error);
     }
   };
 
   const loadStats = async () => {
     if (isDemo) {
-      // Demo mode: use mock stats
       setStats({
         tasksCreated: 2,
         applicationsSent: 3,
@@ -57,17 +55,14 @@ export default function DashboardPage() {
     }
 
     try {
-      // Fetch my tasks
       const tasksResponse = await fetch('/api/tasks?mine=true');
       const tasksData = await tasksResponse.json();
       const tasksCreated = tasksData.tasks?.length || 0;
 
-      // Fetch my applications (sent)
       const applicationsResponse = await fetch('/api/applications?sent=true');
       const applicationsData = await applicationsResponse.json();
       const applicationsSent = applicationsData.applications?.length || 0;
 
-      // Fetch applications received on my tasks
       const receivedApplicationsResponse = await fetch('/api/applications?received=true');
       const receivedApplicationsData = await receivedApplicationsResponse.json();
       const applicationsReceived = receivedApplicationsData.applications?.length || 0;
@@ -88,101 +83,110 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-cyan-500/30"></div>
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-cyan-400 absolute top-0 left-0"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-indigo-500 absolute top-0 left-0"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="opacity-0 animate-fade-in-up relative z-0">
-      <div className="enable-ambient-animation">
-        <div className="ambient-particle ambient-particle-1" />
-        <div className="ambient-particle ambient-particle-2" />
-        <div className="ambient-particle ambient-particle-3" />
+    <div className="opacity-0 animate-fade-in-up max-w-5xl mx-auto py-6 md:py-10">
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-2">
+          Dashboard
+        </h1>
+        <p className="text-slate-400">Overview of your activity on SkillAntra</p>
       </div>
 
-      <div className="stack-card bg-slate-900/50 backdrop-blur-md rounded-2xl p-6 sm:p-10 border border-purple-500/30 mb-6 md:mb-10 shadow-xl overflow-hidden relative">
-        <div className="relative z-10">
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-black mb-2 md:mb-3 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-white/90 font-normal">Overview of your activity on SkillAntra</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 md:mb-10">
-        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-blue-400/40 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed">
-          <h3 className="text-lg font-bold text-blue-300 mb-3">Tasks Created</h3>
-          <p className="text-5xl font-black text-blue-400 mb-4">{stats.tasksCreated}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:bg-slate-800 transition">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400">
+              <ClipboardList className="w-4 h-4" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400">Tasks Created</h3>
+          </div>
+          <p className="text-4xl font-bold text-slate-100 mb-3">{stats.tasksCreated}</p>
           <Link
             href="/tasks/mine"
-            className="inline-flex items-center text-blue-200 hover:text-blue-100 text-sm font-semibold group-hover:gap-2 transition-all"
+            className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium"
           >
-            View My Tasks <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            View My Tasks <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-green-400/40 hover:border-green-400 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed-2">
-          <h3 className="text-lg font-bold text-green-300 mb-3">Applications Sent</h3>
-          <p className="text-5xl font-black text-green-400 mb-4">{stats.applicationsSent}</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:bg-slate-800 transition">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400">
+              <Send className="w-4 h-4" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400">Applications Sent</h3>
+          </div>
+          <p className="text-4xl font-bold text-slate-100 mb-3">{stats.applicationsSent}</p>
           <Link
             href="/applications"
-            className="inline-flex items-center text-green-200 hover:text-green-100 text-sm font-semibold group-hover:gap-2 transition-all"
+            className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium"
           >
-            View My Applications <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            View Applications <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <div className="group bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/40 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed-3">
-          <h3 className="text-lg font-bold text-purple-300 mb-3">Applications Received</h3>
-          <p className="text-5xl font-black text-purple-400 mb-4">{stats.applicationsReceived}</p>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:bg-slate-800 transition">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400">
+              <FileText className="w-4 h-4" />
+            </div>
+            <h3 className="text-sm font-medium text-slate-400">Applications Received</h3>
+          </div>
+          <p className="text-4xl font-bold text-slate-100 mb-3">{stats.applicationsReceived}</p>
           <Link
             href="/tasks/mine"
-            className="inline-flex items-center text-purple-200 hover:text-purple-100 text-sm font-semibold group-hover:gap-2 transition-all"
+            className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium"
           >
-            View My Tasks <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            View My Tasks <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-cyan-400/40 transition-all duration-300 opacity-0 animate-fade-in-up-delayed-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Quick Actions</h2>
-          <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-slate-100 mb-4">Quick Actions</h2>
+          <div className="space-y-3">
             <Link
               href="/tasks"
-              className="block w-full min-h-[44px] flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-4 px-6 rounded-xl hover:from-blue-500 hover:to-cyan-500 font-bold text-base sm:text-lg transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] shadow-lg shadow-blue-900/30 touch-manipulation"
+              className="flex items-center gap-3 w-full min-h-[44px] bg-indigo-600 text-white py-3 px-5 rounded-lg hover:bg-indigo-500 font-medium transition-colors touch-manipulation"
             >
+              <Search className="w-4 h-4" />
               Browse Tasks
             </Link>
             <Link
               href="/tasks/new"
-              className="block w-full min-h-[44px] flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 px-6 rounded-xl hover:from-green-500 hover:to-emerald-500 font-bold text-base sm:text-lg transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] shadow-lg shadow-green-900/30 touch-manipulation"
+              className="flex items-center gap-3 w-full min-h-[44px] border border-slate-700 text-slate-300 py-3 px-5 rounded-lg hover:bg-slate-800 font-medium transition-colors touch-manipulation"
             >
+              <Plus className="w-4 h-4" />
               Create New Task
             </Link>
           </div>
         </div>
 
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/40 transition-all duration-300 opacity-0 animate-fade-in-up-delayed-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Recent Activity</h2>
-          <p className="text-white/90 text-base mb-6 leading-relaxed">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-slate-100 mb-4">Recent Activity</h2>
+          <p className="text-slate-400 text-sm mb-5 leading-relaxed">
             View your tasks and applications to see your recent activity on SkillAntra.
           </p>
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Link
               href="/tasks/mine"
-              className="flex items-center gap-3 text-purple-200 hover:text-purple-100 text-base font-semibold group"
+              className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-sm font-medium group py-1"
             >
-              <span className="group-hover:translate-x-2 transition-transform duration-200">→</span> My Tasks
+              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" /> My Tasks
             </Link>
             <Link
               href="/applications"
-              className="flex items-center gap-3 text-purple-200 hover:text-purple-100 text-base font-semibold group"
+              className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-sm font-medium group py-1"
             >
-              <span className="group-hover:translate-x-2 transition-transform duration-200">→</span> My Applications
+              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" /> My Applications
             </Link>
           </div>
         </div>

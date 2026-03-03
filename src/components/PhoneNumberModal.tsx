@@ -43,16 +43,16 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
 
   const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
-    
+
     // Ensure +91 prefix is always present
     if (!value.startsWith('+91')) {
       value = '+91 ' + value.replace(/^\+91\s*/, '');
     }
-    
+
     // Only allow digits after +91
     const afterPrefix = value.substring(4);
     const digitsOnly = afterPrefix.replace(/\D/g, '');
-    
+
     if (digitsOnly.length <= 15) {
       setPhoneNumber('+91 ' + digitsOnly);
       setError(null);
@@ -86,24 +86,24 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
     }
   };
 
-  const contextMessage = context === 'apply_task' 
-    ? 'apply to tasks' 
+  const contextMessage = context === 'apply_task'
+    ? 'apply to tasks'
     : 'create tasks';
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm overscroll-contain"
-      style={{ 
-        paddingTop: 'env(safe-area-inset-top)', 
+      style={{
+        paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
         paddingLeft: 'env(safe-area-inset-left)',
         paddingRight: 'env(safe-area-inset-right)',
       }}
     >
-      <div className="bg-slate-900 rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-purple-400/30 shadow-xl">
+      <div className="bg-slate-900 rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-slate-800 shadow-xl">
         <h2 className="text-2xl font-bold text-white mb-4">Phone Number Required</h2>
         <p className="text-white/80 mb-4">
-          A phone number is required to {contextMessage}. 
+          A phone number is required to {contextMessage}.
           Please enter your phone number below.
         </p>
 
@@ -133,7 +133,7 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
                 value={phoneNumber}
                 onChange={handlePhoneInputChange}
                 placeholder="+91 1234567890"
-                className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-purple-400/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 maxLength={20}
               />
             </div>
@@ -156,7 +156,7 @@ export default function PhoneNumberModal({ isOpen, onClose, onSave, context = 'c
             </button>
             <button
               type="submit"
-              className="flex-1 min-h-[44px] px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
+              className="flex-1 min-h-[44px] px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
               disabled={saving}
             >
               {saving ? 'Saving...' : 'Save'}

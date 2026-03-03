@@ -284,11 +284,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950 relative overflow-x-hidden flex items-start justify-center px-4 py-8 sm:py-12">
-      {/* Subtle background glows */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-purple-500/15 rounded-full blur-[100px]"></div>
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-indigo-500/15 rounded-full blur-[120px]"></div>
-
+    <div className="min-h-screen bg-slate-950 relative overflow-x-hidden flex items-start justify-center px-4 py-8 sm:py-12">
       <div className="w-full max-w-lg relative z-10">
         {/* Back button and title */}
         <div className="mb-6">
@@ -305,7 +301,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         {/* Form Card */}
-        <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-500/30 w-full max-w-lg mx-auto">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 w-full max-w-lg mx-auto">
           {emailSent ? (
             <div className="space-y-6 text-center">
               <div className="mb-6">
@@ -350,7 +346,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 </div>
                 <Link
                   href="/login"
-                  className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-all transform hover:scale-[1.02]"
+                  className="inline-block bg-indigo-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all"
                 >
                   Go to Login
                 </Link>
@@ -375,7 +371,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     Full Name <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
@@ -386,7 +382,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       required
-                      className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                      className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -403,7 +399,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   </p>
                 )}
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
@@ -414,7 +410,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -426,7 +422,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     College/University <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400 z-10">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
@@ -436,14 +432,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
                       required
-                      className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 appearance-none cursor-pointer"
+                      className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
                     >
                       <option value="" className="bg-gray-900">Select your college</option>
                       <option value="Indian Institute of Technology (IIT) Mandi" className="bg-gray-900">Indian Institute of Technology (IIT) Mandi</option>
                       <option value="IIIT Una" disabled className="bg-gray-900 text-gray-500">IIIT Una (Coming Soon)</option>
                       <option value="NIT Hamirpur" disabled className="bg-gray-900 text-gray-500">NIT Hamirpur (Coming Soon)</option>
                     </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 pointer-events-none">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
@@ -457,7 +453,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                   Password <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -469,13 +465,13 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full pl-12 pr-12 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                    className="w-full pl-12 pr-12 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                     placeholder={mode === 'signup' ? 'Create a strong password' : 'Enter your password'}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-300"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-300"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       {showPassword ? (
@@ -495,15 +491,15 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     type="checkbox"
                     checked={agreeToTerms}
                     onChange={(e) => setAgreeToTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-purple-600 bg-gray-900/50 border-purple-500/50 rounded focus:ring-purple-500 focus:ring-2"
+                    className="mt-1 w-4 h-4 text-indigo-600 bg-slate-800 border-slate-700 rounded focus:ring-indigo-500 focus:ring-2"
                   />
                   <label htmlFor="agreeToTerms" className="text-sm text-white/90 leading-relaxed">
                     I agree to the{' '}
-                    <Link href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
+                    <Link href="/terms" target="_blank" className="text-slate-400 hover:text-indigo-300 font-medium underline">
                       Terms of Service
                     </Link>
                     {' '}and{' '}
-                    <Link href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
+                    <Link href="/privacy" target="_blank" className="text-slate-400 hover:text-indigo-300 font-medium underline">
                       Privacy Policy
                     </Link>
                   </label>
@@ -513,7 +509,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
+                className="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {loading ? 'Processing...' : mode === 'login' ? 'Log In' : 'Create Account'}
                 {!loading && mode === 'signup' && <span>→</span>}
@@ -526,11 +522,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
               {mode === 'login' && (
                 <p className="text-white/70 text-xs">
                   By logging in, you agree to our{' '}
-                  <Link href="/terms" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
+                  <Link href="/terms" target="_blank" className="text-slate-400 hover:text-indigo-300 font-medium underline">
                     Terms of Service
                   </Link>
                   {' '}and{' '}
-                  <Link href="/privacy" target="_blank" className="text-purple-400 hover:text-purple-300 font-medium underline">
+                  <Link href="/privacy" target="_blank" className="text-slate-400 hover:text-indigo-300 font-medium underline">
                     Privacy Policy
                   </Link>
                 </p>
@@ -538,14 +534,14 @@ export default function AuthForm({ mode }: AuthFormProps) {
               {mode === 'login' ? (
                 <p className="text-white/70">
                   Don't have an account?{' '}
-                  <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium">
+                  <Link href="/signup" className="text-slate-400 hover:text-indigo-300 font-medium">
                     Sign up
                   </Link>
                 </p>
               ) : (
                 <p className="text-white/70">
                   Already have an account?{' '}
-                  <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+                  <Link href="/login" className="text-slate-400 hover:text-indigo-300 font-medium">
                     Log in
                   </Link>
                 </p>

@@ -47,8 +47,8 @@ export default function EditProfilePage() {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-cyan-500/30"></div>
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-cyan-400 absolute top-0 left-0"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-indigo-500 absolute top-0 left-0"></div>
         </div>
       </div>
     );
@@ -75,7 +75,7 @@ export default function EditProfilePage() {
           </p>
         </div>
 
-        <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-purple-500/30">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔒</div>
             <h2 className="text-2xl font-bold text-white mb-3">Sign In Required</h2>
@@ -84,7 +84,7 @@ export default function EditProfilePage() {
             </p>
             <Link
               href="/signup"
-              className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
+              className="inline-block bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-500 transition-all"
             >
               Sign Up to Get Started →
             </Link>
@@ -118,7 +118,7 @@ export default function EditProfilePage() {
         )}
       </div>
 
-      <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl p-8 border border-purple-500/30">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
         <ProfileForm initialProfile={profile} />
       </div>
     </div>

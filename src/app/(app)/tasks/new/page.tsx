@@ -192,7 +192,7 @@ export default function NewTaskPage() {
         <p className="text-white/80 text-sm sm:text-base">Post a task to find skilled collaborators</p>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
@@ -211,7 +211,7 @@ export default function NewTaskPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
               placeholder="e.g., Build a React dashboard"
             />
           </div>
@@ -226,7 +226,7 @@ export default function NewTaskPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
               placeholder="Describe the task in detail..."
             />
           </div>
@@ -241,7 +241,7 @@ export default function NewTaskPage() {
               type="text"
               value={skillsRequired}
               onChange={(e) => setSkillsRequired(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
               placeholder="React, TypeScript, Node.js (comma-separated)"
             />
             <p className="mt-2 text-sm text-white/60">Separate skills with commas</p>
@@ -269,7 +269,7 @@ export default function NewTaskPage() {
                   setPaymentOtherDetails('');
                 }
               }}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] appearance-none"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] appearance-none"
             >
               <option value="">Select payment method</option>
               <option value="stipend">Stipend</option>
@@ -290,7 +290,7 @@ export default function NewTaskPage() {
                       min="0"
                       value={stipendMin}
                       onChange={(e) => setStipendMin(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                       placeholder="e.g., 3000"
                     />
                   </div>
@@ -304,7 +304,7 @@ export default function NewTaskPage() {
                       min="0"
                       value={stipendMax}
                       onChange={(e) => setStipendMax(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                      className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                       placeholder="e.g., 10000"
                     />
                   </div>
@@ -321,7 +321,7 @@ export default function NewTaskPage() {
                     type="text"
                     value={paymentOtherDetails}
                     onChange={(e) => setPaymentOtherDetails(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                     placeholder="e.g., Equity-based, Revenue share, Certificate + LOR"
                   />
                 </div>
@@ -338,7 +338,7 @@ export default function NewTaskPage() {
               id="mode-of-work"
               value={modeOfWork}
               onChange={(e) => setModeOfWork(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] appearance-none"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] appearance-none"
             >
               <option value="">Select mode of work</option>
               {MODE_OPTIONS.map((opt) => (
@@ -360,7 +360,7 @@ export default function NewTaskPage() {
               value={applicationDeadline}
               onChange={(e) => setApplicationDeadline(e.target.value)}
               min={getMinDeadline()}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] [color-scheme:dark]"
+              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] [color-scheme:dark]"
             />
             <p className="mt-2 text-sm text-white/60">
               Leave empty for no deadline. Applications will close automatically at this time.
@@ -435,7 +435,7 @@ export default function NewTaskPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 min-h-[44px] bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 sm:py-4 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] font-semibold touch-manipulation"
+              className="flex-1 min-h-[44px] bg-indigo-600 text-white py-3 sm:py-4 px-6 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] font-semibold touch-manipulation"
             >
               {loading ? 'Creating...' : 'Create Task'}
             </button>

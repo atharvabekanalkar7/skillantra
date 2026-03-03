@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
@@ -31,6 +32,9 @@ type Message = {
 };
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const isDemo = searchParams?.get('demo') === 'true';
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,6 +184,27 @@ export default function MessagesPage() {
 
   if (loading) return <LoadingSpinner />;
 
+  if (isDemo) {
+    return (
+      <div className="opacity-0 animate-fade-in-up h-[calc(100vh-8rem)] flex items-center justify-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 w-full max-w-md text-center py-20">
+          <h2 className="text-xl font-semibold text-slate-200">
+            Sign In Required
+          </h2>
+          <p className="mt-2 text-slate-500 mb-6">
+            Please sign in to access this feature.
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-500 transition-colors font-medium"
+          >
+            Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="opacity-0 animate-fade-in-up h-[calc(100vh-8rem)] flex flex-col">
       <div className="mb-4">
@@ -192,40 +217,40 @@ export default function MessagesPage() {
       </div>
 
       {error ? (
-        <div className="bg-red-500/20 text-red-200 border border-red-500/50 p-4 rounded-xl">
+        <div className="bg-rose-900 border border-rose-800 text-rose-200 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       ) : conversations.length === 0 ? (
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 sm:p-12 text-center border border-purple-400/30 flex-1 flex flex-col justify-center items-center">
-          <div className="text-5xl sm:text-6xl mb-4">📭</div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-white mb-2">Your inbox is empty.</h2>
-          <p className="text-white/60 mb-6 max-w-sm">
+        <div className="bg-slate-900 rounded-2xl p-8 sm:p-12 text-center border border-slate-800 flex-1 flex flex-col justify-center items-center gap-4">
+          <div className="text-5xl sm:text-6xl text-slate-700">📭</div>
+          <h2 className="text-xl sm:text-2xl font-semibold text-slate-100">Your inbox is empty.</h2>
+          <p className="text-slate-400 max-w-sm">
             Visit someone's profile to send them a direct message and start collaborating.
           </p>
-          <Link href="/tasks" className="text-purple-300 hover:text-purple-200 font-semibold bg-purple-500/20 px-6 py-2 rounded-xl transition-colors">
-            Browse Tasks
+          <Link href="/tasks" className="text-indigo-400 hover:text-indigo-300 font-medium mt-2 transition-colors">
+            Browse Tasks →
           </Link>
         </div>
       ) : (
-        <div className="flex-1 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-purple-400/30 overflow-hidden flex shadow-xl relative min-h-0">
+        <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex relative min-h-0">
 
           {/* SIDEBAR: CONVERSATION LIST */}
-          <div className={`${showThreadOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-purple-400/20`}>
+          <div className={`${showThreadOnMobile ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col border-r border-slate-800`}>
             {/* Tabs */}
-            <div className="flex border-b border-purple-400/20 bg-slate-900/80">
+            <div className="flex border-b border-slate-800 bg-slate-900">
               <button
                 onClick={() => setActiveTab('active')}
-                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'active' ? 'text-purple-300 border-purple-500' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'active' ? 'text-indigo-400 border-indigo-500' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
               >
                 Chats
               </button>
               <button
                 onClick={() => setActiveTab('requests')}
-                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 flex justify-center items-center gap-2 ${activeTab === 'requests' ? 'text-purple-300 border-purple-500' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 flex justify-center items-center gap-2 ${activeTab === 'requests' ? 'text-indigo-400 border-indigo-500' : 'text-slate-400 border-transparent hover:text-slate-200'}`}
               >
                 Requests
                 {pendingRequestsCount > 0 && (
-                  <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingRequestsCount}</span>
+                  <span className="bg-rose-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingRequestsCount}</span>
                 )}
               </button>
             </div>
@@ -245,22 +270,22 @@ export default function MessagesPage() {
                         setActiveConvoId(c.id);
                         setShowThreadOnMobile(true);
                       }}
-                      className={`w-full text-left p-4 border-b border-purple-400/10 transition-colors ${isActive ? 'bg-purple-500/10 hover:bg-purple-500/20' : 'hover:bg-slate-800/60'}`}
+                      className={`w-full text-left p-4 border-b border-slate-800/50 transition-colors ${isActive ? 'bg-slate-800 hover:bg-slate-700/80' : 'hover:bg-slate-800/60'}`}
                     >
                       <div className="flex justify-between items-start mb-1 gap-2">
-                        <span className={`font-semibold truncate flex-1 ${c.unread_count > 0 ? 'text-white' : 'text-white/80'}`}>
+                        <span className={`font-semibold truncate flex-1 ${c.unread_count > 0 ? 'text-slate-100' : 'text-slate-300'}`}>
                           {c.other_user.name}
                         </span>
-                        <span className={`text-xs whitespace-nowrap ${c.unread_count > 0 ? 'text-purple-300 font-medium' : 'text-white/40'}`}>
+                        <span className={`text-xs whitespace-nowrap ${c.unread_count > 0 ? 'text-indigo-400 font-medium' : 'text-slate-500'}`}>
                           {formatTimeAgo(c.last_message_at)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center text-sm gap-2">
-                        <span className={`truncate flex-1 ${c.unread_count > 0 ? 'text-slate-200 font-medium' : 'text-white/50'}`}>
+                        <span className={`truncate flex-1 ${c.unread_count > 0 ? 'text-slate-200 font-medium' : 'text-slate-400'}`}>
                           {c.is_sender && c.status === 'pending' ? 'Sent request...' : c.last_message?.content || 'New conversation'}
                         </span>
                         {c.unread_count > 0 && (
-                          <span className="w-2.5 h-2.5 bg-red-500 rounded-full shrink-0 animate-pulse"></span>
+                          <span className="w-2.5 h-2.5 bg-indigo-500 rounded-full shrink-0"></span>
                         )}
                       </div>
                     </button>
@@ -271,23 +296,23 @@ export default function MessagesPage() {
           </div>
 
           {/* MAIN CHAT AREA */}
-          <div className={`${showThreadOnMobile ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0 bg-slate-900/20`}>
+          <div className={`${showThreadOnMobile ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0 bg-slate-900 border-l border-slate-800`}>
             {activeConvoDetail ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-purple-400/20 bg-slate-900/60 flex items-center justify-between shrink-0">
+                <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3 min-w-0">
                     <button
                       onClick={() => setShowThreadOnMobile(false)}
-                      className="md:hidden p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="md:hidden p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
                     >
                       ←
                     </button>
                     <div className="min-w-0">
-                      <Link href={`/profile/${activeConvoDetail.other_user.id}`} className="font-semibold text-white text-base md:text-lg hover:underline truncate block">
+                      <Link href={`/profile/${activeConvoDetail.other_user.id}`} className="font-semibold text-slate-100 text-base md:text-lg hover:underline truncate block">
                         {activeConvoDetail.other_user.name}
                       </Link>
-                      <span className="text-xs text-purple-300 truncate block">
+                      <span className="text-xs text-slate-400 truncate block">
                         {activeConvoDetail.other_user.user_type}
                       </span>
                     </div>
@@ -318,9 +343,9 @@ export default function MessagesPage() {
 
                       return (
                         <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${isMe
-                            ? 'bg-purple-600/80 text-white rounded-tr-sm'
-                            : 'bg-slate-700/80 text-white rounded-tl-sm border border-slate-600'
+                          <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 ${isMe
+                            ? 'bg-slate-800 text-slate-200'
+                            : 'bg-slate-700 text-slate-200'
                             }`}>
                             <p className="text-sm md:text-base whitespace-pre-wrap break-words">{m.content}</p>
                             <span className="text-[10px] opacity-60 mt-1 block text-right">
@@ -335,23 +360,23 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 bg-slate-900/60 border-t border-purple-400/20 shrink-0">
-                  {msgError && <div className="text-red-300 text-xs mb-2 text-center bg-red-500/10 py-1 rounded">{msgError}</div>}
+                <div className="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
+                  {msgError && <div className="text-rose-400 text-xs mb-2 text-center bg-rose-900/20 py-1 rounded">{msgError}</div>}
 
                   {activeConvoDetail.status === 'pending' && activeConvoDetail.is_sender && (
-                    <div className="text-center text-sm text-amber-200/80 bg-amber-500/10 rounded-xl p-3 border border-amber-500/20">
+                    <div className="text-center text-sm text-amber-400 bg-slate-800 rounded-xl p-3 border border-slate-700">
                       Request sent. Waiting for {activeConvoDetail.other_user.name} to accept before keeping the conversation going.
                     </div>
                   )}
 
                   {activeConvoDetail.status === 'pending' && !activeConvoDetail.is_sender && (
-                    <div className="text-center text-sm text-purple-200/80 bg-purple-500/10 rounded-xl p-3 border border-purple-500/20">
+                    <div className="text-center text-sm text-indigo-400 bg-slate-800 rounded-xl p-3 border border-slate-700">
                       Accept this request to continue messaging.
                     </div>
                   )}
 
                   {activeConvoDetail.status === 'ignored' && (
-                    <div className="text-center text-sm text-red-200/80 bg-red-500/10 rounded-xl p-3 border border-red-500/20">
+                    <div className="text-center text-sm text-rose-400 bg-slate-800 rounded-xl p-3 border border-slate-700">
                       This request was ignored. Messaging is permanently locked.
                     </div>
                   )}
@@ -364,12 +389,12 @@ export default function MessagesPage() {
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
                         disabled={sendingMessage}
-                        className="flex-1 bg-slate-800 border border-purple-500/30 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 transition-all disabled:opacity-50"
+                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-all disabled:opacity-50"
                       />
                       <button
                         type="submit"
                         disabled={!newMessage.trim() || sendingMessage}
-                        className="bg-purple-600 hover:bg-purple-500 text-white px-5 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                       >
                         {sendingMessage ? '...' : 'Send'}
                       </button>
@@ -378,8 +403,8 @@ export default function MessagesPage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-white/40 p-8 text-center min-h-0">
-                <div className="text-4xl mb-4">💬</div>
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center min-h-0">
+                <div className="text-4xl mb-4 text-slate-600">💬</div>
                 <p>Select a conversation to start messaging</p>
               </div>
             )}

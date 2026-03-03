@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { parseSkills } from '@/lib/utils';
 import Link from 'next/link';
 import SendDMButton from '@/components/SendDMButton';
+import { AppCard } from '@/components/ui/app-card';
 
 async function getProfile(profileId: string) {
   const supabase = await createClient();
@@ -105,15 +106,15 @@ export default async function ProfileViewPage({
   if (!profileId) {
     return (
       <div className="max-w-2xl mx-auto opacity-0 animate-fade-in-up">
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 text-center border border-purple-400/30">
-          <p className="text-white/80 mb-4">Profile ID is required</p>
+        <AppCard className="text-center">
+          <p className="text-slate-400 mb-4">Profile ID is required</p>
           <Link
             href="/dashboard"
-            className="text-purple-300 hover:text-purple-200 font-semibold"
+            className="text-indigo-400 hover:text-indigo-300 font-medium"
           >
             Return to dashboard
           </Link>
-        </div>
+        </AppCard>
       </div>
     );
   }
@@ -123,15 +124,15 @@ export default async function ProfileViewPage({
   if (!profile) {
     return (
       <div className="max-w-2xl mx-auto opacity-0 animate-fade-in-up">
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 text-center border border-purple-400/30">
-          <p className="text-white/80 mb-4">Profile not found</p>
+        <AppCard className="text-center">
+          <p className="text-slate-400 mb-4">Profile not found</p>
           <Link
             href="/dashboard"
-            className="text-purple-300 hover:text-purple-200 font-semibold"
+            className="text-indigo-400 hover:text-indigo-300 font-medium"
           >
             Return to dashboard
           </Link>
-        </div>
+        </AppCard>
       </div>
     );
   }
@@ -151,32 +152,32 @@ export default async function ProfileViewPage({
 
   return (
     <div className="max-w-3xl mx-auto opacity-0 animate-fade-in-up">
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
+      <AppCard className="p-6 sm:p-8">
         <div className="mb-6">
           <Link
             href="/dashboard"
-            className="text-purple-300 hover:text-purple-200 text-sm font-semibold mb-4 inline-flex items-center gap-1 min-h-[44px] py-2 touch-manipulation"
+            className="text-slate-400 hover:text-slate-200 text-sm font-medium mb-4 inline-flex items-center gap-1 min-h-[44px] py-2 touch-manipulation transition-colors"
           >
             ← Back to dashboard
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-100 mb-2">{profile.name}</h1>
           {profile.college && (
-            <p className="text-white/70 text-sm mb-2">{profile.college}</p>
+            <p className="text-slate-400 text-sm mb-2">{profile.college}</p>
           )}
           {profileEmail && (
-            <p className="text-white/70 text-sm mb-3">
+            <p className="text-slate-400 text-sm mb-3">
               ✉️ {profileEmail}
             </p>
           )}
           {profile.bio && (
-            <p className="text-white/90 text-base sm:text-lg mb-4 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
+            <p className="text-slate-300 text-base sm:text-lg mb-4 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
           )}
         </div>
 
         {profile.user_type && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-white mb-2">I am a:</h2>
-            <span className="inline-block bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-medium border border-purple-400/30">
+            <h2 className="text-lg font-semibold text-slate-100 mb-2">I am a:</h2>
+            <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
               {profile.user_type}
             </span>
           </div>
@@ -184,12 +185,12 @@ export default async function ProfileViewPage({
 
         {skills.length > 0 && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-white mb-3">Skills</h2>
+            <h2 className="text-lg font-semibold text-slate-100 mb-3">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {skills.map((skill, index) => (
                 <span
                   key={index}
-                  className="inline-block bg-blue-500/20 text-blue-200 px-3 py-1 rounded-full text-sm border border-blue-400/30"
+                  className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm border border-slate-700"
                 >
                   {skill}
                 </span>
@@ -198,16 +199,16 @@ export default async function ProfileViewPage({
           </div>
         )}
 
-        <div className="pt-6 border-t border-purple-400/20">
-          <div className="text-sm text-white/60 mb-4">
+        <div className="pt-6 border-t border-slate-800">
+          <div className="text-sm text-slate-500 mb-4">
             Member since {new Date(profile.created_at).toLocaleDateString()}
           </div>
 
           {!isOwnProfile && currentUserProfile && (
-            <div className="bg-purple-500/10 border border-purple-400/30 text-purple-200 px-5 py-4 rounded-xl flex items-center justify-between">
+            <div className="bg-slate-800/50 border border-slate-700 text-slate-200 px-5 py-4 rounded-xl flex items-center justify-between">
               <div>
                 <h3 className="font-semibold mb-1">Collaborate with {profile.name}</h3>
-                <p className="text-sm text-purple-300">Direct messages have arrived!</p>
+                <p className="text-sm text-slate-400">Direct messages have arrived!</p>
               </div>
               <SendDMButton receiverId={profile.id} receiverName={profile.name} />
             </div>
@@ -216,13 +217,13 @@ export default async function ProfileViewPage({
           {isOwnProfile && (
             <Link
               href="/profile/edit"
-              className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all active:scale-[0.98] font-semibold touch-manipulation"
+              className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-slate-800 text-slate-200 border border-slate-700 rounded-xl hover:bg-slate-700 transition-all font-medium touch-manipulation"
             >
               Edit Profile
             </Link>
           )}
         </div>
-      </div>
+      </AppCard>
     </div>
   );
 }

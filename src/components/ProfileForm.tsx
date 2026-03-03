@@ -202,12 +202,12 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   };
 
   const getButtonClasses = () => {
-    const base = 'flex-1 min-h-[44px] text-white py-4 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed transition-all active:scale-[0.98] md:hover:scale-[1.02] font-semibold touch-manipulation';
+    const base = 'flex-1 min-h-[44px] text-white py-4 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:cursor-not-allowed transition-all active:scale-[0.98] md:hover:scale-[1.02] font-semibold touch-manipulation';
 
     if (success) {
-      return `${base} bg-gradient-to-r from-green-600 to-emerald-600 focus:ring-green-500`;
+      return `${base} bg-emerald-600 focus:ring-emerald-500`;
     }
-    return `${base} bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:ring-purple-500 disabled:opacity-50`;
+    return `${base} bg-indigo-600 hover:bg-indigo-500 focus:ring-indigo-500 disabled:opacity-50`;
   };
 
   return (
@@ -238,7 +238,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
             value={initialProfile.college}
             disabled
             readOnly
-            className="w-full px-4 py-3 bg-gray-900/30 border border-purple-500/30 rounded-lg text-white/70 cursor-not-allowed"
+            className="w-full px-4 py-3 bg-slate-900/30 border border-slate-800 rounded-lg text-white/70 cursor-not-allowed"
           />
           <p className="mt-2 text-sm text-white/50">College cannot be changed after signup</p>
         </div>
@@ -255,7 +255,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
             value={email}
             disabled
             readOnly
-            className="w-full px-4 py-3 bg-gray-900/30 border border-purple-500/30 rounded-lg text-white/70 cursor-not-allowed"
+            className="w-full px-4 py-3 bg-slate-900/30 border border-slate-800 rounded-lg text-white/70 cursor-not-allowed"
           />
           <p className="mt-2 text-sm text-white/50">Email cannot be changed</p>
         </div>
@@ -272,7 +272,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           onChange={(e) => setName(e.target.value)}
           required
           disabled={loading || success}
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
+          className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
           placeholder="Your name"
         />
       </div>
@@ -287,14 +287,14 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           onChange={(e) => setUserType(e.target.value as 'SkillSeeker' | 'SkillHolder' | 'Both')}
           required
           disabled={loading || success}
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
+          className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
         >
           <option value="">Select...</option>
-          <option value="SkillSeeker" className="bg-gray-900">SkillSeeker</option>
-          <option value="SkillHolder" className="bg-gray-900">SkillHolder</option>
-          <option value="Both" className="bg-gray-900">Both</option>
+          <option value="SkillSeeker" className="bg-slate-900">SkillSeeker</option>
+          <option value="SkillHolder" className="bg-slate-900">SkillHolder</option>
+          <option value="Both" className="bg-slate-900">Both</option>
         </select>
-        <p className="mt-2 text-sm text-white/60">Choose how you want to use SkillAntra</p>
+        <p className="mt-2 text-sm text-slate-400">Choose how you want to use SkillAntra</p>
       </div>
 
       <div>
@@ -307,7 +307,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           onChange={(e) => setBio(e.target.value)}
           rows={4}
           disabled={loading || success}
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
+          className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
           placeholder="Tell us about yourself..."
         />
       </div>
@@ -322,7 +322,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           value={skills}
           onChange={(e) => setSkills(e.target.value)}
           disabled={loading || success}
-          className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
+          className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
           placeholder="React, TypeScript, Node.js (comma-separated)"
         />
         <p className="mt-2 text-sm text-white/60">Separate skills with commas</p>
@@ -343,7 +343,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
             onChange={handlePhoneInputChange}
             required
             disabled={loading || success}
-            className="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 disabled:opacity-60"
+            className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
             placeholder="+91 1234567890"
             maxLength={20}
             inputMode="numeric"
@@ -359,7 +359,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           type="button"
           onClick={() => router.back()}
           disabled={loading}
-          className="flex-1 min-h-[44px] px-6 py-4 border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors font-semibold touch-manipulation disabled:opacity-50"
+          className="flex-1 min-h-[44px] px-6 py-4 border border-slate-700 rounded-lg text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors font-semibold touch-manipulation disabled:opacity-50"
         >
           Cancel
         </button>

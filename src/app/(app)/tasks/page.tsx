@@ -8,6 +8,8 @@ import PhoneNumberModal from '@/components/PhoneNumberModal';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
 import { useCountdown } from '@/lib/utils/useCountdown';
 import type { Task } from '@/lib/types';
+import { AppCard } from '@/components/ui/app-card';
+import { StatusBadge } from '@/components/ui/status-badge';
 
 // Small component for deadline countdown on each card
 function DeadlineCountdown({ deadline }: { deadline: string }) {
@@ -192,70 +194,63 @@ export default function BrowseTasksPage() {
     <div className="opacity-0 animate-fade-in-up">
       <div className="mb-6 md:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">Browse Tasks</h1>
-          <p className="text-white/80 text-sm sm:text-base">Find tasks that match your skills</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-1 sm:mb-2">Browse Tasks</h1>
+          <p className="text-slate-400 text-sm sm:text-base">Find tasks that match your skills</p>
         </div>
         <Link
           href="/tasks/new"
-          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 font-semibold shadow-lg shadow-green-900/30 touch-manipulation"
+          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-500 transition-all duration-200 active:scale-[0.98] md:hover:scale-[1.02] font-medium touch-manipulation"
         >
           Create Task
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-4 backdrop-blur-md">
+        <div className="bg-rose-900 border border-rose-800 text-rose-200 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       )}
 
       {tasks.length === 0 ? (
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 text-center border border-purple-400/30">
-          <p className="text-white/80 mb-4 text-lg">No open tasks available at the moment.</p>
+        <AppCard className="text-center p-8">
+          <p className="text-slate-400 mb-4 text-lg">No open tasks available at the moment.</p>
           <Link
             href="/tasks/new"
-            className="inline-flex items-center text-purple-300 hover:text-purple-200 font-semibold group"
+            className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-medium group"
           >
             Be the first to create a task <span className="group-hover:translate-x-1 transition-transform duration-200 ml-1">→</span>
           </Link>
-        </div>
+        </AppCard>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tasks.map((task, index) => {
             const deadlinePassed = isDeadlinePassed(task);
 
             return (
-              <div
+              <AppCard
                 key={task.id}
-                className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] opacity-0 animate-fade-in-up-delayed flex flex-col"
+                className="flex flex-col opacity-0 animate-fade-in-up-delayed"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-xl font-bold text-white pr-2">{task.title}</h3>
-                  <span
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${task.status === 'open'
-                      ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-                      : 'bg-gray-500/20 text-gray-300 border border-gray-400/50'
-                      }`}
-                  >
-                    {task.status}
-                  </span>
+                  <h3 className="text-lg font-semibold text-slate-100 pr-2">{task.title}</h3>
+                  <StatusBadge status={task.status} />
                 </div>
 
                 {task.description && (
-                  <p className="text-white/70 text-sm mb-4 line-clamp-3 leading-relaxed">{task.description}</p>
+                  <p className="text-slate-400 text-sm mb-4 line-clamp-3 leading-relaxed">{task.description}</p>
                 )}
 
                 {task.skills_required && (
                   <div className="mb-4">
-                    <p className="text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Skills Required:</p>
+                    <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Skills Required:</p>
                     <div className="flex flex-wrap gap-2">
                       {task.skills_required
                         .split(',')
                         .map((skill, i) => (
                           <span
                             key={i}
-                            className="inline-block bg-blue-500/20 text-blue-200 text-xs px-3 py-1 rounded-lg border border-blue-400/30 font-medium"
+                            className="inline-block bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-lg border border-slate-700 font-medium"
                           >
                             {skill.trim()}
                           </span>
@@ -267,7 +262,7 @@ export default function BrowseTasksPage() {
                 {/* Mode of Work */}
                 {task.mode_of_work && (
                   <div className="mb-3">
-                    <span className="inline-block bg-purple-500/20 text-purple-200 text-xs px-3 py-1 rounded-lg border border-purple-400/30 font-medium">
+                    <span className="inline-block bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-lg border border-slate-700 font-medium">
                       {MODE_LABELS[task.mode_of_work] || task.mode_of_work}
                     </span>
                   </div>
@@ -276,23 +271,23 @@ export default function BrowseTasksPage() {
                 {/* Payment Info */}
                 {task.payment_type === 'stipend' && task.stipend_min !== null && task.stipend_max !== null && (
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
-                    <p className="text-green-300 font-semibold">
+                    <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Stipend:</p>
+                    <p className="text-emerald-400 font-medium text-sm">
                       ₹{task.stipend_min.toLocaleString()} – ₹{task.stipend_max.toLocaleString()}
                     </p>
                   </div>
                 )}
                 {task.payment_type === 'other' && task.payment_other_details && (
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Compensation:</p>
-                    <p className="text-green-300 font-semibold">{task.payment_other_details}</p>
+                    <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Compensation:</p>
+                    <p className="text-emerald-400 font-medium text-sm">{task.payment_other_details}</p>
                   </div>
                 )}
                 {/* Backward compat: no payment_type but has stipend fields */}
                 {!task.payment_type && (task.stipend_min !== null || task.stipend_max !== null) && (
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
-                    <p className="text-green-300 font-semibold">
+                    <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Stipend:</p>
+                    <p className="text-emerald-400 font-medium text-sm">
                       {task.stipend_min !== null && task.stipend_max !== null
                         ? `₹${task.stipend_min.toLocaleString()} – ₹${task.stipend_max.toLocaleString()}`
                         : task.stipend_min !== null
@@ -310,16 +305,16 @@ export default function BrowseTasksPage() {
                 )}
 
                 {(task.creator || task.creator_profile) && (
-                  <div className="text-xs text-white/50 mb-2 truncate">
+                  <div className="text-xs text-slate-500 mb-2 truncate">
                     Posted by {(task.creator?.name || task.creator_profile?.name)}
                   </div>
                 )}
 
-                <div className="text-xs text-white/50 mb-4">
+                <div className="text-xs text-slate-500 mb-4">
                   {formatTimeAgo(task.created_at)}
                 </div>
 
-                <div className="mt-auto">
+                <div className="mt-auto pt-4 border-t border-slate-800">
                   <button
                     onClick={() => handleApply(task.id)}
                     disabled={
@@ -328,7 +323,7 @@ export default function BrowseTasksPage() {
                       appliedTaskIds.has(task.id) ||
                       deadlinePassed
                     }
-                    className="w-full min-h-[44px] bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 rounded-xl hover:from-blue-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-[0.98] md:hover:scale-[1.02] font-semibold shadow-lg shadow-blue-900/30 touch-manipulation"
+                    className="w-full min-h-[44px] bg-indigo-600 text-white py-2 px-4 rounded-xl hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98] font-medium text-sm touch-manipulation"
                   >
                     {isDemo
                       ? 'Sign Up to Apply'
@@ -341,7 +336,7 @@ export default function BrowseTasksPage() {
                             : 'Apply'}
                   </button>
                 </div>
-              </div>
+              </AppCard>
             );
           })}
         </div>

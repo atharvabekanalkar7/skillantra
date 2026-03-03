@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-violet-950 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 overflow-x-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <Link
           href="/"
@@ -12,7 +12,7 @@ export default function TermsPage() {
           <span className="text-sm font-medium">Back to Home</span>
         </Link>
 
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 md:p-12 border border-purple-400/30">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 md:p-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">📄 Terms of Service</h1>
           <p className="text-white/60 mb-8">Last updated: 21-12-2025</p>
 
@@ -123,7 +123,7 @@ export default function TermsPage() {
               <h2 className="text-2xl font-bold text-white mb-4">11. Contact</h2>
               <p>For questions regarding these Terms, contact:</p>
               <p className="mt-2">
-                📧 <a href="mailto:skillantra0511@gmail.com" className="text-purple-300 hover:text-purple-200 underline">skillantra0511@gmail.com</a>
+                <a href="mailto:skillantra0511@gmail.com" className="text-indigo-400 hover:text-indigo-300 underline">skillantra0511@gmail.com</a>
               </p>
             </section>
           </div>

@@ -14,7 +14,7 @@ export default function RequestCard({ request, isReceiver, onRespond, loading }:
   const otherProfile = isReceiver ? request.sender_profile : request.receiver_profile;
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 transition-all duration-300">
+    <div className="bg-slate-900 rounded-xl p-6 border border-slate-800 hover:bg-slate-800 transition-all duration-300">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
         <div className="min-w-0">
           <h3 className="text-base sm:text-lg font-semibold text-white truncate">
@@ -25,13 +25,12 @@ export default function RequestCard({ request, isReceiver, onRespond, loading }:
           </p>
         </div>
         <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 ${
-            request.status === 'accepted'
+          className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 ${request.status === 'accepted'
               ? 'bg-green-500/20 text-green-300 border border-green-400/50'
               : request.status === 'rejected'
-              ? 'bg-red-500/20 text-red-300 border border-red-400/50'
-              : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
-          }`}
+                ? 'bg-red-500/20 text-red-300 border border-red-400/50'
+                : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+            }`}
         >
           {request.status}
         </span>

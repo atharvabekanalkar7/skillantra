@@ -234,7 +234,7 @@ export default function EditTaskPage() {
                 <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-4 backdrop-blur-md">
                     {pageError}
                 </div>
-                <Link href="/tasks/mine" className="text-purple-300 hover:text-purple-200 font-semibold">
+                <Link href="/tasks/mine" className="text-indigo-400 hover:text-indigo-300 font-semibold">
                     ← Back to My Tasks
                 </Link>
             </div>
@@ -246,7 +246,7 @@ export default function EditTaskPage() {
             <div className="mb-6 md:mb-8">
                 <Link
                     href={`/tasks/${taskId}`}
-                    className="text-purple-300 hover:text-purple-200 text-sm font-semibold inline-flex items-center gap-1 mb-4 group"
+                    className="text-indigo-400 hover:text-indigo-300 text-sm font-semibold inline-flex items-center gap-1 mb-4 group"
                 >
                     <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Back to Task
                 </Link>
@@ -254,7 +254,7 @@ export default function EditTaskPage() {
                 <p className="text-white/80 text-sm sm:text-base">Update your task details</p>
             </div>
 
-            <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
                         <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-3 rounded-lg text-sm">
@@ -273,7 +273,7 @@ export default function EditTaskPage() {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             required
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                         />
                     </div>
 
@@ -287,7 +287,7 @@ export default function EditTaskPage() {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={5}
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                         />
                     </div>
 
@@ -301,7 +301,7 @@ export default function EditTaskPage() {
                             type="text"
                             value={skillsRequired}
                             onChange={(e) => setSkillsRequired(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                             placeholder="React, TypeScript, Node.js (comma-separated)"
                         />
                     </div>
@@ -315,7 +315,7 @@ export default function EditTaskPage() {
                             id="task-status"
                             value={taskStatus}
                             onChange={(e) => setTaskStatus(e.target.value as 'open' | 'closed')}
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] appearance-none"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] appearance-none"
                         >
                             <option value="open">Open</option>
                             <option value="closed">Closed</option>
@@ -341,7 +341,7 @@ export default function EditTaskPage() {
                                     setPaymentOtherDetails('');
                                 }
                             }}
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] appearance-none"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] appearance-none"
                         >
                             <option value="">Select payment method</option>
                             <option value="stipend">Stipend</option>
@@ -361,7 +361,7 @@ export default function EditTaskPage() {
                                             min="0"
                                             value={stipendMin}
                                             onChange={(e) => setStipendMin(e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                                             placeholder="e.g., 3000"
                                         />
                                     </div>
@@ -375,7 +375,7 @@ export default function EditTaskPage() {
                                             min="0"
                                             value={stipendMax}
                                             onChange={(e) => setStipendMax(e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                                             placeholder="e.g., 10000"
                                         />
                                     </div>
@@ -391,7 +391,7 @@ export default function EditTaskPage() {
                                         type="text"
                                         value={paymentOtherDetails}
                                         onChange={(e) => setPaymentOtherDetails(e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px]"
+                                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
                                         placeholder="e.g., Equity-based, Revenue share, Certificate + LOR"
                                     />
                                 </div>
@@ -408,7 +408,7 @@ export default function EditTaskPage() {
                             id="mode-of-work"
                             value={modeOfWork}
                             onChange={(e) => setModeOfWork(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] appearance-none"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] appearance-none"
                         >
                             <option value="">Select mode of work</option>
                             {MODE_OPTIONS.map((opt) => (
@@ -428,7 +428,7 @@ export default function EditTaskPage() {
                             value={applicationDeadline}
                             onChange={(e) => setApplicationDeadline(e.target.value)}
                             min={getMinDeadline()}
-                            className="w-full px-4 py-3 bg-gray-900/50 border border-purple-500/50 rounded-lg text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 min-h-[44px] [color-scheme:dark]"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px] [color-scheme:dark]"
                         />
                         <p className="mt-2 text-sm text-white/60">
                             Leave empty for no deadline. Clear the field to remove the deadline.
@@ -442,7 +442,7 @@ export default function EditTaskPage() {
                             <button
                                 type="button"
                                 onClick={addAttachmentRow}
-                                className="text-sm text-purple-300 hover:text-purple-200 font-semibold transition-colors px-3 py-1 rounded-lg hover:bg-purple-500/10 touch-manipulation"
+                                className="text-sm text-indigo-400 hover:text-indigo-300 font-semibold transition-colors px-3 py-1 rounded-lg hover:bg-slate-800 touch-manipulation"
                             >
                                 + Add Attachment
                             </button>
@@ -456,7 +456,7 @@ export default function EditTaskPage() {
                             {attachments.map((att) => (
                                 <div
                                     key={att.id}
-                                    className="flex flex-col sm:flex-row gap-2 p-3 bg-slate-800/40 rounded-lg border border-purple-400/20 animate-fade-in"
+                                    className="flex flex-col sm:flex-row gap-2 p-3 bg-slate-800/40 rounded-lg border border-slate-700 animate-fade-in"
                                 >
                                     <select
                                         value={att.category}
@@ -492,14 +492,14 @@ export default function EditTaskPage() {
                         <button
                             type="button"
                             onClick={() => router.back()}
-                            className="flex-1 px-6 py-3 sm:py-4 min-h-[44px] border border-purple-500/50 rounded-lg text-white hover:bg-purple-500/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors touch-manipulation font-semibold"
+                            className="flex-1 px-6 py-3 sm:py-4 min-h-[44px] border border-slate-700 rounded-lg text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-colors touch-manipulation font-semibold"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex-1 min-h-[44px] bg-gradient-to-r from-amber-600 to-orange-600 text-white py-3 sm:py-4 px-6 rounded-lg hover:from-amber-500 hover:to-orange-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] font-semibold touch-manipulation"
+                            className="flex-1 min-h-[44px] bg-indigo-600 text-white py-3 sm:py-4 px-6 rounded-lg hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98] font-semibold touch-manipulation"
                         >
                             {saving ? 'Saving...' : 'Save Changes'}
                         </button>

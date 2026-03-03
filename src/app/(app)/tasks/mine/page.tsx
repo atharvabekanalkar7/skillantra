@@ -7,6 +7,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
 import { useCountdown } from '@/lib/utils/useCountdown';
 import type { Task, TaskApplication } from '@/lib/types';
+import { AppCard } from '@/components/ui/app-card';
+import { StatusBadge } from '@/components/ui/status-badge';
 
 const MODE_LABELS: Record<string, string> = {
   remote: '🏠 Remote',
@@ -215,61 +217,54 @@ export default function MyTasksPage() {
     <div className="opacity-0 animate-fade-in-up">
       <div className="mb-6 md:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">My Tasks</h1>
-          <p className="text-white/80 text-sm sm:text-base">Manage tasks you've created</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-2">My Tasks</h1>
+          <p className="text-slate-400 text-sm sm:text-base">Manage tasks you've created</p>
         </div>
         <Link
           href="/tasks/new"
-          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 active:scale-[0.98] md:hover:scale-105 font-semibold shadow-lg shadow-green-900/30 touch-manipulation"
+          className="w-full sm:w-auto min-h-[44px] flex items-center justify-center bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-500 transition-all duration-200 active:scale-[0.98] md:hover:scale-[1.02] font-medium touch-manipulation"
         >
           Create New Task
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-4 backdrop-blur-md">
+        <div className="bg-rose-900 border border-rose-800 text-rose-200 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       )}
 
       {tasks.length === 0 ? (
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 text-center border border-purple-400/30">
-          <p className="text-white/80 mb-4 text-lg">You haven't created any tasks yet.</p>
+        <AppCard className="text-center p-8">
+          <p className="text-slate-400 mb-4 text-lg">You haven't created any tasks yet.</p>
           <Link
             href="/tasks/new"
-            className="inline-flex items-center text-purple-300 hover:text-purple-200 font-semibold group"
+            className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-medium group"
           >
             Create your first task <span className="group-hover:translate-x-1 transition-transform duration-200 ml-1">→</span>
           </Link>
-        </div>
+        </AppCard>
       ) : (
         <div className="space-y-4">
           {tasks.map((task, index) => (
-            <div
+            <AppCard
               key={task.id}
-              className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400 hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 active:scale-[0.99] md:hover:scale-[1.01] opacity-0 animate-fade-in-up-delayed"
+              className="opacity-0 animate-fade-in-up-delayed"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="text-xl font-bold text-white">{task.title}</h3>
-                    <span
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${task.status === 'open'
-                          ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-                          : 'bg-gray-500/20 text-gray-300 border border-gray-400/50'
-                        }`}
-                    >
-                      {task.status}
-                    </span>
+                    <h3 className="text-lg font-semibold text-slate-100">{task.title}</h3>
+                    <StatusBadge status={task.status} />
                     {task.mode_of_work && (
-                      <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-400/30">
+                      <span className="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
                         {MODE_LABELS[task.mode_of_work] || task.mode_of_work}
                       </span>
                     )}
                   </div>
                   {applicationsByTask[task.id] && applicationsByTask[task.id].length > 0 && (
-                    <p className="text-sm text-blue-300 font-semibold">
+                    <p className="text-sm text-indigo-400 font-medium">
                       {applicationsByTask[task.id].length} application{applicationsByTask[task.id].length !== 1 ? 's' : ''} received
                     </p>
                   )}
@@ -277,19 +272,19 @@ export default function MyTasksPage() {
               </div>
 
               {task.description && (
-                <p className="text-white/70 text-sm mb-4 leading-relaxed">{task.description}</p>
+                <p className="text-slate-400 text-sm mb-4 leading-relaxed">{task.description}</p>
               )}
 
               {task.skills_required && (
                 <div className="mb-4">
-                  <p className="text-xs font-semibold text-white/60 mb-2 uppercase tracking-wide">Skills Required:</p>
+                  <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">Skills Required:</p>
                   <div className="flex flex-wrap gap-2">
                     {task.skills_required
                       .split(',')
                       .map((skill, i) => (
                         <span
                           key={i}
-                          className="inline-block bg-blue-500/20 text-blue-200 text-xs px-3 py-1 rounded-lg border border-blue-400/30 font-medium"
+                          className="inline-block bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-lg border border-slate-700 font-medium"
                         >
                           {skill.trim()}
                         </span>
@@ -301,22 +296,22 @@ export default function MyTasksPage() {
               {/* Payment */}
               {task.payment_type === 'stipend' && task.stipend_min !== null && task.stipend_max !== null && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
-                  <p className="text-green-300 font-semibold">
+                  <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Stipend:</p>
+                  <p className="text-emerald-400 font-medium text-sm">
                     ₹{task.stipend_min.toLocaleString()} – ₹{task.stipend_max.toLocaleString()}
                   </p>
                 </div>
               )}
               {task.payment_type === 'other' && task.payment_other_details && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Compensation:</p>
-                  <p className="text-green-300 font-semibold">{task.payment_other_details}</p>
+                  <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Compensation:</p>
+                  <p className="text-emerald-400 font-medium text-sm">{task.payment_other_details}</p>
                 </div>
               )}
               {!task.payment_type && (task.stipend_min !== null || task.stipend_max !== null) && (
                 <div className="mb-3">
-                  <p className="text-xs font-semibold text-white/60 mb-1 uppercase tracking-wide">Stipend:</p>
-                  <p className="text-green-300 font-semibold">
+                  <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Stipend:</p>
+                  <p className="text-emerald-400 font-medium text-sm">
                     {task.stipend_min !== null && task.stipend_max !== null
                       ? `₹${task.stipend_min.toLocaleString()} – ₹${task.stipend_max.toLocaleString()}`
                       : task.stipend_min !== null
@@ -335,62 +330,53 @@ export default function MyTasksPage() {
 
               {/* Applications Section */}
               {applicationsByTask[task.id] && applicationsByTask[task.id].length > 0 && (
-                <div className="mt-4 pt-4 border-t border-purple-400/20">
-                  <h4 className="text-sm font-semibold text-white mb-3">Applications:</h4>
+                <div className="mt-4 pt-4 border-t border-slate-800">
+                  <h4 className="text-sm font-semibold text-slate-100 mb-3">Applications:</h4>
                   <div className="space-y-3">
                     {applicationsByTask[task.id].map((application) => (
                       <div
                         key={application.id}
-                        className="bg-slate-800/60 rounded-lg p-4 border border-purple-400/20"
+                        className="bg-slate-800 rounded-lg p-4 border border-slate-700"
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <div className="flex items-center gap-2">
-                              <p className="text-white font-medium">
+                              <p className="text-slate-200 font-medium">
                                 {application.applicant?.name || 'Unknown User'}
                               </p>
                               {application.applicant?.id && (
                                 <Link
                                   href={`/profile/${application.applicant.id}`}
-                                  className="text-xs text-purple-300 hover:text-purple-200 font-semibold hover:underline"
+                                  className="text-xs text-indigo-400 hover:text-indigo-300 font-medium hover:underline"
                                 >
                                   👤 View Profile
                                 </Link>
                               )}
                             </div>
                             {application.applicant?.college && (
-                              <p className="text-xs text-white/60">{application.applicant.college}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">{application.applicant.college}</p>
                             )}
                             {application.status === 'accepted' && application.applicant?.phone_number && (
-                              <p className="text-xs text-green-300 font-semibold mt-1">
+                              <p className="text-xs text-emerald-400 font-medium mt-1">
                                 📞 +91 {application.applicant.phone_number}
                               </p>
                             )}
                           </div>
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-semibold ${application.status === 'accepted'
-                                ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-                                : application.status === 'rejected'
-                                  ? 'bg-red-500/20 text-red-300 border border-red-400/50'
-                                  : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
-                              }`}
-                          >
-                            {application.status}
-                          </span>
+                          <StatusBadge status={application.status} />
                         </div>
                         {application.status === 'pending' && (
                           <div className="flex flex-col sm:flex-row gap-2 mt-3">
                             <button
                               onClick={() => handleUpdateApplicationStatus(application.id, 'accepted')}
                               disabled={updatingApplicationId === application.id}
-                              className="flex-1 min-h-[44px] bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
+                              className="flex-1 min-h-[36px] bg-emerald-700 hover:bg-emerald-600 border border-emerald-600 text-white py-1.5 px-4 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
                             >
                               {updatingApplicationId === application.id ? 'Updating...' : 'Accept'}
                             </button>
                             <button
                               onClick={() => handleUpdateApplicationStatus(application.id, 'rejected')}
                               disabled={updatingApplicationId === application.id}
-                              className="flex-1 min-h-[44px] bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
+                              className="flex-1 min-h-[36px] bg-slate-700 hover:bg-slate-600 border border-slate-600 text-white py-1.5 px-4 rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation"
                             >
                               {updatingApplicationId === application.id ? 'Updating...' : 'Reject'}
                             </button>
@@ -402,29 +388,29 @@ export default function MyTasksPage() {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-4 pt-4 border-t border-purple-400/20">
-                <div className="text-xs text-white/50">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-4 pt-4 border-t border-slate-800">
+                <div className="text-xs text-slate-500">
                   {formatTimeAgo(task.created_at)}
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href={`/tasks/${task.id}/edit`}
-                    className="text-amber-300 hover:text-amber-200 text-sm font-semibold group inline-flex items-center gap-1"
+                    className="text-amber-500 hover:text-amber-400 text-sm font-medium group inline-flex items-center gap-1"
                   >
                     ✏️ Edit
                   </Link>
                   <Link
                     href={`/tasks/${task.id}`}
-                    className="text-purple-300 hover:text-purple-200 text-sm font-semibold group inline-flex items-center gap-1"
+                    className="text-indigo-400 hover:text-indigo-300 text-sm font-medium group inline-flex items-center gap-1"
                   >
                     View Details <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
                   </Link>
                   <button
                     onClick={() => handleDeleteTask(task.id)}
                     disabled={deletingTaskId === task.id}
-                    className={`text-sm font-semibold px-3 py-1 rounded-lg transition-colors ${confirmDeleteId === task.id
-                        ? 'bg-red-600 hover:bg-red-500 text-white'
-                        : 'text-red-400 hover:text-red-300'
+                    className={`text-sm font-medium px-3 py-1 rounded-md transition-colors ${confirmDeleteId === task.id
+                      ? 'bg-rose-700 hover:bg-rose-600 text-white border border-rose-600'
+                      : 'text-rose-400 hover:text-rose-300'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {deletingTaskId === task.id
@@ -435,7 +421,7 @@ export default function MyTasksPage() {
                   </button>
                 </div>
               </div>
-            </div>
+            </AppCard>
           ))}
         </div>
       )}

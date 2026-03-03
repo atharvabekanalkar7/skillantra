@@ -86,7 +86,7 @@ export default function TaskDetailsPage() {
         </div>
         <Link
           href="/tasks"
-          className="text-purple-300 hover:text-purple-200 font-semibold"
+          className="text-indigo-400 hover:text-indigo-300 font-semibold"
         >
           ← Back to Tasks
         </Link>
@@ -99,13 +99,13 @@ export default function TaskDetailsPage() {
       <div className="mb-6">
         <Link
           href="/tasks"
-          className="text-purple-300 hover:text-purple-200 text-sm font-semibold inline-flex items-center gap-1 mb-4 group"
+          className="text-indigo-400 hover:text-indigo-300 text-sm font-semibold inline-flex items-center gap-1 mb-4 group"
         >
           <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Back to Tasks
         </Link>
       </div>
 
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-purple-400/30">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6">
           <div className="flex-1 min-w-0">
@@ -121,7 +121,7 @@ export default function TaskDetailsPage() {
               </span>
               {/* Mode of Work */}
               {task.mode_of_work && (
-                <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-200 border border-purple-400/30">
+                <span className="px-3 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700">
                   {MODE_LABELS[task.mode_of_work] || task.mode_of_work}
                 </span>
               )}
@@ -131,7 +131,7 @@ export default function TaskDetailsPage() {
                 Created by{' '}
                 <Link
                   href={`/profile/${task.creator.id}`}
-                  className="font-semibold text-purple-300 hover:text-purple-200 hover:underline"
+                  className="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
                 >
                   {task.creator.name}
                 </Link>
@@ -146,7 +146,7 @@ export default function TaskDetailsPage() {
           {isOwner && (
             <Link
               href={`/tasks/${task.id}/edit`}
-              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 active:scale-[0.98] font-semibold shadow-lg touch-manipulation text-sm"
+              className="inline-flex items-center justify-center min-h-[44px] px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all duration-300 active:scale-[0.98] font-semibold touch-manipulation text-sm"
             >
               ✏️ Edit Task
             </Link>
@@ -162,10 +162,10 @@ export default function TaskDetailsPage() {
 
         {/* Task Creator Profile Preview */}
         {!isOwner && task.creator && (
-          <div className="mb-8 p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20">
+          <div className="mb-8 p-5 rounded-2xl bg-slate-800/50 border border-slate-800">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-sm font-bold text-purple-300 uppercase tracking-widest mb-1">About the Task Creator</h2>
+                <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest mb-1">About the Task Creator</h2>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl font-semibold text-white">{task.creator.name}</span>
                   {task.creator.user_type && (
@@ -209,7 +209,7 @@ export default function TaskDetailsPage() {
                 )}
                 <Link
                   href={`/profile/${task.creator.id}`}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800 text-purple-200 border border-purple-500/30 hover:bg-purple-500/20 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-800 text-indigo-300 border border-slate-700 hover:bg-slate-700 transition-colors"
                 >
                   View Full Profile
                 </Link>
@@ -303,11 +303,11 @@ export default function TaskDetailsPage() {
                   href={att.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-slate-800/40 rounded-lg border border-purple-400/20 hover:border-purple-400/40 hover:bg-slate-800/60 transition-all group"
+                  className="flex items-center gap-3 p-3 bg-slate-800/40 rounded-lg border border-slate-700 hover:border-slate-600 hover:bg-slate-800/60 transition-all group"
                 >
                   <span className="text-lg flex-shrink-0">{CATEGORY_ICONS[att.category] || '🌐'}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-purple-200 group-hover:text-purple-100">{att.category}</p>
+                    <p className="text-sm font-semibold text-slate-200 group-hover:text-slate-100">{att.category}</p>
                     <p className="text-xs text-white/50 truncate">{att.link}</p>
                   </div>
                   <span className="text-white/40 group-hover:text-white/60 flex-shrink-0">↗</span>
@@ -317,10 +317,10 @@ export default function TaskDetailsPage() {
           </div>
         )}
 
-        <div className="pt-6 border-t border-purple-400/20">
+        <div className="pt-6 border-t border-slate-800">
           <Link
             href="/tasks"
-            className="inline-flex items-center text-purple-300 hover:text-purple-200 font-semibold group"
+            className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-semibold group"
           >
             ← Back to Tasks
           </Link>

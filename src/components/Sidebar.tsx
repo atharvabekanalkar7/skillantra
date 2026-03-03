@@ -90,15 +90,15 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800">
-      <div className="p-5 border-b border-slate-200 dark:border-slate-800">
+    <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800">
+      <div className="p-5 border-b border-slate-800">
         <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} className="flex items-center gap-2 group">
-          <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
-            Skill<span className="text-indigo-600 dark:text-indigo-400">Antra</span>
+          <span className="text-xl font-bold text-slate-100">
+            Skill<span className="text-indigo-500">Antra</span>
           </span>
         </Link>
         {isDemo && (
-          <div className="mt-3 px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5">
+          <div className="mt-3 px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1.5">
             <Sparkles className="w-3 h-3 text-indigo-500" />
             DEMO MODE
           </div>
@@ -130,13 +130,13 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
         </div>
       </nav>
 
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+      <div className="p-4 border-t border-slate-800 space-y-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
         <button
           onClick={handleLogout}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 font-medium text-sm touch-manipulation shadow-sm"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] text-slate-300 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 hover:text-slate-100 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 font-medium text-sm touch-manipulation"
         >
-          <LogOut className="w-4 h-4 shrink-0 text-slate-500 dark:text-slate-400" />
+          <LogOut className="w-4 h-4 shrink-0 text-slate-400" />
           <span className="truncate">{isDemo ? 'Exit Demo' : loading ? 'Logging out...' : 'Logout'}</span>
         </button>
       </div>
