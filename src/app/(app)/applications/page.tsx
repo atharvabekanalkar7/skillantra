@@ -111,7 +111,7 @@ export default function MyApplicationsPage() {
   }
 
   return (
-    <div className="opacity-0 animate-fade-in-up">
+    <div className="opacity-0 animate-fade-in-up max-w-5xl mx-auto py-6 md:py-8">
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-2">My Applications</h1>
         <p className="text-slate-400 text-sm sm:text-base">Track your task applications</p>

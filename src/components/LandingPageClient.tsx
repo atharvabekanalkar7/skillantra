@@ -52,16 +52,23 @@ export default function LandingPageClient() {
       <section
         id="hero"
         data-section="hero"
-        className="relative w-full h-screen"
+        className="relative w-full min-h-screen"
       >
         <NeuralBackground
-          color="#6366f1"
-          trailOpacity={0.12}
-          particleCount={700}
-          speed={0.9}
+          color="#4f46e5"
+          trailOpacity={0.08}
+          particleCount={600}
+          speed={0.7}
         />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950" />
+        </div>
+        <div className="absolute inset-0 bg-slate-950/70 pointer-events-none" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className={`flex flex-col items-center gap-8 text-center px-4 transition-opacity duration-700 ${mounted ? "opacity-100 animate-fade-in-up" : "opacity-0"}`}>
+            <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase mb-2 bg-gradient-to-r from-indigo-300 via-indigo-400 to-sky-400 bg-clip-text text-transparent">
+              SkillAntra
+            </p>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-100">
               Build Together.
               <span className="block text-indigo-400">Grow Together.</span>
@@ -95,22 +102,22 @@ export default function LandingPageClient() {
       <section
         id="features"
         data-section="features"
-        className="relative bg-slate-950 py-24 md:py-32 transition-opacity duration-1000"
+        className="bg-slate-950 py-24 md:py-32 transition-opacity duration-1000"
       >
         <div className={`relative mx-auto max-w-7xl px-6 transition-opacity duration-1000 ${visibleSections.has('features') ? 'opacity-100' : 'opacity-60'}`}>
           {/* How It Works */}
           <div className={`mb-20 text-center ${visibleSections.has('features') ? 'animate-slide-in-up' : ''}`}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-100 mb-4">
+            <h2 className="text-3xl font-semibold text-slate-100 mb-2">
               How SkillAntra Works
             </h2>
-            <p className="text-base sm:text-lg text-slate-400">
+            <p className="text-sm uppercase tracking-wide text-slate-500">
               Three simple steps to start collaborating
             </p>
           </div>
 
           <div className={`grid gap-6 md:grid-cols-3 mb-24 ${visibleSections.has('features') ? 'animate-fade-in-scale' : ''}`}>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 hover:bg-slate-800 transition">
-              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-900 border border-slate-800 text-indigo-400 mb-6">
                 <Search className="w-5 h-5" />
               </div>
               <h3 className="mb-3 text-xl font-semibold text-slate-100">Discover Skills</h3>
@@ -120,7 +127,7 @@ export default function LandingPageClient() {
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 hover:bg-slate-800 transition">
-              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-900 border border-slate-800 text-indigo-400 mb-6">
                 <Users className="w-5 h-5" />
               </div>
               <h3 className="mb-3 text-xl font-semibold text-slate-100">Collaborate</h3>
@@ -130,7 +137,7 @@ export default function LandingPageClient() {
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 hover:bg-slate-800 transition">
-              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-900 border border-slate-800 text-indigo-400 mb-6">
                 <Briefcase className="w-5 h-5" />
               </div>
               <h3 className="mb-3 text-xl font-semibold text-slate-100">Build Portfolio</h3>
@@ -142,17 +149,17 @@ export default function LandingPageClient() {
 
           {/* Why SkillAntra */}
           <div className={`mb-16 text-center ${visibleSections.has('features') ? 'animate-slide-in-up' : ''}`}>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-100 mb-4">
+            <h2 className="text-3xl font-semibold text-slate-100 mb-2">
               Why SkillAntra Exists
             </h2>
-            <p className="text-base sm:text-lg text-slate-400">
+            <p className="text-sm uppercase tracking-wide text-slate-500">
               Built for students, by students
             </p>
           </div>
 
           <div className={`grid gap-6 md:grid-cols-2 ${visibleSections.has('features') ? 'animate-fade-in-scale' : ''}`}>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 hover:bg-slate-800 transition">
-              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-900 border border-slate-800 text-indigo-400 mb-6">
                 <Shield className="w-5 h-5" />
               </div>
               <h3 className="mb-3 text-xl font-semibold text-slate-100">Campus-Focused Trust</h3>
@@ -162,7 +169,7 @@ export default function LandingPageClient() {
             </div>
 
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 hover:bg-slate-800 transition">
-              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-800 text-indigo-400 mb-6">
+              <div className="w-10 h-10 flex items-center justify-center rounded-md bg-slate-900 border border-slate-800 text-indigo-400 mb-6">
                 <Users2 className="w-5 h-5" />
               </div>
               <h3 className="mb-3 text-xl font-semibold text-slate-100">Peer Collaboration</h3>

@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ProfileForm from '@/components/ProfileForm';
 import { useEffect, useState } from 'react';
+import { Lock } from 'lucide-react';
 
 export default function EditProfilePage() {
   const searchParams = useSearchParams();
@@ -56,37 +57,26 @@ export default function EditProfilePage() {
 
   if (isDemo) {
     return (
-      <div className="max-w-2xl mx-auto animate-fade-in-up">
-        <div className="mb-8">
-          <Link
-            href="/dashboard?demo=true"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-all mb-6"
-          >
-            <span>←</span>
-            <span className="text-sm font-medium">Back</span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 md:mb-3">
-            {profile ? 'Edit Profile' : 'Create Profile'}
-          </h1>
-          <p className="text-white/70">
-            {profile
-              ? 'Update your profile information'
-              : 'Create your profile to get started'}
-          </p>
-        </div>
+      <div className="opacity-0 animate-fade-in-up h-[calc(100vh-8rem)] flex items-center justify-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 w-full max-w-md">
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-14 h-14 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800 mb-6">
+              <Lock className="w-6 h-6 text-slate-400" />
+            </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔒</div>
-            <h2 className="text-2xl font-bold text-white mb-3">Sign In Required</h2>
-            <p className="text-white/70 mb-8">
-              To create or edit your profile, please sign in to your SkillAntra account.
+            <h2 className="text-xl font-semibold text-slate-200">
+              Sign In Required
+            </h2>
+
+            <p className="mt-3 text-sm text-slate-500 max-w-md">
+              Please sign in to access this feature.
             </p>
+
             <Link
-              href="/signup"
-              className="inline-block bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-indigo-500 transition-all"
+              href="/login"
+              className="mt-6 inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-500 transition-colors"
             >
-              Sign Up to Get Started →
+              Sign In
             </Link>
           </div>
         </div>

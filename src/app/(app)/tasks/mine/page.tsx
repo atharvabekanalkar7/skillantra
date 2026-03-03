@@ -214,7 +214,7 @@ export default function MyTasksPage() {
   }
 
   return (
-    <div className="opacity-0 animate-fade-in-up">
+    <div className="opacity-0 animate-fade-in-up max-w-5xl mx-auto py-6 md:py-8">
       <div className="mb-6 md:mb-8 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-2">My Tasks</h1>

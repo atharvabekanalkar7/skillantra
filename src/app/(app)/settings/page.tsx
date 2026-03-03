@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { AppCard } from '@/components/ui/app-card';
+import { Lock } from 'lucide-react';
 
 async function getProfile() {
   const supabase = await createClient();
@@ -38,19 +39,27 @@ export default async function SettingsPage({
   if (isDemo) {
     return (
       <div className="opacity-0 animate-fade-in-up h-[calc(100vh-8rem)] flex items-center justify-center">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 w-full max-w-md text-center py-20">
-          <h2 className="text-xl font-semibold text-slate-200">
-            Sign In Required
-          </h2>
-          <p className="mt-2 text-slate-500 mb-6">
-            Please sign in to access this feature.
-          </p>
-          <Link
-            href="/login"
-            className="inline-flex items-center justify-center bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-500 transition-colors font-medium"
-          >
-            Sign In
-          </Link>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 w-full max-w-md">
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-14 h-14 flex items-center justify-center rounded-full bg-slate-900 border border-slate-800 mb-6">
+              <Lock className="w-6 h-6 text-slate-400" />
+            </div>
+
+            <h2 className="text-xl font-semibold text-slate-200">
+              Sign In Required
+            </h2>
+
+            <p className="mt-3 text-sm text-slate-500 max-w-md">
+              Please sign in to access this feature.
+            </p>
+
+            <Link
+              href="/login"
+              className="mt-6 inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-500 transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
         </div>
       </div>
     );

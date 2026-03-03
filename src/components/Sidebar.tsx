@@ -111,7 +111,16 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
           <ul className="space-y-1">
             {navItems.map((item) => {
               const baseHref = item.href.split('?')[0];
-              const isActive = pathname === baseHref || pathname?.startsWith(baseHref + '/');
+              let isActive = pathname === baseHref || pathname?.startsWith(baseHref + '/');
+
+              // Avoid marking Browse Tasks active when My Tasks or Create Task routes are selected
+              if (baseHref === '/tasks' && (pathname === '/tasks/mine' || pathname?.startsWith('/tasks/mine/'))) {
+                isActive = false;
+              }
+              if (baseHref === '/tasks' && (pathname === '/tasks/new' || pathname?.startsWith('/tasks/new/'))) {
+                isActive = false;
+              }
+
               return (
                 <li key={item.href + item.label}>
                   <SidebarButton

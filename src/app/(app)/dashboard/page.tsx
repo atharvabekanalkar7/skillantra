@@ -109,7 +109,7 @@ export default function DashboardPage() {
           </div>
           <p className="text-4xl font-bold text-slate-100 mb-3">{stats.tasksCreated}</p>
           <Link
-            href="/tasks/mine"
+            href={isDemo ? '/tasks/mine?demo=true' : '/tasks/mine'}
             className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium"
           >
             View My Tasks <ArrowRight className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           </div>
           <p className="text-4xl font-bold text-slate-100 mb-3">{stats.applicationsSent}</p>
           <Link
-            href="/applications"
+            href={isDemo ? '/applications?demo=true' : '/applications'}
             className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium"
           >
             View Applications <ArrowRight className="w-3.5 h-3.5" />
@@ -141,7 +141,7 @@ export default function DashboardPage() {
           </div>
           <p className="text-4xl font-bold text-slate-100 mb-3">{stats.applicationsReceived}</p>
           <Link
-            href="/tasks/mine"
+            href={isDemo ? '/tasks/mine?demo=true' : '/tasks/mine'}
             className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300 text-sm font-medium"
           >
             View My Tasks <ArrowRight className="w-3.5 h-3.5" />
@@ -154,14 +154,14 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-slate-100 mb-4">Quick Actions</h2>
           <div className="space-y-3">
             <Link
-              href="/tasks"
+              href={isDemo ? '/tasks?demo=true' : '/tasks'}
               className="flex items-center gap-3 w-full min-h-[44px] bg-indigo-600 text-white py-3 px-5 rounded-lg hover:bg-indigo-500 font-medium transition-colors touch-manipulation"
             >
               <Search className="w-4 h-4" />
               Browse Tasks
             </Link>
             <Link
-              href="/tasks/new"
+              href={isDemo ? '/tasks/new?demo=true' : '/tasks/new'}
               className="flex items-center gap-3 w-full min-h-[44px] border border-slate-700 text-slate-300 py-3 px-5 rounded-lg hover:bg-slate-800 font-medium transition-colors touch-manipulation"
             >
               <Plus className="w-4 h-4" />
@@ -177,13 +177,13 @@ export default function DashboardPage() {
           </p>
           <div className="space-y-2">
             <Link
-              href="/tasks/mine"
+              href={isDemo ? '/tasks/mine?demo=true' : '/tasks/mine'}
               className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-sm font-medium group py-1"
             >
               <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" /> My Tasks
             </Link>
             <Link
-              href="/applications"
+              href={isDemo ? '/applications?demo=true' : '/applications'}
               className="flex items-center gap-2 text-slate-300 hover:text-slate-100 text-sm font-medium group py-1"
             >
               <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 transition-colors" /> My Applications
