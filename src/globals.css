@@ -306,10 +306,40 @@ input[type="button"] {
   animation-delay: 1s;
 }
 
-/* === Hero heading: premium letter-spacing for large hero titles === */
+/* === Global Heading Typography System === */
+/* Prevent awkward word-breaking on ALL headings project-wide */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+  /* Modern: balanced line breaks */
+  white-space: normal;
+  /* Never collapse whitespace oddly */
+  overflow-wrap: break-word;
+  /* Only break if a single word is too long */
+  word-break: normal;
+  /* No character-level breaking */
+  hyphens: none;
+  /* No automatic hyphens */
+  line-height: 1.1;
+}
+
+/* Hero heading: premium letter-spacing + tighter leading for large hero titles */
 .hero-heading {
   letter-spacing: -0.02em;
   font-weight: 800;
+  line-height: 1.05;
+}
+
+/* User-generated text (messages, task descriptions) may have very long URLs.
+   Use overflow-wrap: anywhere only on these containers, NEVER on headings. */
+.prose-content {
+  overflow-wrap: anywhere;
+  word-break: normal;
+  white-space: pre-wrap;
 }
 
 @theme inline {

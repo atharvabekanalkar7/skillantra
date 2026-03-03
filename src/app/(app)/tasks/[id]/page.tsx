@@ -110,7 +110,7 @@ export default function TaskDetailsPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-6">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3 mb-3">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white break-words">{task.title}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white whitespace-normal">{task.title}</h1>
               <span
                 className={`px-3 py-1 rounded-lg text-xs font-semibold flex-shrink-0 ${task.status === 'open'
                   ? 'bg-green-500/20 text-green-300 border border-green-400/50'

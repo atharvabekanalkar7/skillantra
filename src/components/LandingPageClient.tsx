@@ -69,8 +69,8 @@ export default function LandingPageClient() {
             <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase mb-2 bg-gradient-to-r from-indigo-300 via-indigo-400 to-sky-400 bg-clip-text text-transparent">
               SkillAntra
             </p>
-            <h1 className="hero-heading text-5xl md:text-7xl tracking-tight text-slate-100">
-              Build Together.
+            <h1 className="hero-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-[-0.02em] text-slate-100 [text-wrap:balance] whitespace-normal">
+              <span className="block">Build Together.</span>
               <span className="block text-indigo-400">Grow Together.</span>
             </h1>
 
@@ -107,7 +107,7 @@ export default function LandingPageClient() {
         <div className={`relative mx-auto max-w-7xl px-6 transition-opacity duration-1000 ${visibleSections.has('features') ? 'opacity-100' : 'opacity-60'}`}>
           {/* How It Works */}
           <div className={`mb-20 text-center ${visibleSections.has('features') ? 'animate-slide-in-up' : ''}`}>
-            <h2 className="text-3xl font-semibold text-slate-100 mb-2">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-100 mb-2 leading-[1.05] [text-wrap:balance] whitespace-normal">
               How SkillAntra Works
             </h2>
             <p className="text-sm uppercase tracking-wide text-slate-500">
@@ -149,7 +149,7 @@ export default function LandingPageClient() {
 
           {/* Why SkillAntra */}
           <div className={`mb-16 text-center ${visibleSections.has('features') ? 'animate-slide-in-up' : ''}`}>
-            <h2 className="text-3xl font-semibold text-slate-100 mb-2">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-100 mb-2 leading-[1.05] [text-wrap:balance] whitespace-normal">
               Why SkillAntra Exists
             </h2>
             <p className="text-sm uppercase tracking-wide text-slate-500">

@@ -349,13 +349,12 @@ export default function MessagesPage() {
                       return (
                         <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                           <div
-                            className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${
-                              isMe
+                            className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${isMe
                                 ? 'bg-indigo-600 text-slate-50 rounded-br-sm'
                                 : 'bg-slate-800 text-slate-100 rounded-bl-sm'
-                            }`}
+                              }`}
                           >
-                            <p className="text-sm md:text-base whitespace-pre-wrap break-words">{m.content}</p>
+                            <p className="prose-content text-sm md:text-base">{m.content}</p>
                             <span className="text-[10px] mt-1 block text-right text-slate-200/60">
                               {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
