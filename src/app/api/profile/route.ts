@@ -36,7 +36,7 @@ export async function GET() {
     // phone_number column doesn't exist - select without it
     const { data: profileWithoutPhone, error: errorWithoutPhone } = await supabase
       .from('profiles')
-      .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at')
+      .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at, company_name, company_description')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -106,7 +106,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { name, bio, skills, user_type, college, phone_number } = body;
+  const { name, bio, skills, user_type, college, phone_number, company_name, company_description } = body;
 
   // Validate phone number if provided
   if (phone_number !== undefined) {
@@ -131,7 +131,7 @@ export async function PATCH(request: Request) {
   // Check if profile already exists
   const { data: existingProfile, error: profileCheckError } = await supabase
     .from('profiles')
-    .select('id, college')
+    .select('id, college, user_type')
     .eq('user_id', user.id)
     .maybeSingle();
 
@@ -180,13 +180,22 @@ export async function PATCH(request: Request) {
     college === undefined;
 
   // If not a phone-only update, validate required fields
+  const type_to_use = existingProfile?.user_type || user_type || 'SkillSeeker';
+  const isRecruiter = type_to_use === 'recruiter';
+
   if (!isPhoneOnlyUpdate) {
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    if (!user_type || !['SkillSeeker', 'SkillHolder', 'Both'].includes(user_type)) {
+    if (!isRecruiter && (!user_type || !['SkillSeeker', 'SkillHolder', 'Both'].includes(user_type))) {
       return NextResponse.json({ error: 'Valid user_type is required (SkillSeeker, SkillHolder, or Both)' }, { status: 400 });
+    }
+
+    if (isRecruiter) {
+      if (!company_name || typeof company_name !== 'string' || company_name.trim().length === 0) {
+        return NextResponse.json({ error: 'Company Name is required' }, { status: 400 });
+      }
     }
   }
 
@@ -214,14 +223,26 @@ export async function PATCH(request: Request) {
   if (name !== undefined) {
     updateData.name = name.trim();
   }
-  if (bio !== undefined) {
-    updateData.bio = bio ? bio.trim() : null;
-  }
-  if (skills !== undefined) {
-    updateData.skills = skills ? skills.trim() : null;
-  }
-  if (user_type !== undefined) {
-    updateData.user_type = user_type as 'SkillSeeker' | 'SkillHolder' | 'Both';
+
+  if (isRecruiter) {
+    // Recruiter specific fields
+    if (company_name !== undefined) {
+      (updateData as any).company_name = company_name ? company_name.trim() : null;
+    }
+    if (company_description !== undefined) {
+      (updateData as any).company_description = company_description ? company_description.trim() : null;
+    }
+  } else {
+    // Student specific fields
+    if (bio !== undefined) {
+      updateData.bio = bio ? bio.trim() : null;
+    }
+    if (skills !== undefined) {
+      updateData.skills = skills ? skills.trim() : null;
+    }
+    if (user_type !== undefined) {
+      updateData.user_type = user_type as 'SkillSeeker' | 'SkillHolder' | 'Both';
+    }
   }
 
   // Allow college to be set on initial creation, but not updated if already set

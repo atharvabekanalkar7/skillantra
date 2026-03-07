@@ -73,7 +73,7 @@ export function NeuralBackground({
             draw() {
                 if (!ctx) return;
                 const alpha = Math.max(0, this.life / this.maxLife);
-                ctx.fillStyle = `rgba(${rgbColor}, ${alpha * 0.5})`;
+                ctx.fillStyle = `rgba(${rgbColor}, ${alpha * 0.75})`;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -85,7 +85,7 @@ export function NeuralBackground({
         }
 
         const draw = () => {
-            ctx.fillStyle = `rgba(2, 6, 23, ${trailOpacity})`;
+            ctx.fillStyle = `rgba(15, 23, 42, ${trailOpacity})`;
             ctx.fillRect(0, 0, width, height);
 
             for (let i = 0; i < particles.length; i++) {
@@ -101,7 +101,7 @@ export function NeuralBackground({
 
                     if (dist < 100) {
                         ctx.beginPath();
-                        ctx.strokeStyle = `rgba(${rgbColor}, ${(1 - dist / 100) * 0.15})`;
+                        ctx.strokeStyle = `rgba(${rgbColor}, ${(1 - dist / 100) * 0.28})`;
                         ctx.lineWidth = 0.5;
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);

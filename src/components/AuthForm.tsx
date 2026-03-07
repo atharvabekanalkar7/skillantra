@@ -14,6 +14,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [college, setCollege] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [companyDescription, setCompanyDescription] = useState('');
+  const [isRecruiter, setIsRecruiter] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -102,10 +105,23 @@ export default function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      if (!college || college.trim().length === 0) {
+      if (!isRecruiter && (!college || college.trim().length === 0)) {
         setError('Please select a college');
         setLoading(false);
         return;
+      }
+
+      if (isRecruiter) {
+        if (!companyName || companyName.trim().length === 0) {
+          setError('Company name is required');
+          setLoading(false);
+          return;
+        }
+        if (!companyDescription || companyDescription.trim().length === 0) {
+          setError('Company description is required');
+          setLoading(false);
+          return;
+        }
       }
 
       // Email domain validation is handled entirely by the server API
@@ -125,6 +141,11 @@ export default function AuthForm({ mode }: AuthFormProps) {
             password,
             full_name: fullName.trim(),
             college: college.trim(),
+            user_type: isRecruiter ? 'recruiter' : 'SkillSeeker',
+            ...(isRecruiter && {
+              company_name: companyName.trim(),
+              company_description: companyDescription.trim(),
+            }),
           }),
         });
 
@@ -284,7 +305,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 relative overflow-x-hidden flex items-start justify-center px-4 py-8 sm:py-12">
+    <div className="relative flex items-start justify-center px-4 py-8 sm:py-12 w-full">
       <div className="pointer-events-none absolute inset-0 opacity-60">
         <div className="absolute -top-32 left-1/4 h-80 w-80 rounded-full bg-indigo-500/15 blur-3xl" />
         <div className="absolute -bottom-40 right-1/5 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
@@ -358,6 +379,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {mode === 'signup' && (
+                <div className="flex bg-slate-800/50 p-1 rounded-xl mb-6 border border-slate-700/50">
+                  <button
+                    type="button"
+                    onClick={() => setIsRecruiter(false)}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all text-center ${!isRecruiter ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    I'm a Student
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsRecruiter(true)}
+                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all text-center ${isRecruiter ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    I'm a Recruiter
+                  </button>
+                </div>
+              )}
+
               {mode === 'login' && emailConfirmed && (
                 <div className="bg-green-500/20 border border-green-500/50 text-green-300 px-4 py-3 rounded-lg text-sm">
                   ✅ Email verified successfully! Please log in to proceed.
@@ -397,7 +437,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
                   Email <span className="text-red-400">*</span>
                 </label>
-                {mode === 'signup' && (
+                {mode === 'signup' && !isRecruiter && (
                   <p className="text-xs text-white/60 mb-2">
                     Only @students.iitmandi.ac.in and @iitmandi.ac.in email addresses are allowed to verify that student is actually from IIT Mandi.
                   </p>
@@ -420,7 +460,54 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 </div>
               </div>
 
-              {mode === 'signup' && (
+              {mode === 'signup' && isRecruiter && (
+                <>
+                  <div>
+                    <label htmlFor="companyName" className="block text-sm font-medium text-white mb-2">
+                      Company Name <span className="text-red-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <input
+                        id="companyName"
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        required={isRecruiter}
+                        className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                        placeholder="e.g. Acme Technologies"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="companyDescription" className="block text-sm font-medium text-white mb-2">
+                      Company Description <span className="text-red-400">*</span>
+                    </label>
+                    <div className="relative">
+                      <textarea
+                        id="companyDescription"
+                        value={companyDescription}
+                        onChange={(e) => setCompanyDescription(e.target.value)}
+                        required={isRecruiter}
+                        maxLength={200}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 resize-none"
+                        placeholder="Brief description of what your company does"
+                      />
+                      <div className="text-xs text-white/50 text-right mt-1">
+                        {companyDescription.length}/200
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {mode === 'signup' && !isRecruiter && (
                 <div>
                   <label htmlFor="college" className="block text-sm font-medium text-white mb-2">
                     College/University <span className="text-red-400">*</span>
@@ -435,7 +522,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
                       id="college"
                       value={college}
                       onChange={(e) => setCollege(e.target.value)}
-                      required
+                      required={!isRecruiter}
                       className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none cursor-pointer"
                     >
                       <option value="" className="bg-gray-900">Select your college</option>

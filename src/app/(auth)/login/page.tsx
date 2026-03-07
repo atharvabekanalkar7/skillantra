@@ -8,7 +8,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="text-white">Loading...</div>
       </div>
     }>

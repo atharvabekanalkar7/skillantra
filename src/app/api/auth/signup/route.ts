@@ -33,14 +33,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, password, full_name, college } = body;
+    const { email, password, full_name, college, user_type, company_name, company_description } = body;
 
-    // 2️⃣ Basic validation
-    if (!email || !password || !full_name || !college) {
+    const isRecruiter = user_type === 'recruiter';
+
+    if (!email || !password || !full_name || (!isRecruiter && !college) || (isRecruiter && (!company_name || !company_description))) {
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.MISSING_FIELDS,
-          "Email, password, full name and college are required"
+          "Please fill in all required fields"
         ),
         { status: 400 }
       );
@@ -56,8 +57,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate IIT Mandi email domain
-    if (!isValidIITMandiEmail(email)) {
+    // Validate IIT Mandi email domain (only for students in production)
+    const appMode = process.env.APP_MODE || "development";
+    if (appMode === "production" && !isRecruiter && !isValidIITMandiEmail(email)) {
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.INVALID_EMAIL,
@@ -104,7 +106,12 @@ export async function POST(request: Request) {
         emailRedirectTo,
         data: {
           full_name: full_name.trim(),
-          college: college.trim(),
+          college: isRecruiter ? 'Other' : college.trim(),
+          user_type: isRecruiter ? 'recruiter' : 'Both', // Default students to Both
+          ...(isRecruiter && {
+            company_name: company_name.trim(),
+            company_description: company_description.trim(),
+          }),
         },
       },
     });

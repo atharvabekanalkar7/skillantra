@@ -87,8 +87,9 @@ export async function updateSession(request: NextRequest) {
     const isApiRoute = pathname.startsWith('/api');
     const isPublicRoute = pathname === '/terms' || pathname === '/privacy';
     const isLandingPage = pathname === '/';
+    const isDemoMode = request.nextUrl.searchParams.get('demo') === 'true' || request.cookies.has('demo');
 
-    if (!isAuthRoute && !isApiRoute && !isPublicRoute && !isLandingPage) {
+    if (!isAuthRoute && !isApiRoute && !isPublicRoute && !isLandingPage && !isDemoMode) {
       if (!isEmailConfirmed) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = '/login';
@@ -102,7 +103,7 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/auth/callback');
   const isApiRoute = pathname.startsWith('/api');
   const isLandingPage = pathname === '/';
-  const isDemoMode = request.nextUrl.searchParams.get('demo') === 'true';
+  const isDemoMode = request.nextUrl.searchParams.get('demo') === 'true' || request.cookies.has('demo');
   const isProfileEditRoute = pathname.startsWith('/profile/edit');
   const isCompleteProfileRoute = pathname.startsWith('/complete-profile');
   const isLogoutRoute = pathname.startsWith('/logout');
@@ -137,7 +138,7 @@ export async function updateSession(request: NextRequest) {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('is_profile_complete')
+        .select('is_profile_complete, user_type')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -147,6 +148,15 @@ export async function updateSession(request: NextRequest) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = '/complete-profile';
         return NextResponse.redirect(redirectUrl);
+      }
+
+      if (profile.user_type === 'recruiter') {
+        const isRestrictedRoute = pathname.startsWith('/tasks') || pathname.startsWith('/applications') || pathname.startsWith('/collaborate');
+        if (isRestrictedRoute) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = '/dashboard';
+          return NextResponse.redirect(redirectUrl);
+        }
       }
     } catch (error: any) {
       if (isConnectionError(error)) {

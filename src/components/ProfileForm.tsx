@@ -59,7 +59,10 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       } else {
         setPhoneNumber('+91 ');
       }
-      setUserType(initialProfile.user_type || 'Both');
+      const parsedType = (initialProfile.user_type === 'recruiter' || !initialProfile.user_type)
+        ? 'Both'
+        : initialProfile.user_type;
+      setUserType(parsedType);
       setEmail((initialProfile as any).email || null);
     } else {
       // Load email from API if no initial profile

@@ -38,13 +38,27 @@ export default function BrowseTasksPage() {
   const [appliedTaskIds, setAppliedTaskIds] = useState<Set<string>>(new Set());
   const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
+  const [currentUserType, setCurrentUserType] = useState<string | null>(null);
 
   useEffect(() => {
     loadTasks();
     if (!isDemo) {
       loadAppliedTasks();
+      loadUserProfile();
     }
   }, [isDemo]);
+
+  const loadUserProfile = async () => {
+    try {
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentUserType(data.profile?.user_type || null);
+      }
+    } catch (err) {
+      console.error('Error loading user profile:', err);
+    }
+  };
 
   const loadTasks = async () => {
     if (isDemo) {
@@ -315,26 +329,35 @@ export default function BrowseTasksPage() {
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-slate-800">
-                  <button
-                    onClick={() => handleApply(task.id)}
-                    disabled={
-                      applyingTaskId === task.id ||
-                      task.status !== 'open' ||
-                      appliedTaskIds.has(task.id) ||
-                      deadlinePassed
-                    }
-                    className="w-full min-h-[44px] bg-indigo-600 text-white py-2 px-4 rounded-xl hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98] font-medium text-sm touch-manipulation"
-                  >
-                    {isDemo
-                      ? 'Sign Up to Apply'
-                      : deadlinePassed
-                        ? 'Applications Closed'
-                        : appliedTaskIds.has(task.id)
-                          ? 'Already Applied'
-                          : applyingTaskId === task.id
-                            ? 'Applying...'
-                            : 'Apply'}
-                  </button>
+                  {currentUserType === 'recruiter' ? (
+                    <button
+                      disabled
+                      className="w-full min-h-[44px] bg-slate-800 text-slate-400 py-2 px-4 rounded-xl cursor-not-allowed transition-all duration-200 font-medium text-sm touch-manipulation"
+                    >
+                      View Only
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleApply(task.id)}
+                      disabled={
+                        applyingTaskId === task.id ||
+                        task.status !== 'open' ||
+                        appliedTaskIds.has(task.id) ||
+                        deadlinePassed
+                      }
+                      className="w-full min-h-[44px] bg-indigo-600 text-white py-2 px-4 rounded-xl hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 active:scale-[0.98] font-medium text-sm touch-manipulation"
+                    >
+                      {isDemo
+                        ? 'Sign Up to Apply'
+                        : deadlinePassed
+                          ? 'Applications Closed'
+                          : appliedTaskIds.has(task.id)
+                            ? 'Already Applied'
+                            : applyingTaskId === task.id
+                              ? 'Applying...'
+                              : 'Apply'}
+                    </button>
+                  )}
                 </div>
               </AppCard>
             );

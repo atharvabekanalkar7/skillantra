@@ -80,3 +80,65 @@ export async function GET(
         messages: messages || []
     }, { status: 200 });
 }
+
+export async function PATCH(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> | { id: string } }
+) {
+    const supabase = await createClient();
+
+    // 1. Authenticate Request
+    const {
+        data: { user },
+        error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 2. Fetch User's Profile ID to verify access
+    const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+    if (profileError || !userProfile) {
+        return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
+    }
+
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const conversationId = resolvedParams.id;
+
+    if (!conversationId) {
+        return NextResponse.json({ error: 'Conversation ID is required' }, { status: 400 });
+    }
+
+    try {
+        const body = await request.json();
+        const { markAllRead } = body;
+
+        // 3. Update Message Read Status in batch
+        if (markAllRead) {
+            const { error: updateError } = await supabase
+                .from('dm_messages')
+                .update({ is_read: true })
+                .eq('conversation_id', conversationId)
+                .neq('sender_profile_id', userProfile.id)
+                .eq('is_read', false);
+
+            if (updateError) {
+                return NextResponse.json({ error: 'Failed to update message reads.' }, { status: 500 });
+            }
+
+            return NextResponse.json({ success: true }, { status: 200 });
+        }
+
+        return NextResponse.json({ error: 'No valid action provided.' }, { status: 400 });
+
+    } catch (err: any) {
+        console.error('Messages PATCH API error:', err);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}

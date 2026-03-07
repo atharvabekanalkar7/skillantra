@@ -31,6 +31,7 @@ export default function TaskDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [currentUserType, setCurrentUserType] = useState<string | null>(null);
 
   const countdown = useCountdown(task?.application_deadline);
 
@@ -52,13 +53,16 @@ export default function TaskDetailsPage() {
 
       setTask(data.task);
 
-      // Check ownership
+      // Check ownership & type
       try {
         const profileRes = await fetch('/api/profile');
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           if (profileData.profile?.id === data.task.creator_profile_id) {
             setIsOwner(true);
+          }
+          if (profileData.profile?.user_type) {
+            setCurrentUserType(profileData.profile.user_type);
           }
         }
       } catch {
@@ -155,7 +159,16 @@ export default function TaskDetailsPage() {
           {/* Apply button for applicants */}
           {!isOwner && task.status === 'open' && task.creator && (
             <div className="mt-4 sm:mt-0">
-              <SendDMButton receiverId={task.creator.id} receiverName={task.creator.name} />
+              {currentUserType === 'recruiter' ? (
+                <button
+                  disabled
+                  className="inline-flex items-center justify-center min-h-[44px] px-5 py-2 bg-slate-800 text-slate-400 rounded-xl cursor-not-allowed font-semibold text-sm touch-manipulation"
+                >
+                  View Only
+                </button>
+              ) : (
+                <SendDMButton receiverId={task.creator.id} receiverName={task.creator.name} />
+              )}
             </div>
           )}
         </div>

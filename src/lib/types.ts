@@ -11,9 +11,22 @@ export interface Profile {
   skills: string | null;
   college: string | null;
   phone_number: string | null;
-  user_type: 'SkillSeeker' | 'SkillHolder' | 'Both' | null;
+  user_type: 'SkillSeeker' | 'SkillHolder' | 'Both' | 'recruiter' | null;
+  company_name?: string | null;
+  company_description?: string | null;
+  company_website?: string | null;
+  designation?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_profile_id: string;
+  content: string;
+  is_read?: boolean;
+  created_at: string;
 }
 
 export interface CollaborationRequest {

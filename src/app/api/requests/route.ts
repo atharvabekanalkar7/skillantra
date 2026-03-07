@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   const { data: senderProfile, error: senderError } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, user_type')
     .eq('user_id', user.id)
     .single();
 
@@ -41,14 +41,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Cannot send request to yourself' }, { status: 400 });
   }
 
+  if (senderProfile.user_type === 'recruiter') {
+    return NextResponse.json({ error: 'Recruiters cannot use collaboration requests' }, { status: 403 });
+  }
+
   const { data: receiverProfile, error: receiverError } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, user_type')
     .eq('id', receiver_id)
     .single();
 
   if (receiverError || !receiverProfile) {
     return NextResponse.json({ error: 'Receiver profile not found' }, { status: 404 });
+  }
+
+  if (receiverProfile.user_type === 'recruiter') {
+    return NextResponse.json({ error: 'Cannot send collaboration request to a recruiter' }, { status: 400 });
   }
 
   const { data: existingRequest } = await supabase

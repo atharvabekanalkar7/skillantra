@@ -169,12 +169,29 @@ export default async function ProfileViewPage({
               ✉️ {profileEmail}
             </p>
           )}
-          {profile.bio && (
+          {profile.bio && profile.user_type !== 'recruiter' && (
             <p className="text-slate-300 text-base sm:text-lg mb-4 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
+          )}
+
+          {profile.user_type === 'recruiter' && (
+            <div className="mt-4 mb-4">
+              {profile.company_name && (
+                <div className="mb-2">
+                  <span className="text-slate-500 font-medium text-sm block">Company</span>
+                  <p className="text-slate-200">{profile.company_name}</p>
+                </div>
+              )}
+              {profile.company_description && (
+                <div className="mt-4">
+                  <span className="text-slate-500 font-medium text-sm block mb-1">About Company</span>
+                  <p className="text-slate-300 whitespace-pre-wrap leading-relaxed">{profile.company_description}</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
-        {profile.user_type && (
+        {profile.user_type && profile.user_type !== 'recruiter' && (
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-100 mb-2">I am a:</h2>
             <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">

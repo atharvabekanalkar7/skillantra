@@ -33,6 +33,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Conversation ID and message content are required.' }, { status: 400 });
         }
 
+        if (content.length > 2000) {
+            return NextResponse.json({ error: 'Message content cannot exceed 2000 characters.' }, { status: 400 });
+        }
+
         // 3. Fetch Conversation and Lock State Matrix Verification
         const { data: conversation, error: convoError } = await supabase
             .from('dm_conversations')

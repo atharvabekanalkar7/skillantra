@@ -53,7 +53,26 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Receiver profile not found.' }, { status: 404 });
         }
 
-        // 3. Create conversation (will fail via SQL UNIQUE constraint if one already exists between these two)
+        // 3. Pre-check if conversation already exists
+        const { data: existingConvo, error: existingError } = await supabase
+            .from('dm_conversations')
+            .select('id, status')
+            .or(`and(sender_profile_id.eq.${senderProfile.id},receiver_profile_id.eq.${receiverId}),and(sender_profile_id.eq.${receiverId},receiver_profile_id.eq.${senderProfile.id})`)
+            .maybeSingle();
+
+        if (existingError && existingError.code !== 'PGRST116') {
+            return NextResponse.json({ error: 'Failed to verify existing conversation.' }, { status: 500 });
+        }
+
+        if (existingConvo) {
+            return NextResponse.json({
+                error: 'A conversation already exists with this user.',
+                conversationId: existingConvo.id,
+                status: existingConvo.status
+            }, { status: 409 });
+        }
+
+        // 4. Create conversation
         const { data: conversation, error: convoError } = await supabase
             .from('dm_conversations')
             .insert({
@@ -70,24 +89,10 @@ export async function POST(request: Request) {
         let conversationId = conversation?.id;
 
         if (convoError) {
-            if (convoError.code === '23505') { // Postgres Unique Violation
-                // Get the existing conversation to return its ID so frontend can redirect or show error
-                const { data: existingConvo } = await supabase
-                    .from('dm_conversations')
-                    .select('id, status')
-                    .or(`and(sender_profile_id.eq.${senderProfile.id},receiver_profile_id.eq.${receiverId}),and(sender_profile_id.eq.${receiverId},receiver_profile_id.eq.${senderProfile.id})`)
-                    .single();
-
-                return NextResponse.json({
-                    error: 'A conversation already exists with this user.',
-                    conversationId: existingConvo?.id,
-                    status: existingConvo?.status
-                }, { status: 409 });
-            }
             return NextResponse.json({ error: 'Failed to create conversation thread.' }, { status: 500 });
         }
 
-        // 4. Insert the actual initial message
+        // 5. Insert the actual initial message
         if (conversationId) {
             const { data: message, error: messageError } = await supabase
                 .from('dm_messages')

@@ -61,9 +61,9 @@ export default function LandingPageClient() {
           speed={0.7}
         />
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/40 to-slate-950" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/15 to-slate-950" />
         </div>
-        <div className="absolute inset-0 bg-slate-950/70 pointer-events-none" />
+        <div className="absolute inset-0 bg-slate-950/25 pointer-events-none" />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className={`flex flex-col items-center gap-8 text-center px-4 transition-opacity duration-700 ${mounted ? "opacity-100 animate-fade-in-up" : "opacity-0"}`}>
             <p className="text-sm md:text-base font-semibold tracking-[0.3em] uppercase mb-2 bg-gradient-to-r from-indigo-300 via-indigo-400 to-sky-400 bg-clip-text text-transparent">

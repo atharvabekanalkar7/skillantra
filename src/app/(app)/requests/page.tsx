@@ -12,7 +12,7 @@ export default function RequestsPage() {
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Create client with error handling
   let supabase;
   try {
@@ -73,8 +73,12 @@ export default function RequestsPage() {
 
       const requestsWithProfiles = (requests || []) as CollaborationRequestWithProfiles[];
 
-      const incoming = requestsWithProfiles.filter((r) => r.receiver_id === profile.id);
-      const sent = requestsWithProfiles.filter((r) => r.sender_id === profile.id);
+      const filteredRequests = requestsWithProfiles.filter(r =>
+        r.sender_profile?.user_type !== 'recruiter' && r.receiver_profile?.user_type !== 'recruiter'
+      );
+
+      const incoming = filteredRequests.filter((r) => r.receiver_id === profile.id);
+      const sent = filteredRequests.filter((r) => r.sender_id === profile.id);
 
       setIncomingRequests(incoming);
       setSentRequests(sent);

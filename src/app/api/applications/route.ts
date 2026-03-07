@@ -152,7 +152,7 @@ export async function POST(request: Request) {
 
   const { data: profileWithPhone, error: errorWithPhone } = await supabase
     .from('profiles')
-    .select('id, phone_number')
+    .select('id, phone_number, user_type')
     .eq('user_id', user.id)
     .single();
 
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
       // Try to get profile without phone_number if column doesn't exist
       const { data: profileBasic, error: errorBasic } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, user_type')
         .eq('user_id', user.id)
         .single();
 
@@ -193,6 +193,11 @@ export async function POST(request: Request) {
 
   if (profileError || !userProfile) {
     return NextResponse.json({ error: 'Profile not found. Please create your profile first.' }, { status: 404 });
+  }
+
+  // Prevent recruiters from applying to tasks/internships
+  if (userProfile.user_type === 'recruiter') {
+    return NextResponse.json({ error: 'Recruiters cannot apply for internships' }, { status: 403 });
   }
 
   // Check if phone number is required and present

@@ -7,6 +7,9 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
 import { Lock } from 'lucide-react';
 
+import { createClient } from '@/lib/supabase/client';
+import { Check, CheckCheck } from 'lucide-react';
+
 type UserProfile = {
   id: string;
   name: string;
@@ -27,14 +30,18 @@ type Conversation = {
 
 type Message = {
   id: string;
+  conversation_id: string;
   sender_profile_id: string;
   content: string;
   created_at: string;
+  is_read?: boolean;
+  status?: 'sending' | 'failed' | 'sent'; // For optimistic UI tracking
 };
 
 export default function MessagesPage() {
   const searchParams = useSearchParams();
   const isDemo = searchParams?.get('demo') === 'true';
+  const supabase = createClient();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,28 +57,117 @@ export default function MessagesPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [msgError, setMsgError] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
-  const [sendingMessage, setSendingMessage] = useState(false);
+
+  // Current user's Profile ID for tracking 'isMe' directly within subscriptions
+  const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
 
   // Mobile layout state
   const [showThreadOnMobile, setShowThreadOnMobile] = useState(false);
 
   // Refs for auto-scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const maxContentLength = 2000;
 
   useEffect(() => {
-    fetchConversations();
+    // 1. Fetch conversations and set up Realtime for conversation updates
+    let isMounted = true;
+    const loadInit = async () => {
+      const profileRes = await fetch('/api/profile');
+      const profileData = await profileRes.json();
+      if (profileData?.profile?.id && isMounted) {
+        setCurrentProfileId(profileData.profile.id);
+      }
+      await fetchConversations();
+    };
+    loadInit();
+
+    // Setup Conversations Realtime Subscription
+    const convoChannel = supabase
+      .channel('conversations_channel')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'dm_conversations',
+      }, (payload: any) => {
+        // Re-sort the conversation list based on last_message_at without refetching fully
+        setConversations(prev => {
+          const updatedConvos = prev.map(c =>
+            c.id === payload.new.id
+              ? { ...c, last_message_at: payload.new.last_message_at, updated_at: payload.new.updated_at, status: payload.new.status }
+              : c
+          );
+          // Bubble the updated conversation to top
+          return updatedConvos.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+        });
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(convoChannel);
+    };
   }, []);
 
   useEffect(() => {
-    if (activeConvoId) {
-      fetchMessages(activeConvoId);
-      // Optimistically mark as read in local state
-      setConversations(prev => prev.map(c => c.id === activeConvoId ? { ...c, unread_count: 0 } : c));
-    }
-  }, [activeConvoId]);
+    if (!activeConvoId || !currentProfileId) return;
 
+    fetchMessages(activeConvoId);
+
+    // Optimistically mark as read in local sidebar state
+    setConversations(prev => prev.map(c => c.id === activeConvoId ? { ...c, unread_count: 0 } : c));
+
+    // Setup Messages Realtime Subscription scoped to conversationId
+    const messageChannel = supabase
+      .channel(`conv-${activeConvoId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'dm_messages',
+        filter: `conversation_id=eq.${activeConvoId}`
+      }, (payload: any) => {
+        const incomingMessage = payload.new as Message;
+
+        setMessages(prev => {
+          // Deduplicate by ID to avoid dual-entry from Optimistic appends
+          if (prev.find(m => m.id === incomingMessage.id)) {
+            return prev.map(m => m.id === incomingMessage.id ? { ...m, status: 'sent', is_read: incomingMessage.is_read } : m);
+          }
+          return [...prev, { ...incomingMessage, status: 'sent' }];
+        });
+
+        // Auto mark incoming message as read since user is actively in the thread
+        if (incomingMessage.sender_profile_id !== currentProfileId) {
+          markConvoAsRead(activeConvoId);
+        }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'dm_messages',
+        filter: `conversation_id=eq.${activeConvoId}`
+      }, (payload: any) => {
+        const updatedMsg = payload.new as Message;
+        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? { ...m, is_read: updatedMsg.is_read } : m));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messageChannel);
+    };
+  }, [activeConvoId, currentProfileId]);
+
+  // Handle Scroll behavior to only auto-scroll if user is near bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+
+      if (isNearBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
   }, [messages]);
 
   const fetchConversations = async () => {
@@ -87,16 +183,24 @@ export default function MessagesPage() {
     }
   };
 
+  const markConvoAsRead = async (id: string) => {
+    try {
+      await fetch(`/api/conversations/${id}/messages`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllRead: true })
+      });
+    } catch (e) {
+      console.error("Failed to mark batch messages as read", e);
+    }
+  };
+
   const fetchMessages = async (id: string) => {
     setLoadingMessages(true);
     setMsgError(null);
     try {
-      // Mark as read in DB in parallel
-      fetch(`/api/conversations/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markRead: true })
-      }).catch(e => console.error('Failed to mark read', e));
+      // Mark all unread messages from this conversation as read
+      markConvoAsRead(id);
 
       const res = await fetch(`/api/conversations/${id}/messages`);
       const data = await res.json();
@@ -104,6 +208,12 @@ export default function MessagesPage() {
 
       setMessages(data.messages || []);
       setActiveConvoDetail(data.conversation);
+
+      // Force instant smooth scroll to bottom on initial thread load
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 50);
+
     } catch (err: any) {
       setMsgError(err.message || 'Failed to load thread');
     } finally {
@@ -111,33 +221,75 @@ export default function MessagesPage() {
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !activeConvoId) return;
+  const handleSendMessage = async (e?: React.FormEvent, retryMessage?: Message) => {
+    if (e) e.preventDefault();
 
-    setSendingMessage(true);
+    let contentToSend = retryMessage ? retryMessage.content : newMessage;
+    if (!contentToSend.trim() || !activeConvoId || !currentProfileId) return;
+
+    if (contentToSend.length > maxContentLength) {
+      setMsgError(`Message exceeds maximum length of ${maxContentLength} characters.`);
+      return;
+    }
+
+    setMsgError(null);
+
+    // Provide UUID temp token for deduplication mapping
+    const tempId = retryMessage ? retryMessage.id : `temp-${Date.now()}`;
+
+    if (!retryMessage) {
+      const optimisticMsg: Message = {
+        id: tempId,
+        conversation_id: activeConvoId,
+        sender_profile_id: currentProfileId,
+        content: newMessage,
+        created_at: new Date().toISOString(),
+        status: 'sending'
+      };
+      setMessages(prev => [...prev, optimisticMsg]);
+      setNewMessage('');
+
+      // Push scroll down visually
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    } else {
+      // Attempting retry: set back to sending
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, status: 'sending' } : m));
+    }
+
+
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           conversationId: activeConvoId,
-          content: newMessage
+          content: contentToSend
         })
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || `Server error: ${res.status}`);
 
-      // Optimistically add message
-      setMessages([...messages, data.message]);
-      setNewMessage('');
+      // Re-map the temp message to the actual DB ID
+      setMessages(prev => prev.map(m => {
+        if (m.id === tempId) {
+          return { ...data.message, status: 'sent' };
+        }
+        return m;
+      }));
 
-      fetchConversations();
+      // We do NOT call `fetchConversations()` here because the real-time subscriber will trigger the latest update.
     } catch (err: any) {
       setMsgError(err.message || 'Failed to send message');
-    } finally {
-      setSendingMessage(false);
+      // Set optimistic message as failed
+      setMessages(prev => prev.map(m => m.id === tempId ? { ...m, status: 'failed' } : m));
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -337,33 +489,55 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Messages List */}
-                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
                   {loadingMessages ? (
-                    <div className="flex justify-center items-center h-full text-white/50"><LoadingSpinner /></div>
+                    <div className="flex flex-col gap-4 animate-pulse pt-4">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`h-12 w-48 rounded-2xl ${i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-800/60'}`}></div>
+                        </div>
+                      ))}
+                    </div>
                   ) : messages.length === 0 ? (
-                    <div className="flex justify-center items-center h-full text-white/50 text-sm">No messages yet.</div>
+                    <div className="flex flex-col justify-center items-center h-full text-white/50 text-sm gap-2">
+                      <span className="text-3xl mb-1 flex items-center justify-center w-12 h-12 bg-slate-800 rounded-full border border-slate-700">👋</span>
+                      <p>Say hello to {activeConvoDetail.other_user.name}!</p>
+                    </div>
                   ) : (
                     messages.map((m) => {
                       const isMe = m.sender_profile_id !== activeConvoDetail.other_user.id; // Safest check
 
                       return (
-                        <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                        <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                           <div
-                            className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2 shadow-sm ${isMe
-                                ? 'bg-indigo-600 text-slate-50 rounded-br-sm'
-                                : 'bg-slate-800 text-slate-100 rounded-bl-sm'
-                              }`}
+                            className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm ${isMe
+                              ? 'bg-indigo-600 text-slate-50 rounded-br-sm'
+                              : 'bg-slate-800 text-slate-100 rounded-bl-sm'
+                              } ${m.status === 'failed' ? 'bg-rose-900/80 line-through opacity-70 border border-rose-500/50' : m.status === 'sending' ? 'opacity-70' : ''}`}
                           >
-                            <p className="prose-content text-sm md:text-base">{m.content}</p>
-                            <span className="text-[10px] mt-1 block text-right text-slate-200/60">
-                              {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <p className="prose-content text-sm md:text-base whitespace-pre-wrap">{m.content}</p>
+                            <div className="flex justify-end items-center gap-1.5 mt-1 text-[10px] text-slate-200/60">
+                              <span>
+                                {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              {isMe && m.status !== 'sending' && m.status !== 'failed' && (
+                                m.is_read ? <CheckCheck className="w-3.5 h-3.5 text-blue-300" /> : <Check className="w-3.5 h-3.5" />
+                              )}
+                            </div>
                           </div>
+                          {m.status === 'failed' && (
+                            <button
+                              onClick={() => handleSendMessage(undefined, m)}
+                              className="text-xs text-rose-400 font-medium mt-1 hover:underline"
+                            >
+                              Retry Send
+                            </button>
+                          )}
                         </div>
                       );
                     })
                   )}
-                  <div ref={messagesEndRef} />
+                  <div ref={messagesEndRef} className="h-2" />
                 </div>
 
                 {/* Input Area */}
@@ -389,21 +563,33 @@ export default function MessagesPage() {
                   )}
 
                   {!isInputLocked && (
-                    <form onSubmit={handleSendMessage} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type a message..."
-                        disabled={sendingMessage}
-                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-all disabled:opacity-50"
-                      />
+                    <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
+                      <div className="relative flex-1">
+                        <textarea
+                          value={newMessage}
+                          onChange={(e) => {
+                            setNewMessage(e.target.value);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
+                          }}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Type a message... (Shift+Enter for newline)"
+                          rows={1}
+                          maxLength={maxContentLength}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-all resize-none custom-scrollbar min-h-[44px] max-h-[100px]"
+                        />
+                        {newMessage.length > maxContentLength - 100 && (
+                          <span className={`absolute right-3 bottom-full mb-1 text-xs ${newMessage.length >= maxContentLength ? 'text-rose-400 font-medium' : 'text-slate-500'}`}>
+                            {newMessage.length} / {maxContentLength}
+                          </span>
+                        )}
+                      </div>
                       <button
                         type="submit"
-                        disabled={!newMessage.trim() || sendingMessage}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                        disabled={!newMessage.trim()}
+                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 h-[44px] flex justify-center items-center mb-0.5"
                       >
-                        {sendingMessage ? '...' : 'Send'}
+                        Send
                       </button>
                     </form>
                   )}

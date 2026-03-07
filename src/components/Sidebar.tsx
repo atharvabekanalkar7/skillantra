@@ -6,15 +6,16 @@ import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Search,
+  Briefcase,
   ClipboardList,
   FileText,
   MessageSquare,
-  Target,
-  Trophy,
+  Users,
   UserCircle,
   Settings,
   LogOut,
-  Sparkles
+  Sparkles,
+  List
 } from 'lucide-react';
 import SidebarButton from './SidebarButton';
 
@@ -30,15 +31,29 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
     if (!isDemo) {
       fetchUnreadCount();
+      fetchUserProfile();
       const interval = setInterval(fetchUnreadCount, 30000);
       return () => clearInterval(interval);
     }
   }, [isDemo]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const res = await fetch('/api/profile');
+      const data = await res.json();
+      if (res.ok && data.profile) {
+        setUserProfile(data.profile);
+      }
+    } catch (e) {
+      console.error('Failed to fetch user profile:', e);
+    }
+  };
 
   const fetchUnreadCount = async () => {
     try {
@@ -77,15 +92,53 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     }
   };
 
-  const navItems = [
-    { href: isDemo ? '/dashboard?demo=true' : '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse Tasks', icon: Search },
-    { href: isDemo ? '/tasks/mine?demo=true' : '/tasks/mine', label: 'My Tasks', icon: ClipboardList },
-    { href: isDemo ? '/applications?demo=true' : '/applications', label: 'My Applications', icon: FileText },
+  // Define the base menu sections
+  const allMenuSections = [
+    {
+      id: 'DASHBOARD',
+      title: 'OVERVIEW',
+      items: [
+        { href: isDemo ? '/dashboard?demo=true' : '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      id: 'INTERNSHIPS',
+      title: 'INTERNSHIPS',
+      items: [
+        { href: isDemo ? '/internships?demo=true' : '/internships', label: 'Browse Internships', icon: Briefcase },
+        ...(userProfile?.user_type === 'recruiter'
+          ? [{ href: isDemo ? '/internships/mine?demo=true' : '/internships/mine', label: 'My Internships', icon: List }]
+          : []),
+      ],
+    },
+    {
+      id: '1_ON_1_HELP',
+      title: '1-ON-1 HELP',
+      items: [
+        { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse Tasks', icon: Search },
+        { href: isDemo ? '/tasks/mine?demo=true' : '/tasks/mine', label: 'My Tasks', icon: ClipboardList },
+      ],
+    },
+    {
+      id: 'TEAM_COLLABORATION',
+      title: 'TEAM COLLABORATION',
+      items: [
+        { href: isDemo ? '/collaborate?demo=true' : '/collaborate', label: 'Collaborate', icon: Users },
+      ],
+    },
+  ];
+
+  // Filter sections based on user_type
+  const menuSections = allMenuSections.filter(section => {
+    if (userProfile?.user_type === 'recruiter') {
+      return section.id === 'INTERNSHIPS' || section.id === 'DASHBOARD';
+    }
+    return true; // For student/others, show all
+  });
+
+  const bottomItems = [
     { href: isDemo ? '/messages?demo=true' : '/messages', label: 'Messages', icon: MessageSquare, unread: unreadCount },
-    { href: '#', label: 'Matchmaking', icon: Target, comingSoon: true },
-    { href: isDemo ? '/leaderboard?demo=true' : '/leaderboard', label: 'Leaderboard', icon: Trophy, comingSoon: true },
-    { href: isDemo ? '/profile/edit?demo=true' : '/profile/edit', label: 'Profile', icon: UserCircle },
+    { href: isDemo ? '/profile/edit?demo=true' : (userProfile?.id ? `/profile/${userProfile.id}` : '#'), label: 'Profile', icon: UserCircle },
     { href: isDemo ? '/settings?demo=true' : '/settings', label: 'Settings', icon: Settings },
   ];
 
@@ -105,21 +158,57 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 overscroll-contain">
-        <div className="mb-4">
-          <p className="px-3 text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">Main Menu</p>
-          <ul className="space-y-1">
-            {navItems.map((item) => {
-              const baseHref = item.href.split('?')[0];
-              let isActive = pathname === baseHref || pathname?.startsWith(baseHref + '/');
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 overscroll-contain space-y-4">
+        {menuSections.map((section, idx) => (
+          <div key={idx} className="mb-4">
+            <p className="px-3 text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">{section.title}</p>
+            <ul className="space-y-1">
+              {section.items.map((item: any) => {
+                const baseHref = item.href.split('?')[0];
+                const isActive = pathname === baseHref;
 
-              // Avoid marking Browse Tasks active when My Tasks or Create Task routes are selected
-              if (baseHref === '/tasks' && (pathname === '/tasks/mine' || pathname?.startsWith('/tasks/mine/'))) {
-                isActive = false;
-              }
-              if (baseHref === '/tasks' && (pathname === '/tasks/new' || pathname?.startsWith('/tasks/new/'))) {
-                isActive = false;
-              }
+                return (
+                  <li key={item.href + item.label}>
+                    <SidebarButton
+                      href={item.href}
+                      icon={<item.icon className="w-[18px] h-[18px]" />}
+                      label={item.label}
+                      isActive={isActive}
+                      comingSoon={item.comingSoon}
+                      unreadCount={item.unread}
+                      onClick={onClose}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+
+        {userProfile?.user_type !== 'recruiter' && (
+          <>
+            <div className="border-t border-gray-700 my-2" />
+            <ul className="space-y-1">
+              <li>
+                <SidebarButton
+                  href={isDemo ? '/applications?demo=true' : '/applications'}
+                  icon={<FileText className="w-[18px] h-[18px]" />}
+                  label="My Applications"
+                  isActive={pathname === '/applications'}
+                  onClick={onClose}
+                />
+              </li>
+            </ul>
+            <div className="border-t border-gray-700 my-2" />
+          </>
+        )}
+
+        <div className="mt-4">
+          <p className="px-3 text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">ACCOUNT</p>
+          <ul className="space-y-1">
+            {bottomItems.map((item: any) => {
+              const baseHref = item.href.split('?')[0];
+              const isActive = pathname === baseHref;
 
               return (
                 <li key={item.href + item.label}>

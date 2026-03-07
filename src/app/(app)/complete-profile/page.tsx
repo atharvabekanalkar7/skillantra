@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ProfileForm from '@/components/ProfileForm';
+import RecruiterProfileForm from '@/components/RecruiterProfileForm';
 import { useEffect, useState } from 'react';
 import { Lock } from 'lucide-react';
 
@@ -109,7 +110,11 @@ export default function EditProfilePage() {
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
-        <ProfileForm initialProfile={profile} />
+        {profile?.user_type === 'recruiter' ? (
+          <RecruiterProfileForm initialProfile={profile} />
+        ) : (
+          <ProfileForm initialProfile={profile} />
+        )}
       </div>
     </div>
   );
