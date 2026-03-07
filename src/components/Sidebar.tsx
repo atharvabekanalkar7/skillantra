@@ -17,7 +17,9 @@ import {
   Sparkles,
   List
 } from 'lucide-react';
+import { HiOutlineIdentification } from 'react-icons/hi';
 import SidebarButton from './SidebarButton';
+import NotificationBell from './NotificationBell';
 
 interface SidebarProps {
   isDemo?: boolean;
@@ -145,11 +147,14 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
   const sidebarContent = (
     <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800">
       <div className="p-5 border-b border-slate-800">
-        <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} className="flex items-center gap-2 group">
-          <span className="text-xl font-bold text-slate-100 tracking-tight">
-            Skill<span className="text-indigo-400">Antra</span>
-          </span>
-        </Link>
+        <div className="flex justify-between items-center">
+          <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} className="flex items-center gap-2 group">
+            <span className="text-xl font-bold text-slate-100 tracking-tight">
+              Skill<span className="text-indigo-400">Antra</span>
+            </span>
+          </Link>
+          <NotificationBell isDemo={isDemo} />
+        </div>
         {isDemo && (
           <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-indigo-500/40 text-xs font-semibold text-indigo-100 shadow-[0_0_18px_rgba(79,70,229,0.45)]">
             <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
@@ -195,6 +200,15 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
                   icon={<FileText className="w-[18px] h-[18px]" />}
                   label="My Applications"
                   isActive={pathname === '/applications'}
+                  onClick={onClose}
+                />
+              </li>
+              <li>
+                <SidebarButton
+                  href={isDemo ? '/resume?demo=true' : '/resume'}
+                  icon={<HiOutlineIdentification className="w-[18px] h-[18px]" />}
+                  label="My Resume"
+                  isActive={pathname === '/resume'}
                   onClick={onClose}
                 />
               </li>

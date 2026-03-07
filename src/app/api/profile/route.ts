@@ -36,7 +36,7 @@ export async function GET() {
     // phone_number column doesn't exist - select without it
     const { data: profileWithoutPhone, error: errorWithoutPhone } = await supabase
       .from('profiles')
-      .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at, company_name, company_description')
+      .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at, company_name, company_description, degree_level')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -106,7 +106,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { name, bio, skills, user_type, college, phone_number, company_name, company_description } = body;
+  const { name, bio, skills, user_type, college, phone_number, company_name, company_description, degree_level } = body;
 
   // Validate phone number if provided
   if (phone_number !== undefined) {
@@ -196,6 +196,11 @@ export async function PATCH(request: Request) {
       if (!company_name || typeof company_name !== 'string' || company_name.trim().length === 0) {
         return NextResponse.json({ error: 'Company Name is required' }, { status: 400 });
       }
+    } else {
+      // Validate degree_level for non-recruiters
+      if (!degree_level || !['UG', 'PG'].includes(degree_level)) {
+        return NextResponse.json({ error: 'Degree Level is required (UG or PG)' }, { status: 400 });
+      }
     }
   }
 
@@ -242,6 +247,9 @@ export async function PATCH(request: Request) {
     }
     if (user_type !== undefined) {
       updateData.user_type = user_type as 'SkillSeeker' | 'SkillHolder' | 'Both';
+    }
+    if (degree_level !== undefined) {
+      (updateData as any).degree_level = degree_level as 'UG' | 'PG';
     }
   }
 

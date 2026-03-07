@@ -7,23 +7,20 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { AppCard } from '@/components/ui/app-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
-
-const WORK_MODE_LABELS: Record<string, string> = {
-    remote: '🏠 Remote',
-    hybrid: '🔄 Hybrid',
-    onsite: '🏢 On-site',
-};
+import { MapPin, Users, IndianRupee, Clock, CalendarDays } from 'lucide-react';
 
 interface Internship {
     id: string;
-    role_title: string;
+    title: string;
     company_name: string;
-    status: 'open' | 'closed' | 'filled';
-    stipend_amount: number;
-    duration_weeks: number;
-    work_mode: string;
-    apply_by_date: string | null;
-    seats: number;
+    status: 'pending_approval' | 'approved' | 'rejected' | 'closed' | 'expired';
+    stipend_min: number;
+    stipend_max: number;
+    is_unpaid: boolean;
+    duration_months: number;
+    location: string;
+    apply_by: string | null;
+    number_of_openings: number;
     created_at: string;
     applicant_count?: number;
 }
@@ -64,7 +61,7 @@ export default function MyInternshipsPage() {
     };
 
     const handleToggleStatus = async (internship: Internship) => {
-        const newStatus = internship.status === 'open' ? 'closed' : 'open';
+        const newStatus = internship.status === 'closed' ? 'approved' : 'closed';
         setTogglingId(internship.id);
         try {
             const res = await fetch(`/api/internships/${internship.id}`, {
@@ -77,7 +74,7 @@ export default function MyInternshipsPage() {
                 showToast(data.error || 'Failed to update status');
                 return;
             }
-            showToast(`Listing ${newStatus === 'open' ? 're-opened' : 'closed'} successfully`);
+            showToast(`Listing ${newStatus === 'approved' ? 're-opened' : 'closed'} successfully`);
             setInternships(prev => prev.map(i => i.id === internship.id ? { ...i, status: newStatus } : i));
         } catch {
             showToast('An unexpected error occurred');
@@ -117,8 +114,12 @@ export default function MyInternshipsPage() {
             )}
 
             {internships.length === 0 ? (
-                <AppCard className="text-center p-8">
-                    <p className="text-slate-400 mb-4 text-lg">No internships posted yet.</p>
+                <AppCard className="text-center p-12">
+                    <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Users className="w-8 h-8 text-indigo-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-200 mb-2">No internships posted yet</h3>
+                    <p className="text-slate-400 mb-6 max-w-sm mx-auto">Create your first internship listing to start receiving applications from talented students.</p>
                     <Link
                         href="/internships/new"
                         className="inline-flex items-center text-indigo-400 hover:text-indigo-300 font-medium group"
@@ -131,70 +132,86 @@ export default function MyInternshipsPage() {
                     {internships.map((internship, index) => (
                         <AppCard
                             key={internship.id}
-                            className="opacity-0 animate-fade-in-up-delayed"
+                            className="opacity-0 animate-fade-in-up-delayed p-6"
                             style={{ animationDelay: `${index * 0.08}s` }}
                         >
-                            <div className="flex justify-between items-start mb-3">
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-5">
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                        <h3 className="text-lg font-semibold text-slate-100">{internship.role_title}</h3>
+                                        <h3 className="text-lg md:text-xl font-semibold text-slate-100 truncate">{internship.title}</h3>
                                         <StatusBadge status={internship.status} />
-                                        <span className="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                                            {WORK_MODE_LABELS[internship.work_mode] ?? internship.work_mode}
-                                        </span>
                                     </div>
-                                    <p className="text-sm text-slate-400">{internship.company_name}</p>
-                                    {internship.applicant_count !== undefined && internship.applicant_count > 0 && (
-                                        <p className="text-sm text-indigo-400 font-medium mt-1">
-                                            {internship.applicant_count} applicant{internship.applicant_count !== 1 ? 's' : ''}
-                                        </p>
+                                    <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-slate-400">
+                                        <div className="flex items-center gap-1.5 border border-slate-700/50 bg-slate-800/30 px-2.5 py-1 rounded-md">
+                                            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                                            <span>{internship.location}</span>
+                                        </div>
+                                        <span className="hidden sm:inline text-slate-600">•</span>
+                                        <span className="font-medium text-slate-300">{internship.company_name}</span>
+                                    </div>
+                                </div>
+                                <div className="text-right whitespace-nowrap hidden sm:block">
+                                    <div className="text-xs text-slate-500 mb-1">Posted</div>
+                                    <div className="text-sm text-slate-300 font-medium">{formatTimeAgo(internship.created_at)}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 py-4 border-y border-slate-800/60 bg-slate-900/30 -mx-6 px-6">
+                                <div>
+                                    <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">
+                                        <IndianRupee className="w-3.5 h-3.5" /> Stipend
+                                    </div>
+                                    <p className="text-emerald-400 font-medium">
+                                        {internship.is_unpaid ? 'Unpaid' : `₹${internship.stipend_min.toLocaleString()}${internship.stipend_max ? ` - ₹${internship.stipend_max.toLocaleString()}` : ''}/mo`}
+                                    </p>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">
+                                        <Clock className="w-3.5 h-3.5" /> Duration
+                                    </div>
+                                    <p className="text-slate-200 font-medium">{internship.duration_months} Months</p>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">
+                                        <CalendarDays className="w-3.5 h-3.5" /> Apply By
+                                    </div>
+                                    <p className="text-slate-200 font-medium">{internship.apply_by ? new Date(internship.apply_by).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'No deadline'}</p>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium uppercase tracking-wider mb-1">
+                                        <Users className="w-3.5 h-3.5" /> Applicants
+                                    </div>
+                                    <p className="text-indigo-400 font-medium">
+                                        {internship.applicant_count || 0} applications
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-3">
+                                <Link
+                                    href={`/internships/${internship.id}/applicants`}
+                                    className="flex items-center justify-center gap-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 px-4 py-2 rounded-lg font-medium transition-colors"
+                                >
+                                    View Applications
+                                    {(internship.applicant_count || 0) > 0 && (
+                                        <span className="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                            {internship.applicant_count}
+                                        </span>
                                     )}
-                                </div>
-                            </div>
+                                </Link>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Monthly Stipend</p>
-                                    <p className="text-emerald-400 font-medium text-sm">₹{internship.stipend_amount.toLocaleString()}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Duration</p>
-                                    <p className="text-slate-300 text-sm">{internship.duration_weeks} weeks</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">Seats</p>
-                                    <p className="text-slate-300 text-sm">{internship.seats}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-4 pt-4 border-t border-slate-800">
-                                <div className="text-xs text-slate-500">
-                                    Posted {formatTimeAgo(internship.created_at)}
-                                </div>
-                                <div className="flex flex-wrap items-center gap-3">
-                                    <Link
-                                        href={`/internships/${internship.id}/applicants`}
-                                        className="text-sm font-medium text-indigo-400 hover:text-indigo-300 group inline-flex items-center gap-1"
-                                    >
-                                        View Applications <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
-                                    </Link>
-                                    <Link
-                                        href={`/internships/${internship.id}/edit`}
-                                        className="text-amber-500 hover:text-amber-400 text-sm font-medium"
-                                    >
-                                        ✏️ Edit
-                                    </Link>
+                                {['approved', 'closed'].includes(internship.status) && (
                                     <button
                                         onClick={() => handleToggleStatus(internship)}
-                                        disabled={togglingId === internship.id || internship.status === 'filled'}
-                                        className={`text-sm font-medium px-3 py-1 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${internship.status === 'open'
-                                                ? 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-700'
-                                                : 'text-emerald-400 hover:text-emerald-200 hover:bg-emerald-900/30 border border-emerald-800'
+                                        disabled={togglingId === internship.id}
+                                        className={`flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 border ${internship.status === 'approved'
+                                                ? 'text-rose-400 border-rose-500/30 hover:bg-rose-500/10'
+                                                : 'text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10'
                                             }`}
                                     >
-                                        {togglingId === internship.id ? 'Updating...' : internship.status === 'open' ? 'Close Listing' : 'Reopen Listing'}
+                                        {togglingId === internship.id ? 'Updating...' : internship.status === 'approved' ? 'Close Listing' : 'Reopen Listing'}
                                     </button>
-                                </div>
+                                )}
                             </div>
                         </AppCard>
                     ))}

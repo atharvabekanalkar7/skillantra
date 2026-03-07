@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { parseSkills } from '@/lib/utils';
 import Link from 'next/link';
+import { BadgeCheck } from 'lucide-react';
 import SendDMButton from '@/components/SendDMButton';
 import { AppCard } from '@/components/ui/app-card';
 
@@ -160,7 +161,15 @@ export default async function ProfileViewPage({
           >
             ← Back to dashboard
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-100 mb-2">{profile.name}</h1>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-slate-100">{profile.name}</h1>
+            {profile.is_verified_recruiter && (
+              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 mt-1 sm:mt-0 shadow-sm shadow-blue-500/5">
+                <BadgeCheck className="w-4 h-4 shrink-0" />
+                <span className="text-xs font-semibold tracking-wide uppercase">Verified Recruiter</span>
+              </div>
+            )}
+          </div>
           {profile.college && (
             <p className="text-slate-400 text-sm mb-2">{profile.college}</p>
           )}

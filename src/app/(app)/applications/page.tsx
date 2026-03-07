@@ -38,12 +38,14 @@ interface InternshipApplication {
   created_at: string;
   internship?: {
     id: string;
-    role_title: string;
+    title: string;
     company_name: string | null;
     company_logo_url: string | null;
-    stipend_amount: number;
-    duration_weeks: number;
-    work_mode: string;
+    stipend_min: number;
+    stipend_max: number;
+    is_unpaid: boolean;
+    duration_months: number;
+    location: string;
   };
 }
 
@@ -84,8 +86,8 @@ function DeadlineCountdown({ deadline }: { deadline: string }) {
   if (!countdown) return null;
   return (
     <span className={`px-2 py-1 rounded-md text-xs font-medium ${countdown.expired
-        ? 'bg-rose-900/50 text-rose-400 border border-rose-800'
-        : 'bg-amber-900/50 text-amber-400 border border-amber-800'
+      ? 'bg-rose-900/50 text-rose-400 border border-rose-800'
+      : 'bg-amber-900/50 text-amber-400 border border-amber-800'
       }`}>
       ⏰ {countdown.text}
     </span>
@@ -141,15 +143,15 @@ function TabBar({
           key={tab.id}
           onClick={() => onSelect(tab.id)}
           className={`relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${active === tab.id
-              ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
             }`}
         >
           {tab.label}
           {tab.count > 0 && (
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none ${active === tab.id
-                ? 'bg-indigo-400/30 text-indigo-100'
-                : 'bg-slate-700 text-slate-400'
+              ? 'bg-indigo-400/30 text-indigo-100'
+              : 'bg-slate-700 text-slate-400'
               }`}>
               {tab.count}
             </span>
@@ -338,8 +340,6 @@ function TasksTab({ isDemo }: { isDemo: boolean }) {
   );
 }
 
-// ─── Internship Applications Tab ───────────────────────────────────────────────
-
 function InternshipsTab() {
   const [applications, setApplications] = useState<InternshipApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -350,95 +350,15 @@ function InternshipsTab() {
       setLoading(true);
       setError(null);
       try {
-        const supabase = createClient();
+        const response = await fetch('/api/internship-applications');
+        const data = await response.json();
 
-        // Get current user profile id
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setError('Please sign in to view your applications.');
-          setLoading(false);
+        if (!response.ok) {
+          setError(data.error || 'Failed to load internship applications');
           return;
         }
 
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (!profile) {
-          setError('Profile not found.');
-          setLoading(false);
-          return;
-        }
-
-        // Fetch internship applications joined with the internship row
-        const { data, error: sbError } = await supabase
-          .from('task_applications')
-          .select(`
-            id,
-            internship_id,
-            applicant_profile_id,
-            status,
-            cover_note,
-            created_at,
-            internship:internships!task_applications_internship_id_fkey (
-              id,
-              role_title,
-              company_name,
-              company_logo_url,
-              stipend_amount,
-              duration_weeks,
-              work_mode
-            )
-          `)
-          .eq('applicant_profile_id', profile.id)
-          .not('internship_id', 'is', null)
-          .order('created_at', { ascending: false });
-
-        if (sbError) {
-          // If the FK hint doesn't match, fall back to a simpler query
-          if (sbError.message?.includes('relationship') || sbError.message?.includes('hint')) {
-            const { data: fallbackData, error: fallbackErr } = await supabase
-              .from('task_applications')
-              .select('id, internship_id, applicant_profile_id, status, cover_note, created_at')
-              .eq('applicant_profile_id', profile.id)
-              .not('internship_id', 'is', null)
-              .order('created_at', { ascending: false });
-
-            if (fallbackErr) {
-              setError(fallbackErr.message);
-              return;
-            }
-
-            // Enrich with internship data manually
-            const ids = (fallbackData ?? []).map((r: any) => r.internship_id).filter(Boolean);
-            let internshipMap: Record<string, any> = {};
-            if (ids.length > 0) {
-              const { data: internships } = await supabase
-                .from('internships')
-                .select('id, role_title, company_name, company_logo_url, stipend_amount, duration_weeks, work_mode')
-                .in('id', ids);
-              (internships ?? []).forEach((i: any) => { internshipMap[i.id] = i; });
-            }
-
-            const enriched = (fallbackData ?? []).map((row: any) => ({
-              ...row,
-              internship: internshipMap[row.internship_id] ?? null,
-            }));
-            setApplications(enriched as InternshipApplication[]);
-            return;
-          }
-          setError(sbError.message);
-          return;
-        }
-
-        // Normalize: Supabase may return the FK join as an array
-        const normalized = (data ?? []).map((row: any) => ({
-          ...row,
-          internship: Array.isArray(row.internship) ? row.internship[0] ?? null : row.internship,
-        }));
-        setApplications(normalized as InternshipApplication[]);
+        setApplications(data.data || []);
       } catch {
         setError('An unexpected error occurred');
       } finally {
@@ -477,7 +397,7 @@ function InternshipsTab() {
         return (
           <AppCard
             key={application.id}
-            className="opacity-0 animate-fade-in-up-delayed border-slate-800"
+            className="opacity-0 animate-fade-in-up-delayed hover:border-slate-700 transition-colors"
             style={{ animationDelay: `${index * 0.08}s` }}
           >
             {/* Header: logo + title + company + status */}
@@ -486,11 +406,11 @@ function InternshipsTab() {
                 <CompanyLogo
                   logoUrl={intern?.company_logo_url ?? null}
                   companyName={intern?.company_name ?? null}
-                  roleTitle={intern?.role_title ?? '?'}
+                  roleTitle={intern?.title ?? '?'}
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-slate-100 leading-snug truncate mb-1">
-                    {intern?.role_title ?? 'Internship'}
+                  <h3 className="text-lg font-bold text-slate-100 leading-snug truncate mb-1">
+                    {intern?.title ?? 'Internship'}
                   </h3>
                   {intern?.company_name && (
                     <p className="text-slate-400 text-sm truncate">{intern.company_name}</p>
@@ -506,47 +426,48 @@ function InternshipsTab() {
             {intern && (
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 {/* Stipend */}
-                <span className={`text-xs font-semibold ${intern.stipend_amount > 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
-                  {intern.stipend_amount > 0
-                    ? `₹${intern.stipend_amount.toLocaleString('en-IN')}/mo`
+                <span className={`text-xs font-semibold ${!intern.is_unpaid ? 'text-emerald-400' : 'text-slate-400'}`}>
+                  {!intern.is_unpaid
+                    ? (intern.stipend_min === intern.stipend_max
+                      ? `₹${intern.stipend_min.toLocaleString('en-IN')}/mo`
+                      : `₹${intern.stipend_min.toLocaleString('en-IN')} - ${intern.stipend_max.toLocaleString('en-IN')}/mo`)
                     : 'Unpaid'}
                 </span>
                 <span className="text-slate-700">·</span>
                 {/* Duration */}
-                <span className="text-xs text-slate-400 font-medium bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">
-                  ⏱ {intern.duration_weeks}w
+                <span className="text-xs text-slate-400 font-medium bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-md">
+                  ⏱ {intern.duration_months}m
                 </span>
-                {/* Work mode */}
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-lg ${WORK_MODE_BADGE[intern.work_mode] ?? 'bg-slate-800 text-slate-400 border border-slate-700'
-                  }`}>
-                  {WORK_MODE_LABEL[intern.work_mode] ?? intern.work_mode}
+                {/* Location */}
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-md border ${intern.location?.toLowerCase().includes('remote') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' : 'bg-blue-500/10 text-blue-400 border-blue-500/25'}`}>
+                  {intern.location?.toLowerCase().includes('remote') ? '🏠 Remote' : `🏢 ${intern.location}`}
                 </span>
               </div>
             )}
 
             {/* Cover note snippet */}
             {application.cover_note && (
-              <p className="text-slate-400 text-sm mb-4 line-clamp-2 leading-relaxed italic">
+              <p className="text-slate-400 text-sm mb-4 line-clamp-2 leading-relaxed italic border-l-2 border-indigo-500/30 pl-3">
                 &ldquo;{application.cover_note}&rdquo;
               </p>
             )}
 
             {/* Footer: time ago + CTA */}
             <div className="flex justify-between items-center mt-2 pt-4 border-t border-slate-800">
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-slate-500 font-medium">
                 Applied {formatTimeAgo(application.created_at)}
               </div>
               {isHired ? (
                 <Link
                   href="/messages"
-                  className="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold px-4 py-1.5 rounded-xl transition-all duration-150 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-150 active:scale-[0.97] shadow shadow-emerald-900/50"
                 >
                   💬 Open Chat →
                 </Link>
               ) : intern ? (
                 <Link
                   href={`/internships/${application.internship_id}`}
-                  className="text-indigo-400 hover:text-indigo-300 text-sm font-medium group inline-flex items-center gap-1"
+                  className="text-indigo-400 hover:text-indigo-300 text-sm font-semibold group inline-flex items-center gap-1"
                 >
                   View Listing <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
                 </Link>

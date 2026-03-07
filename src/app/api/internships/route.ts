@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { enforceEmailConfirmed } from '@/lib/api-helpers';
+import { adminApprovalEmail } from '@/lib/email-templates';
+import { sendEmail } from '@/lib/notifications';
+import crypto from 'crypto';
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@skillantra.in';
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'fallback-secret-for-dev';
 
 export async function GET(request: Request) {
     const supabase = await createClient();
@@ -10,12 +16,9 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const emailCheck = await enforceEmailConfirmed(user, user.id);
-    if (emailCheck) return emailCheck;
-
     const { data: userProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, user_type, degree_level')
         .eq('user_id', user.id)
         .single();
 
@@ -32,21 +35,35 @@ export async function GET(request: Request) {
         .order('created_at', { ascending: false });
 
     if (mine) {
-        query = query.eq('created_by', userProfile.id) as typeof query;
+        if (userProfile.user_type !== 'recruiter') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+        query = query.eq('recruiter_id', userProfile.id) as typeof query;
     } else {
-        query = query.eq('status', 'open').neq('created_by', userProfile.id) as typeof query;
+        // Students browse
+        query = query.eq('status', 'approved') as typeof query;
+        // Supabase apply_by >= today filter
+        query = query.gte('apply_by', new Date().toISOString()) as typeof query;
+
+        // Degree Level filtering
+        if (userProfile.degree_level === 'UG') {
+            query = query.in('target_degree', ['both', 'ug']) as typeof query;
+        } else if (userProfile.degree_level === 'PG') {
+            query = query.in('target_degree', ['both', 'pg']) as typeof query;
+        }
     }
 
     const { data: internships, error } = await query;
+
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Attach applicant counts
-    if (mine && internships && internships.length > 0) {
+    if (internships && internships.length > 0) {
         const ids = internships.map((i: any) => i.id);
         const { data: counts } = await supabase
-            .from('task_applications')
+            .from('internship_applications')
             .select('internship_id')
             .in('internship_id', ids);
 
@@ -55,44 +72,37 @@ export async function GET(request: Request) {
             countMap[row.internship_id] = (countMap[row.internship_id] || 0) + 1;
         });
 
-        const enriched = internships.map((i: any) => ({ ...i, applicant_count: countMap[i.id] ?? 0 }));
+        const enriched = internships.map((i: any) => {
+            // Also auto-expire if past apply_by (for mine view)
+            if (mine && i.status === 'approved' && new Date(i.apply_by).getTime() < Date.now()) {
+                i.status = 'expired';
+            }
+            return { ...i, applicant_count: countMap[i.id] ?? 0 };
+        });
         return NextResponse.json({ internships: enriched });
     }
 
-    return NextResponse.json({ internships: internships || [] });
+    return NextResponse.json({ internships: [] });
 }
 
 export async function POST(request: Request) {
     const supabase = await createClient();
 
-    // 1. Authenticate user
-    const {
-        data: { user },
-        error: authError,
-    } = await supabase.auth.getUser();
-
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Enforce email confirmation
     const emailCheck = await enforceEmailConfirmed(user, user.id);
-    if (emailCheck) {
-        return emailCheck;
-    }
+    if (emailCheck) return emailCheck;
 
-    // 3. Get profile & verify recruiter status
     const { data: userProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, user_type, is_verified, company_name, company_logo_url')
+        .select('id, user_type, is_verified, company_name, company_logo_url, name, phone_number')
         .eq('user_id', user.id)
         .single();
 
-    if (profileError || !userProfile) {
-        return NextResponse.json({ error: 'Profile not found. Please create your profile first.' }, { status: 404 });
-    }
-
-    if (userProfile.user_type !== 'recruiter') {
+    if (profileError || !userProfile || userProfile.user_type !== 'recruiter') {
         return NextResponse.json({ error: 'Only recruiters can post internships.' }, { status: 403 });
     }
 
@@ -100,77 +110,50 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Your recruiter account is pending verification.' }, { status: 403 });
     }
 
-    if (!userProfile.company_name) {
-        return NextResponse.json({ error: 'Company name is required. Please complete your recruiter profile.' }, { status: 400 });
-    }
-
     try {
         const body = await request.json();
         const {
-            role_title,
-            description,
-            skills_required,
-            duration_weeks,
-            stipend_amount,
-            work_mode,
-            apply_by_date,
-            seats,
+            title, location, start_date, duration_months,
+            stipend_min, stipend_max, is_unpaid, apply_by,
+            number_of_openings, about_internship, skills_required,
+            who_can_apply, perks, is_linkedin_mandatory, questions, target_degree
         } = body;
 
-        // ---- Basic Validation ----
-        if (!role_title || typeof role_title !== 'string' || role_title.trim().length === 0) {
-            return NextResponse.json({ error: 'Role title is required' }, { status: 400 });
+        if (!title || !duration_months || !about_internship || !who_can_apply || !apply_by) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        if (!description || typeof description !== 'string' || description.trim().length === 0) {
-            return NextResponse.json({ error: 'Description is required' }, { status: 400 });
-        }
+        // Check if returning approved recruiter
+        const { count } = await supabase
+            .from('internships')
+            .select('*', { count: 'exact', head: true })
+            .eq('recruiter_id', userProfile.id)
+            .eq('status', 'approved');
 
-        if (!duration_weeks || typeof duration_weeks !== 'number' || duration_weeks <= 0) {
-            return NextResponse.json({ error: 'Valid duration in weeks is required' }, { status: 400 });
-        }
+        const isFirstTime = count === 0;
+        const status = isFirstTime ? 'pending_approval' : 'approved';
 
-        if (stipend_amount === undefined || stipend_amount === null || typeof stipend_amount !== 'number' || stipend_amount < 0) {
-            return NextResponse.json({ error: 'Monthly stipend is required and must be a non-negative number' }, { status: 400 });
-        }
-
-        if (mode_mapped(work_mode) === null) {
-            return NextResponse.json({ error: 'Work mode must be Remote, Hybrid, or On-site' }, { status: 400 });
-        }
-
-        if (seats && (typeof seats !== 'number' || seats < 1 || seats > 10)) {
-            return NextResponse.json({ error: 'Seats must be between 1 and 10' }, { status: 400 });
-        }
-
-        if (apply_by_date) {
-            const deadlineDate = new Date(apply_by_date);
-            if (isNaN(deadlineDate.getTime())) {
-                return NextResponse.json({ error: 'Invalid apply-by date format' }, { status: 400 });
-            }
-            if (deadlineDate.getTime() <= Date.now()) {
-                return NextResponse.json({ error: 'Apply-by date must be in the future' }, { status: 400 });
-            }
-        }
-
-        let parsedSkills: string[] = [];
-        if (skills_required && Array.isArray(skills_required)) {
-            parsedSkills = skills_required.filter(s => typeof s === 'string' && s.trim().length > 0).map(s => s.trim());
-        }
-
-        // ---- Build insert data ----
+        // Insert internship
         const internshipData = {
-            created_by: userProfile.id,
+            recruiter_id: userProfile.id,
+            title,
             company_name: userProfile.company_name,
             company_logo_url: userProfile.company_logo_url || null,
-            role_title: role_title.trim(),
-            description: description.trim(),
-            skills_required: parsedSkills,
-            duration_weeks: duration_weeks,
-            stipend_amount: stipend_amount,
-            work_mode: mode_mapped(work_mode),
-            apply_by_date: apply_by_date || null,
-            seats: seats || 1,
-            status: 'open',
+            location,
+            start_date,
+            duration_months,
+            stipend_min: is_unpaid ? 0 : stipend_min,
+            stipend_max: is_unpaid ? 0 : stipend_max,
+            is_unpaid,
+            apply_by,
+            number_of_openings,
+            about_internship,
+            skills_required: skills_required || [],
+            who_can_apply,
+            perks: perks || [],
+            is_linkedin_mandatory: !!is_linkedin_mandatory,
+            status,
+            target_degree: target_degree || 'both'
         };
 
         const { data: newInternship, error: insertError } = await supabase
@@ -180,20 +163,54 @@ export async function POST(request: Request) {
             .single();
 
         if (insertError) {
-            console.error('Error inserting internship:', insertError);
-            return NextResponse.json({ error: insertError.message || 'Failed to create internship' }, { status: 500 });
+            console.error('Insert Error:', insertError);
+            return NextResponse.json({ error: insertError.message }, { status: 500 });
+        }
+
+        // Insert questions
+        if (questions && questions.length > 0) {
+            const qs = questions.slice(0, 5).map((q: any) => ({
+                internship_id: newInternship.id,
+                question_text: q.question_text,
+                question_type: q.question_type,
+                is_required: !!q.is_required,
+                order_index: q.order_index || 0
+            }));
+
+            const { error: qError } = await supabase.from('internship_questions').insert(qs);
+            if (qError) console.error('Failed to insert questions:', qError);
+        }
+
+        // Send admin email if pending_approval
+        if (status === 'pending_approval') {
+            const approveToken = crypto.createHmac('sha256', ADMIN_SECRET).update(newInternship.id).digest('hex');
+            const rejectToken = crypto.createHmac('sha256', ADMIN_SECRET).update(newInternship.id).digest('hex');
+
+            const emailContent = adminApprovalEmail(
+                userProfile.name,
+                userProfile.company_name || 'Unknown Company',
+                user.email || '',
+                userProfile.phone_number,
+                newInternship.id,
+                title,
+                about_internship,
+                skills_required || [],
+                stipend_min,
+                stipend_max,
+                is_unpaid,
+                apply_by,
+                location,
+                duration_months,
+                approveToken,
+                rejectToken
+            );
+
+            await sendEmail(ADMIN_EMAIL, emailContent.subject, emailContent.html);
         }
 
         return NextResponse.json({ internship: newInternship }, { status: 201 });
     } catch (err: any) {
-        console.error('Internship creation failed:', err);
-        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+        console.error('Internship POST error:', err);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
-
-function mode_mapped(frontendMode: string): string | null {
-    const mode = frontendMode?.toLowerCase() || '';
-    if (['remote', 'hybrid'].includes(mode)) return mode;
-    if (mode === 'on-site' || mode === 'onsite' || mode === 'in-person') return 'onsite';
-    return null;
 }

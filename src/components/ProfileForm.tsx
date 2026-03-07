@@ -15,6 +15,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [bio, setBio] = useState('');
   const [skills, setSkills] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('+91 ');
+  const [degreeLevel, setDegreeLevel] = useState<'UG' | 'PG' | ''>('');
   const [userType, setUserType] = useState<'SkillSeeker' | 'SkillHolder' | 'Both'>('Both');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -63,6 +64,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         ? 'Both'
         : initialProfile.user_type;
       setUserType(parsedType);
+      setDegreeLevel((initialProfile as any).degree_level || '');
       setEmail((initialProfile as any).email || null);
     } else {
       // Load email from API if no initial profile
@@ -141,6 +143,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           skills: skills.trim() || null,
           phone_number: cleaned,
           user_type: userType,
+          degree_level: degreeLevel,
         }),
       });
 
@@ -298,6 +301,40 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           <option value="Both" className="bg-slate-900">Both</option>
         </select>
         <p className="mt-2 text-sm text-slate-400">Choose how you want to use SkillAntra</p>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">
+          Degree Level <span className="text-red-400">*</span>
+        </label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 text-slate-200 cursor-pointer">
+            <input
+              type="radio"
+              name="degreeLevel"
+              value="UG"
+              checked={degreeLevel === 'UG'}
+              onChange={() => setDegreeLevel('UG')}
+              disabled={loading || success}
+              className="w-4 h-4 text-indigo-500 bg-slate-900 border-slate-700 bg-slate-900/50"
+              required
+            />
+            UG (B.Tech / B.E. / B.S. / iMBA)
+          </label>
+          <label className="flex items-center gap-2 text-slate-200 cursor-pointer">
+            <input
+              type="radio"
+              name="degreeLevel"
+              value="PG"
+              checked={degreeLevel === 'PG'}
+              onChange={() => setDegreeLevel('PG')}
+              disabled={loading || success}
+              className="w-4 h-4 text-indigo-500 bg-slate-900 border-slate-700 bg-slate-900/50"
+              required
+            />
+            PG (M.Tech / M.Tech(R) / M.A. / M.Sc. / MBA)
+          </label>
+        </div>
       </div>
 
       <div>

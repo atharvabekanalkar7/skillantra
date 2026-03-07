@@ -13,19 +13,22 @@ import { useCountdown } from '@/lib/utils/useCountdown';
 
 interface Internship {
     id: string;
-    role_title: string;
-    description: string | null;
+    title: string;
+    about_internship: string | null;
     skills_required: string[];
-    duration_weeks: number;
-    stipend_amount: number;
-    work_mode: 'Remote' | 'Hybrid' | 'On-site';
-    apply_by_date: string | null;
-    seats: number;
+    duration_months: number;
+    stipend_min: number;
+    stipend_max: number;
+    is_unpaid: boolean;
+    location: string;
+    apply_by: string | null;
+    number_of_openings: number;
     status: string;
     created_at: string;
-    created_by: string;
+    recruiter_id: string;
     company_name: string | null;
     company_logo_url: string | null;
+    target_degree: 'both' | 'ug' | 'pg';
 }
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -43,20 +46,16 @@ const LOGO_COLORS = [
     'bg-orange-500',
 ];
 
-const WORK_MODE_BADGE: Record<string, string> = {
-    Remote: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25',
-    Hybrid: 'bg-amber-500/10 text-amber-400 border border-amber-500/25',
-    'On-site': 'bg-blue-500/10 text-blue-400 border border-blue-500/25',
-};
-
-const DURATION_OPTIONS = ['All', '2w', '4w', '6w', '8w', '12w'];
-const WORK_MODE_OPTIONS = ['All', 'Remote', 'Hybrid', 'On-site'] as const;
-const STIPEND_OPTIONS = ['All', 'Unpaid', '₹1–5k', '₹5–15k', '₹15k+'] as const;
+const DURATION_OPTIONS = ['All', '1m', '2m', '3m', '6m', '6m+'];
+const WORK_MODE_OPTIONS = ['All', 'Remote', 'In-office'] as const;
+const STIPEND_OPTIONS = ['All', 'Unpaid', 'Paid', '₹10k+'] as const;
+const DEGREE_OPTIONS = ['All', 'UG', 'PG'] as const;
 
 type WorkModeFilter = (typeof WORK_MODE_OPTIONS)[number];
 type StipendFilter = (typeof STIPEND_OPTIONS)[number];
+type DegreeFilter = (typeof DEGREE_OPTIONS)[number];
 
-// Deterministic logo color from role title
+// Deterministic logo color from title
 function logoColorForTitle(title: string): string {
     let hash = 0;
     for (let i = 0; i < title.length; i++) {
@@ -70,15 +69,15 @@ function logoColorForTitle(title: string): string {
 function CompanyLogo({
     logoUrl,
     companyName,
-    roleTitle,
+    title,
 }: {
     logoUrl: string | null;
     companyName: string | null;
-    roleTitle: string;
+    title: string;
 }) {
     const [imgError, setImgError] = useState(false);
-    const fallbackLetter = (companyName ?? roleTitle).charAt(0).toUpperCase();
-    const colorClass = logoColorForTitle(roleTitle);
+    const fallbackLetter = (companyName ?? title).charAt(0).toUpperCase();
+    const colorClass = logoColorForTitle(title);
 
     if (logoUrl && !imgError) {
         return (
@@ -104,10 +103,10 @@ function CompanyLogo({
     );
 }
 
-function ApplyByInfo({ applyByDate }: { applyByDate: string | null }) {
-    const countdown = useCountdown(applyByDate);
+function ApplyByInfo({ applyBy }: { applyBy: string | null }) {
+    const countdown = useCountdown(applyBy);
 
-    if (!applyByDate || !countdown) {
+    if (!applyBy || !countdown) {
         return <span className="text-slate-500 text-xs">No deadline</span>;
     }
 
@@ -115,7 +114,7 @@ function ApplyByInfo({ applyByDate }: { applyByDate: string | null }) {
         return <span className="text-red-400 text-xs font-medium">Applications Closed</span>;
     }
 
-    const diffMs = new Date(applyByDate).getTime() - Date.now();
+    const diffMs = new Date(applyBy).getTime() - Date.now();
     const within48h = diffMs < 48 * 60 * 60 * 1000;
 
     if (within48h) {
@@ -132,13 +131,22 @@ function ApplyByInfo({ applyByDate }: { applyByDate: string | null }) {
     );
 }
 
-function StipendText({ amount }: { amount: number }) {
-    if (amount === 0) {
+function StipendText({ min, max, isUnpaid }: { min: number; max: number; isUnpaid: boolean }) {
+    if (isUnpaid) {
         return <span className="text-slate-400 font-medium text-sm">Unpaid</span>;
     }
+
+    if (min === max) {
+        return (
+            <span className="text-emerald-400 font-semibold text-sm">
+                ₹{min.toLocaleString('en-IN')}/month
+            </span>
+        );
+    }
+
     return (
         <span className="text-emerald-400 font-semibold text-sm">
-            ₹{amount.toLocaleString('en-IN')}/month
+            ₹{min.toLocaleString('en-IN')} - ₹{max.toLocaleString('en-IN')}/month
         </span>
     );
 }
@@ -151,7 +159,7 @@ function SkillChips({ skills }: { skills: string[] }) {
             {shown.map((skill, i) => (
                 <span
                     key={i}
-                    className="inline-block bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-lg border border-slate-700 font-medium"
+                    className="inline-block bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-lg border border-slate-700 font-medium whitespace-nowrap"
                 >
                     {skill}
                 </span>
@@ -179,7 +187,7 @@ export default function InternshipsPage() {
     const [durationFilter, setDurationFilter] = useState('All');
     const [workModeFilter, setWorkModeFilter] = useState<WorkModeFilter>('All');
     const [stipendFilter, setStipendFilter] = useState<StipendFilter>('All');
-    const [crossCampus, setCrossCampus] = useState(false);
+    const [degreeFilter, setDegreeFilter] = useState<DegreeFilter>('All');
     const [crossCampusTooltip, setCrossCampusTooltip] = useState(false);
 
     useEffect(() => {
@@ -191,50 +199,56 @@ export default function InternshipsPage() {
             setInternships([
                 {
                     id: 'demo-int-1',
-                    role_title: 'Frontend Developer Intern',
-                    description: 'Looking for a passionate frontend developer intern to help build beautiful user interfaces.',
+                    title: 'Frontend Developer Intern',
+                    about_internship: 'Looking for a passionate frontend developer intern to help build beautiful user interfaces.',
                     skills_required: ['React', 'TypeScript', 'Tailwind CSS'],
-                    duration_weeks: 12,
-                    stipend_amount: 15000,
-                    work_mode: 'Remote',
-                    apply_by_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    seats: 2,
-                    status: 'open',
+                    duration_months: 3,
+                    stipend_min: 15000,
+                    stipend_max: 15000,
+                    is_unpaid: false,
+                    location: 'Remote',
+                    apply_by: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    number_of_openings: 2,
+                    status: 'approved',
                     created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                    created_by: 'demo-creator-1',
+                    recruiter_id: 'demo-creator-1',
                     company_name: 'TechFlow Solutions',
                     company_logo_url: null,
                 },
                 {
                     id: 'demo-int-2',
-                    role_title: 'Marketing & Growth Intern',
-                    description: 'Join our fast-growing startup to lead digital marketing and community growth.',
+                    title: 'Marketing & Growth Intern',
+                    about_internship: 'Join our fast-growing startup to lead digital marketing and community growth.',
                     skills_required: ['Social Media', 'Content Creation', 'SEO'],
-                    duration_weeks: 8,
-                    stipend_amount: 10000,
-                    work_mode: 'Hybrid',
-                    apply_by_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-                    seats: 1,
-                    status: 'open',
+                    duration_months: 2,
+                    stipend_min: 10000,
+                    stipend_max: 12000,
+                    is_unpaid: false,
+                    location: 'Mumbai, India',
+                    apply_by: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    number_of_openings: 1,
+                    status: 'approved',
                     created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                    created_by: 'demo-creator-2',
+                    recruiter_id: 'demo-creator-2',
                     company_name: 'GrowthHackers INC',
                     company_logo_url: null,
                 },
                 {
                     id: 'demo-int-3',
-                    role_title: 'UI/UX Design Intern',
-                    description: 'Help us redesign our core platform and create amazing experiences for our users.',
-                    skills_required: ['Figma', 'Prototyping', 'User Research'],
-                    duration_weeks: 4,
-                    stipend_amount: 8000,
-                    work_mode: 'On-site',
-                    apply_by_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-                    seats: 1,
-                    status: 'open',
+                    title: 'Open Source Contributor',
+                    about_internship: 'Help maintain and improve our open-source tools.',
+                    skills_required: ['Python', 'Git', 'Open Source'],
+                    duration_months: 6,
+                    stipend_min: 0,
+                    stipend_max: 0,
+                    is_unpaid: true,
+                    location: 'Remote',
+                    apply_by: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                    number_of_openings: 5,
+                    status: 'approved',
                     created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-                    created_by: 'demo-creator-3',
-                    company_name: 'DesignStudio',
+                    recruiter_id: 'demo-creator-3',
+                    company_name: 'OpenComm',
                     company_logo_url: null,
                 }
             ] as Internship[]);
@@ -249,9 +263,9 @@ export default function InternshipsPage() {
             const { data, error: sbError } = await supabase
                 .from('internships')
                 .select(
-                    'id, role_title, description, skills_required, duration_weeks, stipend_amount, work_mode, apply_by_date, seats, status, created_at, created_by, company_name, company_logo_url'
+                    'id, title, about_internship, skills_required, duration_months, stipend_min, stipend_max, is_unpaid, location, apply_by, number_of_openings, status, created_at, recruiter_id, company_name, company_logo_url, target_degree'
                 )
-                .eq('status', 'open')
+                .eq('status', 'approved') // changed from 'open' since new flow uses approved
                 .order('created_at', { ascending: false });
 
             if (sbError) {
@@ -275,42 +289,50 @@ export default function InternshipsPage() {
             if (skillFilter.trim()) {
                 const q = skillFilter.trim().toLowerCase();
                 const skillsStr = (item.skills_required ?? []).join(' ').toLowerCase();
-                if (!skillsStr.includes(q)) return false;
+                const titleStr = (item.title ?? '').toLowerCase();
+                if (!skillsStr.includes(q) && !titleStr.includes(q)) return false;
             }
 
             // Duration filter
             if (durationFilter !== 'All') {
-                const weeks = parseInt(durationFilter); // e.g. "2w" → 2
-                if (item.duration_weeks !== weeks) return false;
+                const months = parseInt(durationFilter); // "1m" -> 1
+                if (durationFilter === '6m+' && item.duration_months < 6) return false;
+                if (durationFilter !== '6m+' && item.duration_months !== months) return false;
             }
 
             // Work mode filter
             if (workModeFilter !== 'All') {
-                if (item.work_mode !== workModeFilter) return false;
+                const isRemote = item.location?.toLowerCase().includes('remote');
+                if (workModeFilter === 'Remote' && !isRemote) return false;
+                if (workModeFilter === 'In-office' && isRemote) return false;
             }
 
             // Stipend filter
             if (stipendFilter !== 'All') {
-                const amt = item.stipend_amount;
-                if (stipendFilter === 'Unpaid' && amt !== 0) return false;
-                if (stipendFilter === '₹1–5k' && (amt < 1 || amt > 5000)) return false;
-                if (stipendFilter === '₹5–15k' && (amt <= 5000 || amt > 15000)) return false;
-                if (stipendFilter === '₹15k+' && amt <= 15000) return false;
+                if (stipendFilter === 'Unpaid' && !item.is_unpaid) return false;
+                if (stipendFilter === 'Paid' && item.is_unpaid) return false;
+                if (stipendFilter === '₹10k+' && (item.is_unpaid || item.stipend_max < 10000)) return false;
+            }
+
+            // Degree filter
+            if (degreeFilter !== 'All') {
+                if (degreeFilter === 'UG' && item.target_degree === 'pg') return false;
+                if (degreeFilter === 'PG' && item.target_degree === 'ug') return false;
             }
 
             return true;
         });
-    }, [internships, skillFilter, durationFilter, workModeFilter, stipendFilter]);
+    }, [internships, skillFilter, durationFilter, workModeFilter, stipendFilter, degreeFilter]);
 
     if (loading) {
         return <LoadingSpinner />;
     }
 
     return (
-        <div className="opacity-0 animate-fade-in-up max-w-6xl mx-auto py-6 md:py-8">
+        <div className="opacity-0 animate-fade-in-up max-w-6xl mx-auto py-6 md:py-8 px-4 sm:px-6">
             {/* Page Header */}
             <div className="mb-6 md:mb-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-1 sm:mb-2">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-100 mb-1 sm:mb-2 tracking-tight">
                     Internships
                 </h1>
                 <p className="text-slate-400 text-sm sm:text-base">
@@ -366,7 +388,7 @@ export default function InternshipsPage() {
                             </svg>
                             <input
                                 type="text"
-                                placeholder="Search by skill (e.g. React, Figma)"
+                                placeholder="Search by skill or title (e.g. React, UX Design)"
                                 value={skillFilter}
                                 onChange={(e) => setSkillFilter(e.target.value)}
                                 className="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
@@ -381,7 +403,7 @@ export default function InternshipsPage() {
                         >
                             {DURATION_OPTIONS.map((d) => (
                                 <option key={d} value={d}>
-                                    {d === 'All' ? 'All Durations' : d}
+                                    {d === 'All' ? 'All Durations' : d === '6m+' ? 'More than 6 months' : `${d.replace('m', ' Months')}`}
                                 </option>
                             ))}
                         </select>
@@ -389,8 +411,8 @@ export default function InternshipsPage() {
 
                     {/* Row 2: Work Mode pills */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">
-                            Mode:
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1 w-16">
+                            Location:
                         </span>
                         {WORK_MODE_OPTIONS.map((mode) => (
                             <button
@@ -408,7 +430,7 @@ export default function InternshipsPage() {
 
                     {/* Row 3: Stipend pills */}
                     <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1 w-16">
                             Stipend:
                         </span>
                         {STIPEND_OPTIONS.map((s) => (
@@ -424,32 +446,51 @@ export default function InternshipsPage() {
                             </button>
                         ))}
                     </div>
+
+                    {/* Row 4: Degree Level pills */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1 w-16">
+                            Degree:
+                        </span>
+                        {DEGREE_OPTIONS.map((d) => (
+                            <button
+                                key={d}
+                                onClick={() => setDegreeFilter(d)}
+                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-150 border ${degreeFilter === d
+                                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-sm'
+                                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                                    }`}
+                            >
+                                {d}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </AppCard>
 
             {/* Error */}
             {error && (
-                <div className="bg-rose-900 border border-rose-800 text-rose-200 px-4 py-3 rounded-lg mb-4 text-sm">
+                <div className="bg-rose-900/50 border border-rose-800 text-rose-200 px-4 py-3 rounded-lg mb-4 text-sm">
                     {error}
                 </div>
             )}
 
             {/* Result count */}
             {!error && (
-                <p className="text-xs text-slate-500 mb-4">
+                <p className="text-xs text-slate-500 mb-4 font-medium pl-1">
                     {filtered.length} internship{filtered.length !== 1 ? 's' : ''} found
                 </p>
             )}
 
             {/* Card Grid */}
             {internships.length === 0 && !error ? (
-                <AppCard className="text-center p-8 md:p-10">
-                    <p className="text-slate-400 mb-2 text-lg font-medium">No open internships right now.</p>
-                    <p className="text-slate-500 text-sm">Check back soon — new opportunities are added regularly.</p>
+                <AppCard className="text-center p-8 md:p-12 border-dashed border-2 bg-slate-900/30">
+                    <p className="text-slate-300 mb-2 text-xl font-bold tracking-tight">No open internships right now.</p>
+                    <p className="text-slate-500 text-sm max-w-sm mx-auto">Companies are currently looking for candidates. Check back soon — new opportunities are added regularly.</p>
                 </AppCard>
             ) : filtered.length === 0 && !error ? (
-                <AppCard className="text-center p-8 md:p-10">
-                    <p className="text-slate-400 mb-2 text-lg font-medium">No internships match your filters.</p>
+                <AppCard className="text-center p-8 md:p-12 border-dashed border-2 bg-slate-900/30">
+                    <p className="text-slate-300 mb-2 text-xl font-bold tracking-tight">No internships match your filters.</p>
                     <button
                         onClick={() => {
                             setSkillFilter('');
@@ -457,9 +498,9 @@ export default function InternshipsPage() {
                             setWorkModeFilter('All');
                             setStipendFilter('All');
                         }}
-                        className="text-indigo-400 hover:text-indigo-300 text-sm font-medium"
+                        className="text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-2 bg-indigo-500/10 px-4 py-2 rounded-lg"
                     >
-                        Clear all filters →
+                        Clear all filters
                     </button>
                 </AppCard>
             ) : (
@@ -468,11 +509,12 @@ export default function InternshipsPage() {
                         const companyName = internship.company_name ?? null;
                         const logoUrl = internship.company_logo_url ?? null;
                         const skills = internship.skills_required ?? [];
+                        const isRemote = internship.location?.toLowerCase().includes('remote');
 
                         return (
                             <AppCard
                                 key={internship.id}
-                                className="flex flex-col opacity-0 animate-fade-in-up-delayed"
+                                className="flex flex-col opacity-0 animate-fade-in-up-delayed hover:border-slate-600 transition-colors"
                                 style={{ animationDelay: `${index * 0.07}s` }}
                             >
                                 {/* Header: Logo + Title + Company */}
@@ -480,62 +522,52 @@ export default function InternshipsPage() {
                                     <CompanyLogo
                                         logoUrl={logoUrl}
                                         companyName={companyName}
-                                        roleTitle={internship.role_title}
+                                        title={internship.title}
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-base font-semibold text-slate-100 leading-snug truncate">
-                                            {internship.role_title}
+                                        <h3 className="text-base font-bold text-slate-100 leading-tight truncate">
+                                            {internship.title}
                                         </h3>
                                         {companyName && (
-                                            <p className="text-slate-400 text-sm truncate mt-0.5">{companyName}</p>
+                                            <p className="text-slate-400 text-sm truncate mt-1">{companyName}</p>
                                         )}
                                     </div>
                                 </div>
 
                                 {/* Duration + Work Mode */}
                                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                    <span className="text-xs text-slate-400 font-medium bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">
-                                        ⏱ {internship.duration_weeks}w
+                                    <span className="text-xs text-slate-400 font-medium bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-md">
+                                        ⏱ {internship.duration_months} month{internship.duration_months > 1 ? 's' : ''}
                                     </span>
                                     <span
-                                        className={`text-xs font-medium px-2.5 py-1 rounded-lg ${WORK_MODE_BADGE[internship.work_mode] ?? 'bg-slate-800 text-slate-400 border border-slate-700'}`}
+                                        className={`text-xs font-medium px-2.5 py-1 rounded-md border ${isRemote ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}
                                     >
-                                        {internship.work_mode === 'Remote'
-                                            ? '🏠 Remote'
-                                            : internship.work_mode === 'Hybrid'
-                                                ? '🔄 Hybrid'
-                                                : '🏢 On-site'}
+                                        {isRemote ? '🏠 Remote' : `🏢 ${internship.location}`}
                                     </span>
                                 </div>
 
                                 {/* Stipend */}
-                                <div className="mb-3">
-                                    <StipendText amount={internship.stipend_amount} />
+                                <div className="mb-3 flex items-center gap-1.5">
+                                    <span className="text-slate-500 text-sm font-medium">Stipend:</span>
+                                    <StipendText min={internship.stipend_min} max={internship.stipend_max} isUnpaid={internship.is_unpaid} />
                                 </div>
 
                                 {/* Skills */}
                                 {skills.length > 0 && (
-                                    <div className="mb-3">
+                                    <div className="mb-4">
                                         <SkillChips skills={skills} />
                                     </div>
                                 )}
 
                                 {/* Apply by */}
-                                <div className="mb-4 flex items-center gap-1.5">
-                                    <svg
-                                        className="w-3.5 h-3.5 text-slate-500 flex-shrink-0"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    <ApplyByInfo applyByDate={internship.apply_by_date} />
+                                <div className="mb-5 flex items-center justify-between text-xs">
+                                    <div className="flex items-center gap-1.5 bg-slate-800/50 px-2 py-1.5 rounded-md border border-slate-700/50">
+                                        <span className="text-slate-500">Apply By:</span>
+                                        <ApplyByInfo applyBy={internship.apply_by} />
+                                    </div>
+                                    <div className="text-slate-500">
+                                        <span className="font-semibold text-slate-300">{internship.number_of_openings}</span> openings
+                                    </div>
                                 </div>
 
                                 {/* CTA */}
@@ -548,7 +580,7 @@ export default function InternshipsPage() {
                                                 alert('Demo mode: Internship details feature not available. Sign up to view internships!');
                                             }
                                         }}
-                                        className="w-full min-h-[44px] flex items-center justify-center bg-indigo-600 text-white py-2.5 px-4 rounded-xl hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-200 active:scale-[0.98] md:hover:scale-[1.02] font-medium text-sm touch-manipulation"
+                                        className="w-full flex items-center justify-center bg-slate-100 hover:bg-white text-slate-900 py-2.5 px-4 rounded-xl transition-all duration-200 active:scale-[0.98] font-bold text-sm shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
                                     >
                                         View &amp; Apply
                                     </Link>

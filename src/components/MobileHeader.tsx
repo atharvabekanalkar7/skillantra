@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import NotificationBell from './NotificationBell';
 
 interface MobileHeaderProps {
   onMenuToggle: () => void;
@@ -25,8 +26,9 @@ export default function MobileHeader({ onMenuToggle, isDemo = false }: MobileHea
       <span className="text-lg font-bold text-slate-100 truncate">
         Skill<span className="text-indigo-500">Antra</span>{isDemo ? ' (Demo)' : ''}
       </span>
-      {/* Spacer for visual balance */}
-      <div className="w-11" />
+      <div className="flex items-center justify-end w-11">
+        <NotificationBell isDemo={isDemo} />
+      </div>
     </header>
   );
 }

@@ -26,7 +26,7 @@ export async function GET(
 
     const { data: internship, error: internError } = await supabase
         .from('internships')
-        .select('id, created_by')
+        .select('id, recruiter_id, title, company_name, stipend_min, stipend_max, is_unpaid, status')
         .eq('id', internshipId)
         .single();
 
@@ -34,23 +34,30 @@ export async function GET(
         return NextResponse.json({ error: 'Internship not found' }, { status: 404 });
     }
 
-    if (internship.created_by !== userProfile.id) {
+    if (internship.recruiter_id !== userProfile.id) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch applications with applicant profiles
+    // Fetch applications with applicant profiles and answers
     const { data: applications, error: appsError } = await supabase
-        .from('task_applications')
+        .from('internship_applications')
         .select(`
-      id,
-      internship_id,
-      applicant_profile_id,
-      status,
-      payment_status,
-      cover_note,
-      created_at,
-      applicant:profiles!task_applications_applicant_profile_id_fkey(id, name, college, skills)
-    `)
+            id,
+            internship_id,
+            student_id,
+            status,
+            cover_letter,
+            resume_url,
+            linkedin_url,
+            offer_letter_url,
+            completion_letter_url,
+            created_at,
+            student_profile:profiles!internship_applications_student_id_fkey(name, college, skills, degree_level),
+            answers:internship_application_answers(
+                id, answer_text, answer_file_url,
+                question:internship_questions(question_text)
+            )
+        `)
         .eq('internship_id', internshipId)
         .order('created_at', { ascending: false });
 
@@ -58,5 +65,16 @@ export async function GET(
         return NextResponse.json({ error: appsError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ applications: applications || [] });
+    // Format answers
+    const formattedApps = applications?.map((app: any) => ({
+        ...app,
+        answers: app.answers?.map((ans: any) => ({
+            id: ans.id,
+            question_text: ans.question?.question_text || 'Unknown Question',
+            answer_text: ans.answer_text,
+            answer_file_url: ans.answer_file_url
+        })) || []
+    }));
+
+    return NextResponse.json({ internship, applications: formattedApps || [] });
 }
