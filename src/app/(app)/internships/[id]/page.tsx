@@ -169,7 +169,7 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
                         .from('internship_applications')
                         .select('id', { count: 'exact', head: true })
                         .eq('student_id', profile.id)
-                        .gte('created_at', twoDaysAgo);
+                        .gte('applied_at', twoDaysAgo);
 
                     setAppCount48h(recentCount || 0);
                 }

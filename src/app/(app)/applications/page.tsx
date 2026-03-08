@@ -35,7 +35,7 @@ interface InternshipApplication {
   applicant_profile_id: string;
   status: 'pending' | 'accepted' | 'rejected' | 'hired';
   cover_note: string | null;
-  created_at: string;
+  applied_at: string;
   internship?: {
     id: string;
     title: string;
@@ -455,7 +455,7 @@ function InternshipsTab() {
             {/* Footer: time ago + CTA */}
             <div className="flex justify-between items-center mt-2 pt-4 border-t border-slate-800">
               <div className="text-xs text-slate-500 font-medium">
-                Applied {formatTimeAgo(application.created_at)}
+                Applied {formatTimeAgo(application.applied_at)}
               </div>
               {isHired ? (
                 <Link

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createAuthError, AuthErrorCode } from "@/lib/auth-errors";
 import { isValidEmail, isValidPassword, isValidIITMandiEmail, getRedirectUrl } from "@/lib/auth-utils";
 
@@ -37,11 +37,21 @@ export async function POST(request: Request) {
 
     const isRecruiter = user_type === 'recruiter';
 
-    if (!email || !password || !full_name || (!isRecruiter && !college) || (isRecruiter && (!company_name || !company_description))) {
+    if (!email || !password || !full_name || !user_type || (!isRecruiter && !college) || (isRecruiter && (!company_name || !company_description))) {
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.MISSING_FIELDS,
-          "Please fill in all required fields"
+          "Please fill in all required fields, including account type"
+        ),
+        { status: 400 }
+      );
+    }
+
+    if (user_type !== 'student' && user_type !== 'recruiter') {
+      return NextResponse.json(
+        createAuthError(
+          AuthErrorCode.MISSING_FIELDS,
+          "Invalid account type"
         ),
         { status: 400 }
       );
@@ -107,7 +117,8 @@ export async function POST(request: Request) {
         data: {
           full_name: full_name.trim(),
           college: isRecruiter ? 'Other' : college.trim(),
-          user_type: isRecruiter ? 'recruiter' : 'Both', // Default students to Both
+          user_type: user_type,
+          role_preference: isRecruiter ? null : 'Both', // Default students to Both
           ...(isRecruiter && {
             company_name: company_name.trim(),
             company_description: company_description.trim(),
@@ -166,6 +177,25 @@ export async function POST(request: Request) {
         ),
         { status: 409 }
       );
+    }
+
+    // 5️⃣ Ensure profile record exists with correct user_type
+    if (data?.user) {
+      try {
+        const adminSupabase = createServiceRoleClient();
+        await adminSupabase.from('profiles').upsert({
+          user_id: data.user.id,
+          user_type: user_type,
+          name: full_name.trim(),
+          college: isRecruiter ? 'Other' : college.trim(),
+          ...(isRecruiter && {
+            company_name: company_name.trim(),
+            company_description: company_description.trim(),
+          }),
+        }, { onConflict: 'user_id' });
+      } catch (profileErr) {
+        console.error('Failed to create/update profile during signup:', profileErr);
+      }
     }
 
     // 6️⃣ Success (new user)

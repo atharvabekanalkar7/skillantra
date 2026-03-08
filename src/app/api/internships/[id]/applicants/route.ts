@@ -46,20 +46,20 @@ export async function GET(
             internship_id,
             student_id,
             status,
-            cover_letter,
+            cover_note,
             resume_url,
             linkedin_url,
             offer_letter_url,
             completion_letter_url,
-            created_at,
+            applied_at,
             student_profile:profiles!internship_applications_student_id_fkey(name, college, skills, degree_level),
             answers:internship_application_answers(
-                id, answer_text, answer_file_url,
+                id, answer_text, file_url,
                 question:internship_questions(question_text)
             )
         `)
         .eq('internship_id', internshipId)
-        .order('created_at', { ascending: false });
+        .order('applied_at', { ascending: false });
 
     if (appsError) {
         return NextResponse.json({ error: appsError.message }, { status: 500 });
@@ -72,7 +72,7 @@ export async function GET(
             id: ans.id,
             question_text: ans.question?.question_text || 'Unknown Question',
             answer_text: ans.answer_text,
-            answer_file_url: ans.answer_file_url
+            file_url: ans.file_url
         })) || []
     }));
 

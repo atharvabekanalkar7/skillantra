@@ -111,8 +111,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
         ...(userProfile?.user_type === 'recruiter'
           ? [
             { href: isDemo ? '/internships/new?demo=true' : '/internships/new', label: 'Post Internship', icon: Briefcase },
-            { href: isDemo ? '/internships/mine?demo=true' : '/internships/mine', label: 'My Internships', icon: List },
-            { href: isDemo ? '/applicants?demo=true' : '/applicants', label: 'Applicants', icon: Users }
+            { href: isDemo ? '/internships/mine?demo=true' : '/internships/mine', label: 'My Internships', icon: List }
           ]
           : []),
       ],

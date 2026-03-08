@@ -19,6 +19,7 @@ interface Internship {
 interface Question {
     id: string;
     question_text: string;
+    is_required: boolean;
 }
 
 export default function ApplicationFlowPage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,6 +45,8 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
     const [coverNote, setCoverNote] = useState('');
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [hasSkillantraResume, setHasSkillantraResume] = useState(false);
+    const [skillantraResumeId, setSkillantraResumeId] = useState<string | null>(null);
 
     useEffect(() => {
         loadData();
@@ -71,12 +74,11 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
             }
             setInternship(intData);
 
-            // 2. Get questions
             const { data: qData } = await supabase
                 .from('internship_questions')
-                .select('id, question_text')
+                .select('id, question_text, is_required')
                 .eq('internship_id', internshipId)
-                .order('created_at', { ascending: true });
+                .order('order_index', { ascending: true });
 
             setQuestions(qData || []);
 
@@ -86,19 +88,31 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                 router.push('/login');
                 return;
             }
-            const { data: profData } = await supabase
+            const { data: profile } = await supabase
                 .from('profiles')
-                .select('id, resume_url, linkedin_url')
+                .select('*')
                 .eq('user_id', user.id)
                 .single();
 
-            if (!profData) {
+            if (!profile) {
                 setError('Profile not found');
                 return;
             }
 
-            setProfile(profData);
-            if (profData.linkedin_url) setLinkedinUrl(profData.linkedin_url);
+            setProfile(profile);
+            if (profile.linkedin_url) setLinkedinUrl(profile.linkedin_url);
+
+            // 3.5 Check for SkillAntra Resume
+            const { data: skillantraResume } = await supabase
+                .from('skillantra_resumes')
+                .select('id, career_objective, education, work_experience, skills')
+                .eq('student_id', profile.id)
+                .maybeSingle();
+
+            if (skillantraResume) {
+                setHasSkillantraResume(true);
+                setSkillantraResumeId(skillantraResume.id);
+            }
 
             // 4. Rate Limiting Check
             const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
@@ -106,8 +120,8 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
             const { count } = await supabase
                 .from('internship_applications')
                 .select('id', { count: 'exact', head: true })
-                .eq('student_id', profData.id)
-                .gte('created_at', twoDaysAgo);
+                .eq('student_id', profile.id)
+                .gte('applied_at', twoDaysAgo);
 
             if ((count || 0) >= 3) {
                 setError('You have reached the limit of 3 applications per 48 hours. Please try again later.');
@@ -117,8 +131,8 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                     .from('internship_applications')
                     .select('id')
                     .eq('internship_id', internshipId)
-                    .eq('student_id', profData.id)
-                    .single();
+                    .eq('student_id', profile.id)
+                    .maybeSingle();
 
                 if (appData) {
                     setError('You have already applied for this internship.');
@@ -142,7 +156,7 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                 alert('Please provide a cover note (max 250 words).');
                 return;
             }
-            if (resumeSource === 'profile' && !profile?.resume_url) {
+            if (resumeSource === 'profile' && !hasSkillantraResume && !profile?.resume_url) {
                 alert('No resume found on your profile. Please upload one or build one first.');
                 return;
             }
@@ -155,8 +169,8 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
         // Validation for step 2 (if questions exist)
         if (step === 2 && questions.length > 0) {
             for (const q of questions) {
-                if (!answers[q.id] || !answers[q.id].trim()) {
-                    alert('Please answer all custom questions.');
+                if (q.is_required && (!answers[q.id] || !answers[q.id].trim())) {
+                    alert('Please answer all required custom questions.');
                     return;
                 }
             }
@@ -181,8 +195,12 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
 
             if (resumeSource === 'upload' && customResumeFile) {
                 formData.append('resume', customResumeFile);
-            } else if (profile?.resume_url) {
-                formData.append('existingResumeUrl', profile.resume_url);
+            } else if (resumeSource === 'profile') {
+                if (skillantraResumeId) {
+                    formData.append('skillantra_resume_id', skillantraResumeId);
+                } else if (profile?.resume_url) {
+                    formData.append('existingResumeUrl', profile.resume_url);
+                }
             }
 
             // Add answers mapping
@@ -261,15 +279,16 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                         {/* Resume Selection */}
                         <div className="space-y-3">
                             <label className="block text-sm font-medium text-slate-300">Choose Resume</label>
-
                             <label className={`block flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${resumeSource === 'profile' ? 'bg-indigo-500/10 border-indigo-500' : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'}`}>
                                 <input type="radio" checked={resumeSource === 'profile'} onChange={() => setResumeSource('profile')} className="w-4 h-4 text-indigo-500 bg-slate-900 border-slate-600 focus:ring-indigo-500" />
                                 <div>
                                     <p className="font-semibold text-slate-200">Use Profile Resume</p>
-                                    {profile?.resume_url ? (
+                                    {hasSkillantraResume ? (
+                                        <p className="text-xs text-emerald-400 mt-1">✓ SkillAntra Resume found</p>
+                                    ) : profile?.resume_url ? (
                                         <p className="text-xs text-emerald-400 mt-1">✓ Resume found on profile</p>
                                     ) : (
-                                        <p className="text-xs text-rose-400 mt-1">✗ No resume uploaded. You must upload one below or build it first.</p>
+                                        <p className="text-xs text-rose-400 mt-1">✗ No resume found. Please upload one or build it first.</p>
                                     )}
                                 </div>
                             </label>
@@ -336,7 +355,7 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                         {questions.map((q, idx) => (
                             <div key={q.id}>
                                 <label className="block text-sm font-medium text-slate-200 mb-2">
-                                    Q{idx + 1}. {q.question_text} <span className="text-rose-400">*</span>
+                                    Q{idx + 1}. {q.question_text} {q.is_required && <span className="text-rose-400">*</span>}
                                 </label>
                                 <textarea
                                     required
@@ -359,7 +378,11 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                         <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 space-y-4 text-sm">
                             <div className="grid grid-cols-3 gap-2 border-b border-slate-800 pb-3">
                                 <span className="text-slate-500 font-medium">Resume:</span>
-                                <span className="col-span-2 text-slate-200 font-semibold">{resumeSource === 'profile' ? 'Using Profile Resume' : customResumeFile?.name}</span>
+                                <span className="col-span-2 text-slate-200 font-semibold">
+                                    {resumeSource === 'profile'
+                                        ? (hasSkillantraResume ? 'Using SkillAntra Resume' : 'Using Profile Resume')
+                                        : customResumeFile?.name}
+                                </span>
                             </div>
 
                             <div className="grid grid-cols-3 gap-2 border-b border-slate-800 pb-3">
@@ -379,7 +402,7 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
                                         {questions.map((q, idx) => (
                                             <div key={q.id}>
                                                 <p className="text-slate-300 font-medium mb-1">Q{idx + 1}. {q.question_text}</p>
-                                                <p className="text-slate-400 p-3 bg-slate-800/50 rounded-lg whitespace-pre-wrap">{answers[q.id]}</p>
+                                                <p className="text-slate-400 p-3 bg-slate-800/50 rounded-lg whitespace-pre-wrap">{answers[q.id] || 'N/A'}</p>
                                             </div>
                                         ))}
                                     </div>

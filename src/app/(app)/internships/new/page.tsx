@@ -240,6 +240,11 @@ export default function NewInternshipPage() {
             const data = await response.json();
 
             if (!response.ok) {
+                if (response.status === 429) {
+                    import('@/lib/utils/toast').then(({ showToast }) => {
+                        showToast('You have reached the limit of 3 internship posts in 24 hours. Please try again later.', 'error');
+                    });
+                }
                 throw new Error(data.error || 'Failed to post internship');
             }
 

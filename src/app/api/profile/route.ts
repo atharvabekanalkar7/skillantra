@@ -114,6 +114,12 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
+
+  // Sanitize role_preference to lowercase if provided
+  if (body.role_preference && typeof body.role_preference === 'string') {
+    body.role_preference = body.role_preference.toLowerCase();
+  }
+
   const { name, bio, skills, role_preference, college, phone_number, company_name, company_description, degree_level, designation, company_logo_url, is_collaboration_available } = body;
 
   // Validate phone number if provided
@@ -208,8 +214,8 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    if (!isRecruiter && (!role_preference || !['SkillSeeker', 'SkillHolder', 'Both'].includes(role_preference))) {
-      return NextResponse.json({ error: 'Valid role preference is required (SkillSeeker, SkillHolder, or Both)' }, { status: 400 });
+    if (!isRecruiter && (!role_preference || !['skillseeker', 'skillholder', 'both', 'SkillSeeker', 'SkillHolder', 'Both'].includes(role_preference))) {
+      return NextResponse.json({ error: 'Valid role preference is required (skillseeker, skillholder, or both)' }, { status: 400 });
     }
 
     if (isRecruiter) {

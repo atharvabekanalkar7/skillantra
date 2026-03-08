@@ -26,6 +26,7 @@ export async function POST(req: Request) {
         const linkedinUrl = formData.get('linkedinUrl') as string | null;
         const resumeSource = formData.get('resumeSource') as string;
         const existingResumeUrl = formData.get('existingResumeUrl') as string | null;
+        const skillantraResumeId = formData.get('skillantra_resume_id') as string | null;
         const resumeFile = formData.get('resume') as File | null;
         const answersRaw = formData.get('answers') as string;
         const answers = answersRaw ? JSON.parse(answersRaw) : {};
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
             .from('internship_applications')
             .select('*', { count: 'exact', head: true })
             .eq('student_id', profile.id)
-            .gte('created_at', twoDaysAgo);
+            .gte('applied_at', twoDaysAgo);
 
         if (countErr) {
             console.error('Error checking rate limit:', countErr);
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
             .select('id')
             .eq('internship_id', internshipId)
             .eq('student_id', profile.id)
-            .single();
+            .maybeSingle();
 
         if (existingApp) {
             return NextResponse.json({ error: 'You have already applied for this internship' }, { status: 400 });
@@ -114,7 +115,7 @@ export async function POST(req: Request) {
             finalResumeUrl = publicUrlData.publicUrl;
         }
 
-        if (!finalResumeUrl) {
+        if (!finalResumeUrl && !skillantraResumeId) {
             return NextResponse.json({ error: 'A resume is required' }, { status: 400 });
         }
 
@@ -124,8 +125,9 @@ export async function POST(req: Request) {
             .insert({
                 internship_id: internshipId,
                 student_id: profile.id,
-                cover_letter: coverNote,
-                resume_url: finalResumeUrl,
+                cover_note: coverNote,
+                resume_url: finalResumeUrl || null,
+                skillantra_resume_id: skillantraResumeId || null,
                 linkedin_url: linkedinUrl || null,
                 status: 'pending'
             })
@@ -191,7 +193,7 @@ export async function GET(request: Request) {
 
     const { data: userProfile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
         .single();
 
@@ -201,7 +203,7 @@ export async function GET(request: Request) {
         .from('internship_applications')
         .select('*')
         .eq('student_id', userProfile.id)
-        .order('created_at', { ascending: false });
+        .order('applied_at', { ascending: false });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

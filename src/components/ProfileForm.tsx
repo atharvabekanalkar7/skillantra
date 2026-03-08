@@ -16,7 +16,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [skills, setSkills] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('+91 ');
   const [degreeLevel, setDegreeLevel] = useState<'UG' | 'PG' | ''>('');
-  const [rolePreference, setRolePreference] = useState<'SkillSeeker' | 'SkillHolder' | 'Both'>('Both');
+  const [rolePreference, setRolePreference] = useState<'skillseeker' | 'skillholder' | 'both' | 'SkillSeeker' | 'SkillHolder' | 'Both'>('both');
   const [isCollaborationAvailable, setIsCollaborationAvailable] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -61,7 +61,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       } else {
         setPhoneNumber('+91 ');
       }
-      setRolePreference((initialProfile as any).role_preference || 'Both');
+      setRolePreference((initialProfile as any).role_preference?.toLowerCase() || 'both');
       setIsCollaborationAvailable((initialProfile as any).is_collaboration_available ?? true);
       setDegreeLevel((initialProfile as any).degree_level || '');
       setEmail((initialProfile as any).email || null);
@@ -141,7 +141,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           bio: bio.trim() || null,
           skills: skills.trim() || null,
           phone_number: cleaned,
-          role_preference: rolePreference,
+          role_preference: rolePreference.toLowerCase(),
           degree_level: degreeLevel,
           is_collaboration_available: isCollaborationAvailable,
         }),
@@ -283,25 +283,27 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         />
       </div>
 
-      <div>
-        <label htmlFor="role_preference" className="block text-sm font-medium text-white mb-2">
-          I am a (Role Preference): <span className="text-red-400">*</span>
-        </label>
-        <select
-          id="role_preference"
-          value={rolePreference}
-          onChange={(e) => setRolePreference(e.target.value as 'SkillSeeker' | 'SkillHolder' | 'Both')}
-          required
-          disabled={loading || success}
-          className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
-        >
-          <option value="">Select...</option>
-          <option value="SkillSeeker" className="bg-slate-900">SkillSeeker</option>
-          <option value="SkillHolder" className="bg-slate-900">SkillHolder</option>
-          <option value="Both" className="bg-slate-900">Both</option>
-        </select>
-        <p className="mt-2 text-sm text-slate-400">Choose how you want to use SkillAntra</p>
-      </div>
+      {(!initialProfile || initialProfile.user_type !== 'recruiter') && (
+        <div>
+          <label htmlFor="role_preference" className="block text-sm font-medium text-white mb-2">
+            I am a (Role Preference): <span className="text-red-400">*</span>
+          </label>
+          <select
+            id="role_preference"
+            value={rolePreference}
+            onChange={(e) => setRolePreference(e.target.value.toLowerCase() as any)}
+            required
+            disabled={loading || success}
+            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
+          >
+            <option value="">Select...</option>
+            <option value="skillseeker" className="bg-slate-900">SkillSeeker</option>
+            <option value="skillholder" className="bg-slate-900">SkillHolder</option>
+            <option value="both" className="bg-slate-900">Both</option>
+          </select>
+          <p className="mt-2 text-sm text-slate-400">Choose how you want to use SkillAntra</p>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-white mb-2">

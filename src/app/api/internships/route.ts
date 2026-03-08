@@ -127,33 +127,41 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Check if returning approved recruiter
+        // Rate limit: Max 3 internship posts per 24 hours per recruiter
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { count } = await supabase
             .from('internships')
             .select('*', { count: 'exact', head: true })
             .eq('recruiter_id', userProfile.id)
-            .eq('status', 'approved');
+            .gte('created_at', twentyFourHoursAgo);
 
-        const isFirstTime = count === 0;
-        const status = isFirstTime ? 'pending_approval' : 'approved';
+        if ((count || 0) >= 3) {
+            return NextResponse.json(
+                { error: 'You can only post 3 internships per 24 hours. Please try again later.' },
+                { status: 429 }
+            );
+        }
+
+        // Auto-approve for verified recruiters
+        const status = userProfile.is_verified === true ? 'approved' : 'pending_approval';
 
         // Insert internship
         const internshipData = {
             recruiter_id: userProfile.id,
-            title,
+            title: title.trim(),
             company_name: userProfile.company_name,
             company_logo_url: userProfile.company_logo_url || null,
-            location,
-            start_date,
-            duration_months,
-            stipend_min: is_unpaid ? 0 : stipend_min,
-            stipend_max: is_unpaid ? 0 : stipend_max,
-            is_unpaid,
-            apply_by,
-            number_of_openings,
-            about_internship,
+            location: location,
+            start_date: start_date,
+            duration_months: Number(duration_months),
+            stipend_min: is_unpaid ? 0 : Number(stipend_min),
+            stipend_max: is_unpaid || !stipend_max ? 0 : Number(stipend_max),
+            is_unpaid: !!is_unpaid,
+            apply_by: apply_by,
+            number_of_openings: Number(number_of_openings),
+            about_internship: about_internship.trim(),
             skills_required: skills_required || [],
-            who_can_apply,
+            who_can_apply: who_can_apply.trim(),
             perks: perks || [],
             is_linkedin_mandatory: !!is_linkedin_mandatory,
             status,

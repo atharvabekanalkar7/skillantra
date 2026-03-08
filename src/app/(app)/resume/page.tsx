@@ -4,9 +4,13 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { Plus, Trash2, Download, Save, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, Download, Save, CheckCircle, FileText } from 'lucide-react';
 import { AppCard } from '@/components/ui/app-card';
 import { useDemoGuard } from '@/lib/utils/useDemoGuard';
+import html2canvas from 'html2canvas';
+
+// Inject EB Garamond font stylesheet
+const FONT_LINK = "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap";
 
 declare global {
     interface Window {
@@ -30,9 +34,11 @@ interface BasicInfo {
     name: string;
     email: string;
     phone: string;
+    city: string;
     linkedin: string;
     github: string;
     portfolio: string;
+    summary: string;
 }
 
 interface Education {
@@ -63,6 +69,131 @@ interface Achievement {
     description: string;
 }
 
+// ─── Shared Resume Content Component ──────────────────────────────────────
+// This component is used for BOTH the live preview and the isolated print target.
+// It uses strictly inline styles to bypass Tailwind/CSS parsing issues in html2canvas.
+
+const ResumeContent = ({
+    basicInfo,
+    education,
+    experience,
+    projects,
+    achievements
+}: {
+    basicInfo: BasicInfo,
+    education: Education[],
+    experience: Experience[],
+    projects: Project[],
+    achievements: Achievement[]
+}) => {
+    const hasData = (field: any) => field && field.length > 0;
+    const hasBasic = (val: string) => val && val.trim().length > 0;
+
+    return (
+        <div id="resume-content-wrapper" style={{
+            fontFamily: "'EB Garamond', serif",
+            padding: "40px",
+            color: "#222",
+            lineHeight: "1.6",
+            background: "#fff",
+            width: "100%",
+            boxSizing: "border-box"
+        }}>
+            <style dangerouslySetInnerHTML={{ __html: `@import url('${FONT_LINK}');` }} />
+
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <h1 style={{ margin: '0 0 5px 0', fontSize: '28px', fontWeight: 'bold', textTransform: 'uppercase', color: '#000' }}>
+                    {basicInfo.name || 'Your Name'}
+                </h1>
+                <div style={{ fontSize: '14px', color: '#444', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}>
+                    {hasBasic(basicInfo.city) && <span>{basicInfo.city}</span>}
+                    {hasBasic(basicInfo.phone) && (<span>{hasBasic(basicInfo.city) && " | "}{basicInfo.phone}</span>)}
+                    {hasBasic(basicInfo.email) && (<span>{(hasBasic(basicInfo.city) || hasBasic(basicInfo.phone)) && " | "}{basicInfo.email}</span>)}
+                </div>
+                <div style={{ fontSize: '14px', color: '#444', marginTop: '4px', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}>
+                    {hasBasic(basicInfo.linkedin) && <span>LinkedIn: {basicInfo.linkedin.replace(/https?:\/\/(www\.)?/, '')}</span>}
+                    {hasBasic(basicInfo.github) && <span>{(hasBasic(basicInfo.linkedin)) && " | "}GitHub: {basicInfo.github.replace(/https?:\/\/(www\.)?/, '')}</span>}
+                </div>
+            </div>
+
+            <hr style={{ border: "none", borderTop: "2px solid #333", marginBottom: "20px" }} />
+
+            {/* Summary */}
+            {hasBasic(basicInfo.summary) && (
+                <div style={{ marginBottom: '20px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #ccc', paddingBottom: '3px', marginTop: '0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>Summary</h2>
+                    <p style={{ margin: '0', fontSize: '14px', textAlign: 'justify' }}>{basicInfo.summary}</p>
+                </div>
+            )}
+
+            {/* Experience */}
+            {hasData(experience) && (
+                <div style={{ marginBottom: '20px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #ccc', paddingBottom: '3px', marginTop: '0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>Experience</h2>
+                    {experience.map(exp => (
+                        <div key={exp.id} style={{ marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '15px' }}>
+                                <span>{exp.role}</span>
+                                <span>{exp.duration}</span>
+                            </div>
+                            <div style={{ fontStyle: 'italic', color: '#444', marginBottom: '4px', fontSize: '14px' }}>{exp.company}</div>
+                            {hasBasic(exp.description) && (
+                                <p style={{ margin: '0', fontSize: '14px', whiteSpace: 'pre-line' }}>{exp.description}</p>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Projects */}
+            {hasData(projects) && (
+                <div style={{ marginBottom: '20px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #ccc', paddingBottom: '3px', marginTop: '0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>Projects</h2>
+                    {projects.map(proj => (
+                        <div key={proj.id} style={{ marginBottom: '12px' }}>
+                            <div style={{ fontWeight: 'bold', fontSize: '15px' }}>
+                                {proj.title} {hasBasic(proj.link) && <span style={{ fontWeight: 'normal', fontSize: '12px', color: '#666', marginLeft: '5px' }}>({proj.link})</span>}
+                            </div>
+                            {hasBasic(proj.description) && (
+                                <p style={{ margin: '4px 0 0 0', fontSize: '14px', whiteSpace: 'pre-line' }}>{proj.description}</p>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Education */}
+            {hasData(education) && (
+                <div style={{ marginBottom: '20px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #ccc', paddingBottom: '3px', marginTop: '0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>Education</h2>
+                    {education.map(edu => (
+                        <div key={edu.id} style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                            <div>
+                                <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{edu.degree}</div>
+                                <div style={{ fontSize: '14px' }}>{edu.institution}{hasBasic(edu.grade) && ` | Grade: ${edu.grade}`}</div>
+                            </div>
+                            <div style={{ textAlign: 'right', fontSize: '14px' }}>{edu.year}</div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Achievements */}
+            {hasData(achievements) && (
+                <div style={{ marginBottom: '20px' }}>
+                    <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #ccc', paddingBottom: '3px', marginTop: '0', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' }}>Achievements</h2>
+                    <ul style={{ paddingLeft: '20px', margin: '0' }}>
+                        {achievements.map(ach => (
+                            <li key={ach.id} style={{ fontSize: '14px', marginBottom: '4px' }}>{ach.description}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function ResumeBuilderPage() {
     const router = useRouter();
     const { guardAction } = useDemoGuard();
@@ -80,7 +211,7 @@ export default function ResumeBuilderPage() {
 
     // Form data
     const [basicInfo, setBasicInfo] = useState<BasicInfo>({
-        name: '', email: '', phone: '', linkedin: '', github: '', portfolio: ''
+        name: '', email: '', phone: '', city: '', linkedin: '', github: '', portfolio: '', summary: ''
     });
     const [education, setEducation] = useState<Education[]>([]);
     const [experience, setExperience] = useState<Experience[]>([]);
@@ -104,7 +235,7 @@ export default function ResumeBuilderPage() {
 
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('id, user_type, name')
+                    .select('id, user_type, name, phone_number')
                     .eq('user_id', user.id)
                     .single();
 
@@ -118,22 +249,41 @@ export default function ResumeBuilderPage() {
                     .from('skillantra_resumes')
                     .select('*')
                     .eq('student_id', profile.id)
-                    .single();
+                    .maybeSingle();
 
                 if (resumeData) {
                     setResumeId(resumeData.id);
-                    setBasicInfo(resumeData.basic_info || { name: profile.name || '', email: user.email || '', phone: '', linkedin: '', github: '', portfolio: '' });
+
+                    // Map portfolio links and profile data back to basicInfo
+                    const links = resumeData.portfolio_links as any || {};
+                    setBasicInfo({
+                        name: profile.name || '',
+                        email: user.email || '',
+                        phone: profile.phone_number || links.phone || '',
+                        city: links.city || '',
+                        linkedin: links.linkedin || '',
+                        github: links.github || '',
+                        portfolio: links.portfolio || '',
+                        summary: resumeData.career_objective || ''
+                    });
+
                     setEducation(resumeData.education || []);
-                    setExperience(resumeData.experience || []);
-                    setProjects(resumeData.projects || []);
-                    setAchievements(resumeData.achievements || []);
+                    setExperience(resumeData.work_experience || []);
+                    setProjects(resumeData.academic_projects || []);
+                    setAchievements(resumeData.extra_curricular || []);
                 } else {
-                    setBasicInfo(prev => ({ ...prev, name: profile.name || '', email: user.email || '' }));
+                    setBasicInfo(prev => ({
+                        ...prev,
+                        name: profile.name || '',
+                        email: user.email || '',
+                        phone: profile.phone_number || ''
+                    }));
                 }
 
                 // Preload html2pdf
                 loadHtml2Pdf();
             } catch (err: any) {
+                console.error("Load data error:", err);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -142,37 +292,68 @@ export default function ResumeBuilderPage() {
         loadData();
     }, [router, supabase]);
 
+    const printTargetRef = useRef<HTMLDivElement>(null);
+
     // Handlers
     const handleSaveProgress = guardAction(async () => {
-        if (!studentId) return;
         setSaving(true);
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            // Find profile to get student_id
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+
+            if (!profile) throw new Error('Profile not found');
+
             const payload = {
-                student_id: studentId,
-                basic_info: basicInfo,
+                student_id: profile.id,
                 education,
-                experience,
-                projects,
-                achievements,
+                work_experience: experience,
+                academic_projects: projects,
+                extra_curricular: achievements,
+                portfolio_links: {
+                    linkedin: basicInfo.linkedin,
+                    github: basicInfo.github,
+                    portfolio: basicInfo.portfolio,
+                    phone: basicInfo.phone,
+                    email: basicInfo.email
+                },
                 updated_at: new Date().toISOString()
             };
 
-            if (resumeId) {
-                await supabase.from('skillantra_resumes').update(payload).eq('id', resumeId);
-            } else {
-                const { data } = await supabase.from('skillantra_resumes').insert(payload).select('id').single();
-                if (data) setResumeId(data.id);
-            }
+            const { error: saveError } = await supabase
+                .from('skillantra_resumes')
+                .upsert(payload, { onConflict: 'student_id' });
+
+            if (saveError) throw saveError;
+
+            // Also update profile name/phone if they changed
+            await supabase
+                .from('profiles')
+                .update({
+                    name: basicInfo.name,
+                    phone_number: basicInfo.phone
+                })
+                .eq('id', profile.id);
+
             showToast('Progress saved successfully');
-        } catch {
-            showToast('Failed to save progress');
+            return true;
+        } catch (err: any) {
+            console.error('Save error:', err);
+            showToast(err.message || 'Failed to save progress');
+            return false;
         } finally {
             setSaving(false);
         }
     });
 
     const handleGeneratePdf = guardAction(async () => {
-        if (!studentId || !previewRef.current) return;
+        if (!printTargetRef.current) return;
 
         const loaded = await loadHtml2Pdf();
         if (!loaded) {
@@ -181,61 +362,37 @@ export default function ResumeBuilderPage() {
         }
 
         setGenerating(true);
-        handleSaveProgress(); // auto-save before generating
+
+        // 1. Save progress first
+        const saved = await handleSaveProgress();
+        if (!saved) {
+            setGenerating(false);
+            return;
+        }
 
         try {
-            // Temporary styles for PDF generation
-            const element = previewRef.current;
-            element.classList.add('pdf-mode');
+            const printTarget = printTargetRef.current;
 
-            // Force light theme and white background for the PDF element temporarily
-            const originalBg = element.style.backgroundColor;
-            const originalColor = element.style.color;
-            element.style.backgroundColor = '#ffffff';
-            element.style.color = '#000000';
+            // Set up options
+            const fileName = `resume-${basicInfo.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
 
+            // Generate PDF from the isolated target
             const opt = {
-                margin: 10,
-                filename: `${basicInfo.name.replace(/\s+/g, '_')}_Resume.pdf`,
+                margin: 0,
+                filename: fileName,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Generate Blob instead of downloading directly
-            const pdfBlob = await window.html2pdf().set(opt).from(element).output('blob');
-
-            // Restore styles
-            element.style.backgroundColor = originalBg;
-            element.style.color = originalColor;
-            element.classList.remove('pdf-mode');
-
-            // Upload to Supabase bucket
-            const fileName = `${studentId}_${Date.now()}.pdf`;
-            const { error: uploadError } = await supabase.storage
-                .from('resumes')
-                .upload(fileName, pdfBlob, {
-                    contentType: 'application/pdf',
-                    upsert: true
-                });
-
-            if (uploadError) throw new Error('Failed to upload PDF: ' + uploadError.message);
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('resumes')
-                .getPublicUrl(fileName);
-
-            // Save resume URL to profile
-            await supabase.from('profiles').update({ resume_url: publicUrl }).eq('id', studentId);
-
-            showToast('PDF Generated & Saved to Profile successfully!');
-
-            // Trigger download for the user automatically
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(pdfBlob);
-            link.download = opt.filename;
-            link.click();
-
+            await window.html2pdf().set(opt).from(printTarget).save();
+            showToast('Resume PDF downloaded successfully!');
         } catch (err: any) {
             console.error('PDF Generation error:', err);
             showToast('An error occurred during PDF generation');
@@ -328,8 +485,12 @@ export default function ResumeBuilderPage() {
                                 <input type="url" value={basicInfo.github} onChange={e => setBasicInfo({ ...basicInfo, github: e.target.value })} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500" />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Portfolio (Optional)</label>
-                                <input type="url" value={basicInfo.portfolio} onChange={e => setBasicInfo({ ...basicInfo, portfolio: e.target.value })} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500" />
+                                <label className="block text-xs font-medium text-slate-400 mb-1">City / Location</label>
+                                <input type="text" value={basicInfo.city} onChange={e => setBasicInfo({ ...basicInfo, city: e.target.value })} className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500" />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="block text-xs font-medium text-slate-400 mb-1">Professional Summary</label>
+                                <textarea rows={3} value={basicInfo.summary} onChange={e => setBasicInfo({ ...basicInfo, summary: e.target.value })} placeholder="Briefly describe your career goals and key strengths..." className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 resize-none" />
                             </div>
                         </div>
                     </AppCard>
@@ -439,116 +600,57 @@ export default function ResumeBuilderPage() {
                 <div className="lg:sticky lg:top-8 h-max">
                     <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wider mb-4 pl-2 flex items-center justify-between">
                         <span>Live Preview</span>
-                        <span className="text-xs normal-case text-amber-500 bg-amber-500/10 px-2 py-1 rounded">A4 Format</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700">Auto-scaling</span>
+                        </div>
                     </h2>
 
-                    {/* The Preview container */}
-                    <div className="bg-slate-300 rounded-xl p-4 overflow-hidden border border-slate-700 flex justify-center shadow-2xl">
-                        <div
-                            ref={previewRef}
-                            className="bg-white w-[210mm] min-h-[297mm] shadow-sm p-[20mm] text-[#333] font-sans box-border text-[11pt] leading-relaxed origin-top scale-[0.5] sm:scale-[0.6] lg:scale-[0.5] xl:scale-[0.6] 2xl:scale-[0.7] transition-transform duration-200 pdf-preview-content"
-                            style={{ margin: '0 auto', marginBottom: '-50%' }}
-                        >
-                            {/* Header */}
-                            <div className="text-center mb-6">
-                                <h1 className="text-2xl font-bold uppercase tracking-wide text-slate-900 mb-1">{basicInfo.name || 'Your Name'}</h1>
-                                <div className="text-sm text-slate-600 flex flex-wrap justify-center gap-x-3 gap-y-1">
-                                    {basicInfo.email && <span>{basicInfo.email}</span>}
-                                    {basicInfo.phone && <><span className="text-slate-300">•</span><span>{basicInfo.phone}</span></>}
-                                    {basicInfo.linkedin && <><span className="text-slate-300">•</span><span>{basicInfo.linkedin.replace(/https?:\/\/(www\.)?/, '')}</span></>}
-                                    {basicInfo.github && <><span className="text-slate-300">•</span><span>{basicInfo.github.replace(/https?:\/\/(www\.)?/, '')}</span></>}
-                                </div>
-                            </div>
-
-                            {/* Education */}
-                            {education.length > 0 && (
-                                <div className="mb-5">
-                                    <h2 className="text-sm font-bold uppercase border-b border-slate-300 pb-1 mb-3 text-slate-800">Education</h2>
-                                    <div className="space-y-3">
-                                        {education.map(edu => (
-                                            <div key={edu.id} className="flex justify-between items-start text-[10.5pt]">
-                                                <div>
-                                                    <div className="font-semibold text-slate-800">{edu.degree}</div>
-                                                    <div className="italic text-slate-600">{edu.institution}</div>
-                                                </div>
-                                                <div className="text-right whitespace-nowrap">
-                                                    <div className="text-slate-700">{edu.year}</div>
-                                                    {edu.grade && <div className="text-slate-600 text-[10pt]">{edu.grade}</div>}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Experience */}
-                            {experience.length > 0 && (
-                                <div className="mb-5">
-                                    <h2 className="text-sm font-bold uppercase border-b border-slate-300 pb-1 mb-3 text-slate-800">Experience</h2>
-                                    <div className="space-y-4">
-                                        {experience.map(exp => (
-                                            <div key={exp.id} className="text-[10.5pt]">
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <div>
-                                                        <span className="font-semibold text-slate-800">{exp.role}</span>
-                                                        <span className="text-slate-700"> | {exp.company}</span>
-                                                    </div>
-                                                    <div className="text-slate-700 whitespace-nowrap">{exp.duration}</div>
-                                                </div>
-                                                {exp.description && (
-                                                    <div className="text-slate-600 text-[10pt] whitespace-pre-line leading-snug">
-                                                        {exp.description}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Projects */}
-                            {projects.length > 0 && (
-                                <div className="mb-5">
-                                    <h2 className="text-sm font-bold uppercase border-b border-slate-300 pb-1 mb-3 text-slate-800">Projects</h2>
-                                    <div className="space-y-3">
-                                        {projects.map(proj => (
-                                            <div key={proj.id} className="text-[10.5pt]">
-                                                <div className="font-semibold text-slate-800 mb-0.5">
-                                                    {proj.title}
-                                                    {proj.link && <span className="font-normal text-slate-500 text-[9.5pt] ml-2">({proj.link.replace(/https?:\/\/(www\.)?/, '')})</span>}
-                                                </div>
-                                                {proj.description && (
-                                                    <div className="text-slate-600 text-[10pt] whitespace-pre-line leading-snug">
-                                                        {proj.description}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Achievements */}
-                            {achievements.length > 0 && (
-                                <div className="mb-5">
-                                    <h2 className="text-sm font-bold uppercase border-b border-slate-300 pb-1 mb-3 text-slate-800">Key Achievements</h2>
-                                    <ul className="list-disc pl-5 m-0 space-y-1 text-[10.5pt] text-slate-700">
-                                        {achievements.map(ach => (
-                                            <li key={ach.id} className="pl-1 leading-snug">{ach.description}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
+                    {/* High-fidelity Live Preview with EB Garamond */}
+                    <div className="bg-slate-800/40 rounded-xl overflow-hidden border border-slate-700 shadow-2xl min-h-[500px]">
+                        <div className="bg-white text-slate-900 shadow-inner">
+                            <ResumeContent
+                                basicInfo={basicInfo}
+                                education={education}
+                                experience={experience}
+                                projects={projects}
+                                achievements={achievements}
+                            />
                         </div>
                     </div>
+                    <p className="text-[11px] text-slate-500 mt-3 px-2 italic text-center">
+                        Sections without content are automatically hidden. The PDF version will be perfectly formatted for A4.
+                    </p>
+                </div>
+            </div>
+
+            {/* ───── Hidden Print Target ───── */}
+            {/* This div is moved off-screen and used strictly for PDF generation via html2canvas */}
+            <div style={{ position: 'absolute', left: '-9999px', top: '0', width: '210mm' }}>
+                <div ref={printTargetRef} style={{ background: '#fff' }}>
+                    <ResumeContent
+                        basicInfo={basicInfo}
+                        education={education}
+                        experience={experience}
+                        projects={projects}
+                        achievements={achievements}
+                    />
                 </div>
             </div>
 
             {/* Global style to help with PDF forcing */}
             <style jsx global>{`
-                .pdf-mode * {
-                    transition: none !important;
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #334155;
+                    border-radius: 10px;
+                }
+                @media print {
+                    .no-print { display: none; }
                 }
             `}</style>
         </div>

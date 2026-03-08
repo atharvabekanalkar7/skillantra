@@ -25,18 +25,18 @@ interface ApplicationAnswer {
     id: string;
     question_text: string;
     answer_text: string | null;
-    answer_file_url: string | null;
+    file_url: string | null;
 }
 
 interface Application {
     id: string;
-    status: 'pending_review' | 'accepted' | 'rejected' | 'offer_sent' | 'offer_accepted' | 'hired' | 'completed';
-    cover_letter: string | null;
+    status: 'pending' | 'accepted' | 'rejected' | 'offer_sent' | 'offer_accepted' | 'hired' | 'completed' | 'withdrawn';
+    cover_note: string | null;
     resume_url: string | null;
     linkedin_url: string | null;
     offer_letter_url: string | null;
     completion_letter_url: string | null;
-    created_at: string;
+    applied_at: string;
     student_id: string;
     student_profile: {
         name: string;
@@ -98,7 +98,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
     const handleUpdateStatus = guardAction(async (applicationId: string, status: string) => {
         setActionId(applicationId);
         try {
-            const res = await fetch(`/api/internships/${internshipId}/applicants/${applicationId}`, {
+            const res = await fetch(`/api/internship-applications/${applicationId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status }),
@@ -150,7 +150,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                 ? { offer_letter_url: publicUrl, status: 'offer_sent' }
                 : { completion_letter_url: publicUrl, status: 'completed' };
 
-            const res = await fetch(`/api/internships/${internshipId}/applicants/${currentUpload.id}`, {
+            const res = await fetch(`/api/internship-applications/${currentUpload.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -223,8 +223,8 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                 <div key={ans.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
                                     <h4 className="text-sm font-semibold text-indigo-300 mb-2">{ans.question_text}</h4>
                                     {ans.answer_text && <p className="text-slate-200 text-sm whitespace-pre-wrap">{ans.answer_text}</p>}
-                                    {ans.answer_file_url && (
-                                        <a href={ans.answer_file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20">
+                                    {ans.file_url && (
+                                        <a href={ans.file_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-2 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20">
                                             <Download className="w-4 h-4" /> View Attached File
                                         </a>
                                     )}
@@ -273,13 +273,14 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                             className="bg-slate-800 border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none h-9 align-middle"
                         >
                             <option value="all">All Statuses</option>
-                            <option value="pending_review">Pending Review</option>
+                            <option value="pending">Pending</option>
                             <option value="accepted">Accepted</option>
                             <option value="offer_sent">Offer Sent</option>
                             <option value="offer_accepted">Offer Accepted</option>
                             <option value="hired">Hired</option>
                             <option value="completed">Completed</option>
                             <option value="rejected">Rejected</option>
+                            <option value="withdrawn">Withdrawn</option>
                         </select>
                     </div>
                     <div className="flex items-center gap-2">
@@ -336,15 +337,15 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                             <p className="text-slate-400 text-sm mt-1 flex items-center gap-2">
                                                 {app.student_profile?.college || 'No college specified'}
                                                 <span className="text-slate-600">•</span>
-                                                Applied {formatTimeAgo(app.created_at)}
+                                                Applied {formatTimeAgo(app.applied_at)}
                                             </p>
                                         </div>
                                     </div>
 
-                                    {app.cover_letter && (
+                                    {app.cover_note && (
                                         <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
                                             <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Cover Letter</h4>
-                                            <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{app.cover_letter}</p>
+                                            <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{app.cover_note}</p>
                                         </div>
                                     )}
 
@@ -384,7 +385,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                 <div className="lg:w-64 shrink-0 flex flex-col gap-3 lg:border-l lg:border-slate-800 lg:pl-6">
                                     <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:block mb-1">Actions</h4>
 
-                                    {app.status === 'pending_review' && (
+                                    {app.status === 'pending' && (
                                         <>
                                             <button
                                                 onClick={() => handleUpdateStatus(app.id, 'accepted')}

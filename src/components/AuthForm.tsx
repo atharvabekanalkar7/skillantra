@@ -21,6 +21,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userType, setUserType] = useState<'student' | 'recruiter' | null>(null);
   const [emailSent, setEmailSent] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
@@ -140,9 +141,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
             email,
             password,
             full_name: fullName.trim(),
-            college: college.trim(),
-            user_type: isRecruiter ? 'recruiter' : 'SkillSeeker',
-            ...(isRecruiter && {
+            college: userType === 'recruiter' ? 'Other' : college.trim(),
+            user_type: userType,
+            ...(userType === 'recruiter' && {
               company_name: companyName.trim(),
               company_description: companyDescription.trim(),
             }),
@@ -380,21 +381,60 @@ export default function AuthForm({ mode }: AuthFormProps) {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {mode === 'signup' && (
-                <div className="flex bg-slate-800/50 p-1 rounded-xl mb-6 border border-slate-700/50">
-                  <button
-                    type="button"
-                    onClick={() => setIsRecruiter(false)}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all text-center ${!isRecruiter ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    I'm a Student
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsRecruiter(true)}
-                    className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all text-center ${isRecruiter ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-                  >
-                    I'm a Recruiter
-                  </button>
+                <div className="space-y-4 mb-8">
+                  <label className="block text-sm font-medium text-white mb-3">
+                    I am a... <span className="text-red-400">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserType('student');
+                        setIsRecruiter(false);
+                      }}
+                      className={`flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left ${userType === 'student'
+                          ? 'bg-indigo-600/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]'
+                          : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
+                        }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`p-2 rounded-lg ${userType === 'student' ? 'bg-indigo-500 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                          </svg>
+                        </div>
+                        <span className={`font-bold ${userType === 'student' ? 'text-white' : 'text-slate-300'}`}>Student</span>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Looking for internships and collaborators
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserType('recruiter');
+                        setIsRecruiter(true);
+                      }}
+                      className={`flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left ${userType === 'recruiter'
+                          ? 'bg-indigo-600/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]'
+                          : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
+                        }`}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`p-2 rounded-lg ${userType === 'recruiter' ? 'bg-indigo-500 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        </div>
+                        <span className={`font-bold ${userType === 'recruiter' ? 'text-white' : 'text-slate-300'}`}>Recruiter</span>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Looking to hire interns for my company
+                      </p>
+                    </button>
+                  </div>
                 </div>
               )}
 
