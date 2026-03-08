@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   }
 
   if (senderProfile.user_type === 'recruiter') {
-    return NextResponse.json({ error: 'Recruiters cannot use collaboration requests' }, { status: 403 });
+    return NextResponse.json({ error: 'Recruiters cannot send collaboration requests' }, { status: 403 })
   }
 
   const { data: receiverProfile, error: receiverError } = await supabase

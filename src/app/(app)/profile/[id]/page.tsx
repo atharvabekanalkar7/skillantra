@@ -161,6 +161,9 @@ export default async function ProfileViewPage({
           >
             ← Back to dashboard
           </Link>
+          {profile.user_type === 'recruiter' && profile.company_logo_url && (
+            <img src={profile.company_logo_url} alt="Company Logo" className="w-16 h-16 rounded-xl object-cover mb-4 border border-slate-700 bg-slate-800" />
+          )}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-semibold text-slate-100">{profile.name}</h1>
             {profile.is_verified_recruiter && (
@@ -178,7 +181,7 @@ export default async function ProfileViewPage({
               ✉️ {profileEmail}
             </p>
           )}
-          {profile.bio && profile.user_type !== 'recruiter' && (
+          {profile.bio && profile.user_type === 'student' && (
             <p className="text-slate-300 text-base sm:text-lg mb-4 whitespace-pre-wrap leading-relaxed">{profile.bio}</p>
           )}
 
@@ -188,6 +191,12 @@ export default async function ProfileViewPage({
                 <div className="mb-2">
                   <span className="text-slate-500 font-medium text-sm block">Company</span>
                   <p className="text-slate-200">{profile.company_name}</p>
+                </div>
+              )}
+              {profile.designation && (
+                <div className="mb-2 mt-4">
+                  <span className="text-slate-500 font-medium text-sm block">Designation</span>
+                  <p className="text-slate-200">{profile.designation}</p>
                 </div>
               )}
               {profile.company_description && (
@@ -200,16 +209,26 @@ export default async function ProfileViewPage({
           )}
         </div>
 
-        {profile.user_type && profile.user_type !== 'recruiter' && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-slate-100 mb-2">I am a:</h2>
-            <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
-              {profile.user_type}
-            </span>
+        {profile.role_preference && profile.user_type === 'student' && (
+          <div className="mb-6 flex gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-100 mb-2">I am a:</h2>
+              <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
+                {profile.role_preference}
+              </span>
+            </div>
+            {profile.degree_level && (
+              <div>
+                <h2 className="text-lg font-semibold text-slate-100 mb-2">Degree</h2>
+                <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
+                  {profile.degree_level}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
-        {skills.length > 0 && (
+        {profile.user_type === 'student' && skills.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-100 mb-3">Skills</h2>
             <div className="flex flex-wrap gap-2">

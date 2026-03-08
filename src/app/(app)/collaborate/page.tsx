@@ -5,6 +5,7 @@ import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
 import { AppCard } from '@/components/ui/app-card';
+import { createClient } from '@/lib/supabase/client';
 import { Search, Plus, HandHelping, Settings2, Lock, X, UserCircle } from 'lucide-react';
 
 interface CollabPost {
@@ -31,6 +32,7 @@ export default function CollaboratePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [requestedPostIds, setRequestedPostIds] = useState<Set<string>>(new Set());
     const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
+    const [isRecruiter, setIsRecruiter] = useState(false);
 
     // Modal state
     const [modalPostId, setModalPostId] = useState<string | null>(null);
@@ -46,6 +48,17 @@ export default function CollaboratePage() {
         setLoading(true);
         setError(null);
         try {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase.from('profiles').select('user_type').eq('user_id', user.id).single();
+                if (profile?.user_type === 'recruiter') {
+                    setIsRecruiter(true);
+                    setLoading(false);
+                    return; // Don't load posts for recruiters
+                }
+            }
+
             const response = await fetch('/api/collaborate/posts');
             const data = await response.json();
 
@@ -110,13 +123,15 @@ export default function CollaboratePage() {
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-100 mb-1 sm:mb-2">Collaborate</h1>
                     <p className="text-slate-400 text-sm sm:text-base">Find peers to help you or offer your skills</p>
                 </div>
-                <Link
-                    href="/collaborate/new"
-                    className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-500 transition-all duration-200 active:scale-[0.98] md:hover:scale-[1.02] font-medium touch-manipulation"
-                >
-                    <Plus className="w-4 h-4" />
-                    Post a Request
-                </Link>
+                {!isRecruiter && (
+                    <Link
+                        href="/collaborate/new"
+                        className="w-full sm:w-auto min-h-[44px] flex items-center justify-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-xl hover:bg-indigo-500 transition-all duration-200 active:scale-[0.98] md:hover:scale-[1.02] font-medium touch-manipulation"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Post a Request
+                    </Link>
+                )}
             </div>
 
             {/* Tabs */}
@@ -152,7 +167,13 @@ export default function CollaboratePage() {
                 </div>
             )}
 
-            {filteredPosts.length === 0 ? (
+            {isRecruiter ? (
+                <AppCard className="text-center p-8 md:p-10">
+                    <p className="text-slate-400 mb-4 text-lg">
+                        Team collaboration is only available for students
+                    </p>
+                </AppCard>
+            ) : filteredPosts.length === 0 ? (
                 <AppCard className="text-center p-8 md:p-10">
                     <p className="text-slate-400 mb-4 text-lg">
                         {posts.length === 0

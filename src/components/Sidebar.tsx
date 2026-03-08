@@ -109,7 +109,11 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
       items: [
         { href: isDemo ? '/internships?demo=true' : '/internships', label: 'Browse Internships', icon: Briefcase },
         ...(userProfile?.user_type === 'recruiter'
-          ? [{ href: isDemo ? '/internships/mine?demo=true' : '/internships/mine', label: 'My Internships', icon: List }]
+          ? [
+            { href: isDemo ? '/internships/new?demo=true' : '/internships/new', label: 'Post Internship', icon: Briefcase },
+            { href: isDemo ? '/internships/mine?demo=true' : '/internships/mine', label: 'My Internships', icon: List },
+            { href: isDemo ? '/applicants?demo=true' : '/applicants', label: 'Applicants', icon: Users }
+          ]
           : []),
       ],
     },
@@ -126,13 +130,15 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
       title: 'TEAM COLLABORATION',
       items: [
         { href: isDemo ? '/collaborate?demo=true' : '/collaborate', label: 'Collaborate', icon: Users },
+        { href: isDemo ? '/requests?demo=true' : '/requests', label: 'Requests', icon: Users },
       ],
     },
   ];
 
-  // Filter sections based on user_type
+  const isRecruiter = userProfile?.user_type === 'recruiter';
+
   const menuSections = allMenuSections.filter(section => {
-    if (userProfile?.user_type === 'recruiter') {
+    if (isRecruiter) {
       return section.id === 'INTERNSHIPS' || section.id === 'DASHBOARD';
     }
     return true; // For student/others, show all

@@ -18,7 +18,9 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
     const [formData, setFormData] = useState({
         name: initialProfile?.name || '',
         company_name: initialProfile?.company_name || '',
+        designation: initialProfile?.designation || '',
         company_description: initialProfile?.company_description || '',
+        company_logo_url: initialProfile?.company_logo_url || '',
         phone_number: initialProfile?.phone_number ? '+91 ' + initialProfile.phone_number : '+91 ',
     });
 
@@ -61,8 +63,8 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
 
         const cleanedPhone = formData.phone_number.replace(/^\+91\s*/, '').trim();
 
-        if (!formData.name.trim() || !formData.company_name.trim() || !cleanedPhone) {
-            setError('Name, Company Name, and Phone Number are required.');
+        if (!formData.name.trim() || !formData.company_name.trim() || !formData.designation.trim() || !cleanedPhone) {
+            setError('Name, Company Name, Designation, and Phone Number are required.');
             setLoading(false);
             return;
         }
@@ -74,7 +76,9 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
                 body: JSON.stringify({
                     name: formData.name.trim(),
                     company_name: formData.company_name.trim(),
+                    designation: formData.designation.trim(),
                     company_description: formData.company_description.trim(),
+                    company_logo_url: formData.company_logo_url,
                     phone_number: cleanedPhone,
                 }),
             });
@@ -174,6 +178,26 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
             </div>
 
             <div>
+                <label htmlFor="designation" className="block text-sm font-medium text-slate-300 mb-2">
+                    Designation <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
+                        <User className="w-5 h-5" />
+                    </div>
+                    <input
+                        id="designation"
+                        type="text"
+                        required
+                        value={formData.designation}
+                        onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                        placeholder="e.g. HR Manager"
+                    />
+                </div>
+            </div>
+
+            <div>
                 <label htmlFor="phone_number" className="block text-sm font-medium text-slate-300 mb-2">
                     Phone Number <span className="text-red-400">*</span>
                 </label>
@@ -210,6 +234,20 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
                         placeholder="Tell us about the company..."
                     />
                 </div>
+            </div>
+
+            <div>
+                <label htmlFor="company_logo_url" className="block text-sm font-medium text-slate-300 mb-2">
+                    Company Logo URL (Optional)
+                </label>
+                <input
+                    id="company_logo_url"
+                    type="url"
+                    value={formData.company_logo_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company_logo_url: e.target.value }))}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                    placeholder="https://example.com/logo.png"
+                />
             </div>
 
             <div className="pt-4">

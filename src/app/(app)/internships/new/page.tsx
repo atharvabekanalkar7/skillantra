@@ -88,7 +88,10 @@ export default function NewInternshipPage() {
                 .single();
 
             if (profile?.user_type !== 'recruiter') {
-                router.push('/dashboard');
+                import('@/lib/utils/toast').then(({ showToast }) => {
+                    showToast('Only recruiters can post internships', 'error');
+                });
+                router.push('/internships');
                 return;
             }
 

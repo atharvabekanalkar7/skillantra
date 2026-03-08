@@ -1,0 +1,1380 @@
+{
+    "name": "skillantra - modify - Copy",
+    "path": "c:\\Users\\drsac\\Downloads\\skillantra-main\\skillantra - modify - Copy",
+    "type": "directory",
+    "children": [
+        {
+            "name": "public",
+            "type": "folder",
+            "children": [
+                {
+                    "name": "fonts",
+                    "type": "folder",
+                    "children": [
+                        {
+                            "name": "satoshi",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "Satoshi-Black.woff2",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "Satoshi-Bold.woff2",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "Satoshi-Medium.woff2",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "Satoshi-Regular.woff2",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "Satoshi-Variable.woff2",
+                                    "type": "file"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "SkillAntra-Logo.png",
+                    "type": "file"
+                },
+                {
+                    "name": "SkillAntra-Logo.svg",
+                    "type": "file"
+                },
+                {
+                    "name": "favicon.ico",
+                    "type": "file"
+                },
+                {
+                    "name": "file.svg",
+                    "type": "file"
+                },
+                {
+                    "name": "globe.svg",
+                    "type": "file"
+                },
+                {
+                    "name": "next.svg",
+                    "type": "file"
+                },
+                {
+                    "name": "vercel.svg",
+                    "type": "file"
+                },
+                {
+                    "name": "window.svg",
+                    "type": "file"
+                }
+            ]
+        },
+        {
+            "name": "src",
+            "type": "folder",
+            "children": [
+                {
+                    "name": "app",
+                    "type": "folder",
+                    "children": [
+                        {
+                            "name": "(app)",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "applications",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "collaborate",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "mine",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "new",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "complete-profile",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "dashboard",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "internships",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "applicants",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "page.tsx",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "apply",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "page.tsx",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "mine",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "new",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "leaderboard",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "messages",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "notifications",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "profile",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "edit",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "requests",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "resume",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "settings",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "tasks",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "edit",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "page.tsx",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "mine",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "new",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "page.tsx",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "layout.tsx",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "(auth)",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "login",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "signup",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "page.tsx",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "layout.tsx",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "api",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "admin",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "internships",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "[id]",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "approve",
+                                                            "type": "folder",
+                                                            "children": [
+                                                                {
+                                                                    "name": "route.ts",
+                                                                    "type": "file"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "reject",
+                                                            "type": "folder",
+                                                            "children": [
+                                                                {
+                                                                    "name": "route.ts",
+                                                                    "type": "file"
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "applications",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "auth",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "delete-account",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "login",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "logout",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "resend-confirmation",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "session",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "signup",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "collaborate",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "mine",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "posts",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "request",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "requests",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "[id]",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "route.ts",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "conversations",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "messages",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "route.ts",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "cron",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "delete-expired-tasks",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "internship-applications",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "internships",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "applicants",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "[appId]",
+                                                            "type": "folder",
+                                                            "children": [
+                                                                {
+                                                                    "name": "completion-letter",
+                                                                    "type": "folder",
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "route.ts",
+                                                                            "type": "file"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "name": "offer-letter",
+                                                                    "type": "folder",
+                                                                    "children": [
+                                                                        {
+                                                                            "name": "route.ts",
+                                                                            "type": "file"
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "name": "route.ts",
+                                                                    "type": "file"
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "name": "route.ts",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "apply",
+                                                    "type": "folder",
+                                                    "children": [
+                                                        {
+                                                            "name": "route.ts",
+                                                            "type": "file"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "messages",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "notifications",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "mark-read",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "payments",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "create-order",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "webhook",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "profile",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "profiles",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "requests",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "resume",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "tasks",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "[id]",
+                                            "type": "folder",
+                                            "children": [
+                                                {
+                                                    "name": "route.ts",
+                                                    "type": "file"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "auth",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "callback",
+                                    "type": "folder",
+                                    "children": [
+                                        {
+                                            "name": "route.ts",
+                                            "type": "file"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "name": "demo",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "page.tsx",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "privacy",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "page.tsx",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "terms",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "page.tsx",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "layout.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "page.tsx",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "components",
+                    "type": "folder",
+                    "children": [
+                        {
+                            "name": "ui",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "animated-shader-background.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "app-card.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "button.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "cybernetic-grid-shader.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "dotted-surface.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "flow-field-background.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "holographic-card.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "interactive-globe.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "lamp.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "splash-screen.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "status-badge.tsx",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "switch.tsx",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "AuthForm.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "DeleteAccountButton.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "LandingPageClient.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "LoadingSpinner.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "MobileHeader.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "Navigation.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "NotificationBell.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "PhoneNumberModal.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "ProfileCard.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "ProfileForm.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "RecruiterProfileForm.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "RequestCard.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "SendDMButton.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "Sidebar.tsx",
+                            "type": "file"
+                        },
+                        {
+                            "name": "SidebarButton.tsx",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "hooks",
+                    "type": "folder",
+                    "children": [
+                        {
+                            "name": "useCountdown.ts",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "lib",
+                    "type": "folder",
+                    "children": [
+                        {
+                            "name": "supabase",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "client.ts",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "middleware.ts",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "server.ts",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "utils",
+                            "type": "folder",
+                            "children": [
+                                {
+                                    "name": "phone.ts",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "timeAgo.ts",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "toast.ts",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "useCountdown.ts",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "useDemoGuard.ts",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "api-helpers.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "auth-errors.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "auth-utils.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "email-templates.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "notifications.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "profile-utils.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "types.ts",
+                            "type": "file"
+                        },
+                        {
+                            "name": "utils.ts",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "globals.css",
+                    "type": "file"
+                }
+            ]
+        },
+        {
+            "name": ".gitignore",
+            "type": "file"
+        },
+        {
+            "name": "AUTH_FIX_IMPLEMENTATION.md",
+            "type": "file"
+        },
+        {
+            "name": "DATABASE_CHECKLIST.md",
+            "type": "file"
+        },
+        {
+            "name": "DATABASE_SETUP_GUIDE.md",
+            "type": "file"
+        },
+        {
+            "name": "DELETE_ACCOUNT_TROUBLESHOOTING.md",
+            "type": "file"
+        },
+        {
+            "name": "EMAIL_CONFIRMATION_FIX.md",
+            "type": "file"
+        },
+        {
+            "name": "EMAIL_FIX_SUMMARY.md",
+            "type": "file"
+        },
+        {
+            "name": "EMAIL_VERIFICATION_FIX.md",
+            "type": "file"
+        },
+        {
+            "name": "ENV_VARS_TROUBLESHOOTING.md",
+            "type": "file"
+        },
+        {
+            "name": "ENV_VAR_DEBUG.md",
+            "type": "file"
+        },
+        {
+            "name": "MOBILE_OPTIMIZATION_SUMMARY.md",
+            "type": "file"
+        },
+        {
+            "name": "PRODUCTION_REDIRECT_FIX.md",
+            "type": "file"
+        },
+        {
+            "name": "QUICK_FIX_ALL_COLUMNS.md",
+            "type": "file"
+        },
+        {
+            "name": "QUICK_FIX_ALL_COLUMNS.sql",
+            "type": "file"
+        },
+        {
+            "name": "QUICK_FIX_COLLEGE_COLUMN.md",
+            "type": "file"
+        },
+        {
+            "name": "QUICK_FIX_DATABASE.md",
+            "type": "file"
+        },
+        {
+            "name": "QUICK_FIX_PHASE3.md",
+            "type": "file"
+        },
+        {
+            "name": "README.md",
+            "type": "file"
+        },
+        {
+            "name": "SCROLL_INPUT_AUDIT_SUMMARY.md",
+            "type": "file"
+        },
+        {
+            "name": "SERVICE_ROLE_KEY_FIX.md",
+            "type": "file"
+        },
+        {
+            "name": "SUPABASE_EMAIL_SETUP.md",
+            "type": "file"
+        },
+        {
+            "name": "TROUBLESHOOTING_EMAILS.md",
+            "type": "file"
+        },
+        {
+            "name": "add-degree-level.sql",
+            "type": "file"
+        },
+        {
+            "name": "build_errors.txt",
+            "type": "file"
+        },
+        {
+            "name": "build_output.txt",
+            "type": "file"
+        },
+        {
+            "name": "check_ts.js",
+            "type": "file"
+        },
+        {
+            "name": "components.json",
+            "type": "file"
+        },
+        {
+            "name": "create-triggers.sql",
+            "type": "file"
+        },
+        {
+            "name": "diff.patch",
+            "type": "file"
+        },
+        {
+            "name": "errors.txt",
+            "type": "file"
+        },
+        {
+            "name": "eslint.config.mjs",
+            "type": "file"
+        },
+        {
+            "name": "fix-college-column.sql",
+            "type": "file"
+        },
+        {
+            "name": "fix-user-type-column.sql",
+            "type": "file"
+        },
+        {
+            "name": "fix_all.js",
+            "type": "file"
+        },
+        {
+            "name": "fix_div.js",
+            "type": "file"
+        },
+        {
+            "name": "fix_duplicates.js",
+            "type": "file"
+        },
+        {
+            "name": "fix_dups.js",
+            "type": "file"
+        },
+        {
+            "name": "fix_errors.js",
+            "type": "file"
+        },
+        {
+            "name": "fix_last.js",
+            "type": "file"
+        },
+        {
+            "name": "middleware.ts",
+            "type": "file"
+        },
+        {
+            "name": "next.config.ts",
+            "type": "file"
+        },
+        {
+            "name": "package-lock.json",
+            "type": "file"
+        },
+        {
+            "name": "package.json",
+            "type": "file"
+        },
+        {
+            "name": "postcss.config.mjs",
+            "type": "file"
+        },
+        {
+            "name": "project-files-list.txt",
+            "type": "file"
+        },
+        {
+            "name": "skillantra-newfiletree.json",
+            "type": "file"
+        },
+        {
+            "name": "supabase-auth-fix-migration.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-buckets.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-collaboration.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-college.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-complete.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-internships-final.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-internships-v2.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-internships.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-messages-read.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-2.1-tasks.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-3-phone.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-3-task-enhancements.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-4-task-cleanup.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-5-messaging.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-6-dms.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-phase-7-profile.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-profile-trigger.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-recruiter-fields.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-tasks.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration-user-type.sql",
+            "type": "file"
+        },
+        {
+            "name": "supabase-migration.sql",
+            "type": "file"
+        },
+        {
+            "name": "tailwind.config.ts",
+            "type": "file"
+        },
+        {
+            "name": "test-database-connection.sql",
+            "type": "file"
+        },
+        {
+            "name": "tsconfig.json",
+            "type": "file"
+        },
+        {
+            "name": "vercel.json",
+            "type": "file"
+        }
+    ],
+    "metadata": {
+        "generated": "2026-03-08T06:59:10.762Z",
+        "generator": "FileTree Pro Extension",
+        "version": "0.2.0",
+        "showIcons": false,
+        "maxDepth": 10
+    }
+}

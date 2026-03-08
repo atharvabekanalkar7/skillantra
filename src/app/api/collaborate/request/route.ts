@@ -19,12 +19,16 @@ export async function POST(request: Request) {
 
     const { data: userProfile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, user_type')
         .eq('user_id', user.id)
         .single();
 
     if (profileError || !userProfile) {
         return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
+    }
+
+    if (userProfile.user_type === 'recruiter') {
+        return NextResponse.json({ error: 'Recruiters cannot send collaboration requests' }, { status: 403 })
     }
 
     const body = await request.json();

@@ -99,6 +99,7 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
     // Auth / ownership state
     const [currentProfileId, setCurrentProfileId] = useState<string | null>(null);
     const [isRecruiterOwner, setIsRecruiterOwner] = useState(false);
+    const [isRecruiter, setIsRecruiter] = useState(false);
 
     // Application state
     const [alreadyApplied, setAlreadyApplied] = useState(false);
@@ -153,6 +154,8 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
 
             if (profile) {
                 setCurrentProfileId(profile.id);
+                if (profile.user_type === 'recruiter') setIsRecruiter(true);
+
                 if (data.recruiter_id === profile.id) {
                     setIsRecruiterOwner(true);
                 } else if (profile.user_type === 'student') {
@@ -392,6 +395,10 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
                                     >
                                         Manage Applicants →
                                     </Link>
+                                ) : isRecruiter ? (
+                                    <div className="bg-slate-800/80 border border-slate-700 py-3 px-4 rounded-xl flex items-center justify-center">
+                                        <p className="text-slate-400 text-sm font-medium text-center">Only students can apply for internships</p>
+                                    </div>
                                 ) : alreadyApplied ? (
                                     <>
                                         <button

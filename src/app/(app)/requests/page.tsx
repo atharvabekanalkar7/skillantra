@@ -12,6 +12,7 @@ export default function RequestsPage() {
   const [loading, setLoading] = useState(true);
   const [responding, setResponding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isRecruiter, setIsRecruiter] = useState(false);
 
   // Create client with error handling
   let supabase;
@@ -45,11 +46,17 @@ export default function RequestsPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, user_type')
         .eq('user_id', user.id)
         .single();
 
       if (!profile) {
+        setLoading(false);
+        return;
+      }
+
+      if (profile.user_type === 'recruiter') {
+        setIsRecruiter(true);
         setLoading(false);
         return;
       }
@@ -141,47 +148,53 @@ export default function RequestsPage() {
         <p className="text-white/80 text-sm sm:text-base">Manage your incoming and sent requests</p>
       </div>
 
-      <div className="space-y-6 md:space-y-8">
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">Incoming Requests</h2>
-          {incomingRequests.length === 0 ? (
-            <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
-              <p className="text-white/80">No incoming requests</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {incomingRequests.map((request) => (
-                <RequestCard
-                  key={request.id}
-                  request={request}
-                  isReceiver={true}
-                  onRespond={handleRespond}
-                  loading={responding === request.id}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+      {isRecruiter ? (
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
+          <p className="text-white/80 text-lg">Team collaboration is only available for students</p>
+        </div>
+      ) : (
+        <div className="space-y-6 md:space-y-8">
+          <section>
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">Incoming Requests</h2>
+            {incomingRequests.length === 0 ? (
+              <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
+                <p className="text-white/80">No incoming requests</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {incomingRequests.map((request) => (
+                  <RequestCard
+                    key={request.id}
+                    request={request}
+                    isReceiver={true}
+                    onRespond={handleRespond}
+                    loading={responding === request.id}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
 
-        <section>
-          <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">Sent Requests</h2>
-          {sentRequests.length === 0 ? (
-            <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
-              <p className="text-white/80">No sent requests</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {sentRequests.map((request) => (
-                <RequestCard
-                  key={request.id}
-                  request={request}
-                  isReceiver={false}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+          <section>
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">Sent Requests</h2>
+            {sentRequests.length === 0 ? (
+              <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 text-center border border-purple-400/30">
+                <p className="text-white/80">No sent requests</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sentRequests.map((request) => (
+                  <RequestCard
+                    key={request.id}
+                    request={request}
+                    isReceiver={false}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 }

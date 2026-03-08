@@ -110,10 +110,12 @@ export default function EditProfilePage() {
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
-        {profile?.user_type === 'recruiter' ? (
+        {profile?.user_type === 'student' ? (
+          <ProfileForm initialProfile={profile} />
+        ) : profile?.user_type === 'recruiter' ? (
           <RecruiterProfileForm initialProfile={profile} />
         ) : (
-          <ProfileForm initialProfile={profile} />
+          <div className="text-center font-medium text-slate-300">Invalid user type. Please contact support.</div>
         )}
       </div>
     </div>

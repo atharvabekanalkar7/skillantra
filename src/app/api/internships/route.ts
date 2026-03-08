@@ -102,8 +102,12 @@ export async function POST(request: Request) {
         .eq('user_id', user.id)
         .single();
 
-    if (profileError || !userProfile || userProfile.user_type !== 'recruiter') {
+    if (profileError || !userProfile) {
         return NextResponse.json({ error: 'Only recruiters can post internships.' }, { status: 403 });
+    }
+
+    if (userProfile.user_type === 'student') {
+        return NextResponse.json({ error: 'Only recruiters can post internships' }, { status: 403 })
     }
 
     if (!userProfile.is_verified) {

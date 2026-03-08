@@ -16,8 +16,8 @@ export async function POST(req: Request) {
         const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
         if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
 
-        if (profile.user_type !== 'student') {
-            return NextResponse.json({ error: 'Only students can apply for internships' }, { status: 403 });
+        if (profile.user_type === 'recruiter') {
+            return NextResponse.json({ error: 'Recruiters cannot apply for internships' }, { status: 403 })
         }
 
         const formData = await req.formData();

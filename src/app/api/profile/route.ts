@@ -82,6 +82,14 @@ export async function GET() {
   // Add email from auth user to profile
   if (profile) {
     profile.email = user.email;
+    if (profile.user_type === 'recruiter') {
+      delete profile.bio;
+      delete profile.skills;
+      delete profile.degree_level;
+    } else {
+      delete profile.company_name;
+      delete profile.company_description;
+    }
   }
 
   return NextResponse.json({ profile });
@@ -106,7 +114,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { name, bio, skills, user_type, college, phone_number, company_name, company_description, degree_level } = body;
+  const { name, bio, skills, role_preference, college, phone_number, company_name, company_description, degree_level, designation, company_logo_url, is_collaboration_available } = body;
 
   // Validate phone number if provided
   if (phone_number !== undefined) {
@@ -176,20 +184,32 @@ export async function PATCH(request: Request) {
     name === undefined &&
     bio === undefined &&
     skills === undefined &&
-    user_type === undefined &&
+    role_preference === undefined &&
     college === undefined;
 
+  // Always read from DB, never from request body
+  const dbUserType = existingProfile?.user_type;
+  const isRecruiter = dbUserType === 'recruiter';
+
+  const hasRecruiterFields = company_name !== undefined || company_description !== undefined;
+  const hasStudentFields = bio !== undefined || skills !== undefined || degree_level !== undefined;
+
+  if (isRecruiter && hasStudentFields) {
+    return NextResponse.json({ error: 'Invalid fields for your account type' }, { status: 400 });
+  }
+  if (!isRecruiter && hasRecruiterFields) {
+    return NextResponse.json({ error: 'Invalid fields for your account type' }, { status: 400 });
+  }
+
   // If not a phone-only update, validate required fields
-  const type_to_use = existingProfile?.user_type || user_type || 'SkillSeeker';
-  const isRecruiter = type_to_use === 'recruiter';
 
   if (!isPhoneOnlyUpdate) {
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    if (!isRecruiter && (!user_type || !['SkillSeeker', 'SkillHolder', 'Both'].includes(user_type))) {
-      return NextResponse.json({ error: 'Valid user_type is required (SkillSeeker, SkillHolder, or Both)' }, { status: 400 });
+    if (!isRecruiter && (!role_preference || !['SkillSeeker', 'SkillHolder', 'Both'].includes(role_preference))) {
+      return NextResponse.json({ error: 'Valid role preference is required (SkillSeeker, SkillHolder, or Both)' }, { status: 400 });
     }
 
     if (isRecruiter) {
@@ -237,6 +257,12 @@ export async function PATCH(request: Request) {
     if (company_description !== undefined) {
       (updateData as any).company_description = company_description ? company_description.trim() : null;
     }
+    if (designation !== undefined) {
+      (updateData as any).designation = designation ? designation.trim() : null;
+    }
+    if (company_logo_url !== undefined) {
+      (updateData as any).company_logo_url = company_logo_url ? company_logo_url.trim() : null;
+    }
   } else {
     // Student specific fields
     if (bio !== undefined) {
@@ -245,11 +271,14 @@ export async function PATCH(request: Request) {
     if (skills !== undefined) {
       updateData.skills = skills ? skills.trim() : null;
     }
-    if (user_type !== undefined) {
-      updateData.user_type = user_type as 'SkillSeeker' | 'SkillHolder' | 'Both';
+    if (role_preference !== undefined) {
+      (updateData as any).role_preference = role_preference;
     }
     if (degree_level !== undefined) {
       (updateData as any).degree_level = degree_level as 'UG' | 'PG';
+    }
+    if (is_collaboration_available !== undefined) {
+      (updateData as any).is_collaboration_available = !!is_collaboration_available;
     }
   }
 
