@@ -8,8 +8,121 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { AppCard } from '@/components/ui/app-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
-import { FileText, CheckCircle, XCircle, Upload, MessageSquare, Linkedin, Eye, Download, Users } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, MessageSquare, Linkedin, Eye, Download, Users } from 'lucide-react';
 import { useDemoGuard } from '@/lib/utils/useDemoGuard';
+import html2canvas from 'html2canvas';
+
+declare global {
+    interface Window {
+        html2pdf: any;
+    }
+}
+
+function loadHtml2Pdf(): Promise<boolean> {
+    return new Promise((resolve) => {
+        if (typeof window !== 'undefined' && window.html2pdf) return resolve(true);
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+}
+
+const generateResumeHTML = (
+    basicInfo: any,
+    education: any[],
+    experience: any[],
+    projects: any[],
+    achievements: any[]
+) => {
+    const hasData = (field: any) => field && field.length > 0;
+    const hasBasic = (val: string) => val && val.trim().length > 0;
+
+    return `
+        <div style="font-family: 'EB Garamond', serif; padding: 40px; color: #222; line-height: 1.6; background: #fff; width: 100%; box-sizing: border-box;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="margin: 0 0 5px 0; font-size: 28px; font-weight: bold; text-transform: uppercase; color: #000;">
+                    ${basicInfo.name || 'Your Name'}
+                </h1>
+                <div style="font-size: 14px; color: #444; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                    ${hasBasic(basicInfo.city) ? `<span>${basicInfo.city}</span>` : ''}
+                    ${hasBasic(basicInfo.phone) ? `<span>${hasBasic(basicInfo.city) ? ' | ' : ''}${basicInfo.phone}</span>` : ''}
+                    ${hasBasic(basicInfo.email) ? `<span>${(hasBasic(basicInfo.city) || hasBasic(basicInfo.phone)) ? ' | ' : ''}${basicInfo.email}</span>` : ''}
+                </div>
+                <div style="font-size: 14px; color: #444; margin-top: 4px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                    ${hasBasic(basicInfo.linkedin) ? `<span>LinkedIn: ${basicInfo.linkedin.replace(/https?:\/\/(www\.)?/, '')}</span>` : ''}
+                    ${hasBasic(basicInfo.github) ? `<span>${hasBasic(basicInfo.linkedin) ? ' | ' : ''}GitHub: ${basicInfo.github.replace(/https?:\/\/(www\.)?/, '')}</span>` : ''}
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 2px solid #333; margin-bottom: 20px;" />
+
+            ${hasBasic(basicInfo.summary) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Summary</h2>
+                    <p style="margin: 0; font-size: 14px; text-align: justify; white-space: pre-line;">${basicInfo.summary}</p>
+                </div>
+            ` : ''}
+
+            ${hasData(experience) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Experience</h2>
+                    ${experience.map(exp => `
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px;">
+                                <span>${exp.role}</span>
+                                <span>${exp.duration}</span>
+                            </div>
+                            <div style="font-style: italic; color: #444; margin-bottom: 4px; font-size: 14px;">${exp.company}</div>
+                            ${hasBasic(exp.description) ? `<p style="margin: 0; font-size: 14px; white-space: pre-line;">${exp.description}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${hasData(projects) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Projects</h2>
+                    ${projects.map(proj => `
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-weight: bold; font-size: 15px;">
+                                ${proj.title} ${hasBasic(proj.link) ? `<span style="font-weight: normal; font-size: 12px; color: #666; margin-left: 5px;">(${proj.link})</span>` : ''}
+                            </div>
+                            ${hasBasic(proj.description) ? `<p style="margin: 4px 0 0 0; font-size: 14px; white-space: pre-line;">${proj.description}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${hasData(education) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Education</h2>
+                    ${education.map(edu => `
+                        <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 15px;">${edu.degree}</div>
+                                <div style="font-size: 14px;">${edu.institution}${hasBasic(edu.grade) ? ` | Grade: ${edu.grade}` : ''}</div>
+                            </div>
+                            <div style="text-align: right; font-size: 14px;">${edu.year}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${hasData(achievements) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Achievements</h2>
+                    <ul style="padding-left: 20px; margin: 0;">
+                        ${achievements.map(ach => `
+                            <li style="font-size: 14px; margin-bottom: 4px;">${ach.description}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+};
 
 interface Internship {
     id: string;
@@ -33,15 +146,21 @@ interface Application {
     status: 'pending' | 'accepted' | 'rejected' | 'offer_sent' | 'offer_accepted' | 'hired' | 'completed' | 'withdrawn';
     cover_note: string | null;
     resume_url: string | null;
+    skillantra_resume_id?: string | null;
     linkedin_url: string | null;
     offer_letter_url: string | null;
     completion_letter_url: string | null;
     applied_at: string;
     student_id: string;
-    student_profile: {
+    profiles: {
+        id: string;
         name: string;
+        email: string | null;
+        phone_number: string | null;
+        degree_level: string | null;
         college: string | null;
-        degree_level?: string | null;
+        skills: string | null;
+        bio: string | null;
     } | null;
     answers?: ApplicationAnswer[];
 }
@@ -63,7 +182,6 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
 
     // Modals state
     const [selectedAnswers, setSelectedAnswers] = useState<ApplicationAnswer[] | null>(null);
-    const [uploadingFor, setUploadingFor] = useState<{ id: string, type: 'offer' | 'completion' } | null>(null);
 
     const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
         setToast({ msg, type });
@@ -109,7 +227,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                 return;
             }
             showToast(`Application ${status}`);
-            setApplications(prev => prev.map(a => a.id === applicationId ? { ...a, status: status as any } : a));
+            loadData();
         } catch {
             showToast('An unexpected error occurred', 'error');
         } finally {
@@ -117,61 +235,24 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
         }
     });
 
-    const handleFileUpload = guardAction(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0 || !uploadingFor) return;
-        const file = e.target.files[0];
 
-        if (file.size > 5 * 1024 * 1024) {
-            showToast('File size must be less than 5MB', 'error');
+    const handleResumeView = (application: Application) => {
+        if (application.resume_url) {
+            window.open(application.resume_url, '_blank');
             return;
         }
-
-        const bucketName = uploadingFor.type === 'offer' ? 'offer-letters' : 'offer-letters'; // Using the same private bucket or separate if created
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${uploadingFor.id}_${Date.now()}.${fileExt}`;
-
-        setActionId(uploadingFor.id);
-        const currentUpload = uploadingFor;
-        setUploadingFor(null);
-
-        try {
-            const { error: uploadError } = await supabase.storage
-                .from('offer-letters')
-                .upload(fileName, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('offer-letters')
-                .getPublicUrl(fileName); // We might need signed urls if private, but assuming public access for now or signed in API
-
-            // Update API
-            const payload = currentUpload.type === 'offer'
-                ? { offer_letter_url: publicUrl, status: 'offer_sent' }
-                : { completion_letter_url: publicUrl, status: 'completed' };
-
-            const res = await fetch(`/api/internship-applications/${currentUpload.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            if (!res.ok) throw new Error('Failed to update application');
-
-            showToast(`${currentUpload.type === 'offer' ? 'Offer' : 'Completion'} letter uploaded successfully`);
-            loadData();
-        } catch (err: any) {
-            showToast(err.message || 'Upload failed', 'error');
-        } finally {
-            setActionId(null);
+        if (application.skillantra_resume_id) {
+            window.open(`/resume/${application.profiles?.id}`, '_blank');
+            return;
         }
-    });
+        showToast('No resume available for this applicant', 'error');
+    };
 
     if (loading) return <LoadingSpinner />;
 
     const filteredApplications = applications.filter((app) => {
         if (statusFilter !== 'all' && app.status !== statusFilter) return false;
-        if (degreeFilter !== 'All' && app.student_profile?.degree_level !== degreeFilter) return false;
+        if (degreeFilter !== 'All' && app.profiles?.degree_level !== degreeFilter) return false;
         return true;
     });
 
@@ -285,12 +366,12 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-slate-400">Degree:</span>
-                        <div className="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                        <div className="flex gap-2 bg-slate-800 rounded-lg p-0.5 border border-slate-700">
                             {['All', 'UG', 'PG'].map((d) => (
                                 <button
                                     key={d}
                                     onClick={() => setDegreeFilter(d as any)}
-                                    className={`px-3 py-1 rounded-md text-sm font-medium transition ${degreeFilter === d ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'} `}
+                                    className={`px - 3 py - 1 rounded - md text - sm font - medium transition ${degreeFilter === d ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'} `}
                                 >
                                     {d}
                                 </button>
@@ -298,7 +379,8 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {applications.length === 0 ? (
                 <AppCard className="text-center p-12 border-dashed border-2 bg-slate-900/30">
@@ -326,19 +408,42 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <h3 className="text-lg md:text-xl font-bold text-slate-100 flex flex-wrap items-center gap-2">
-                                                {app.student_profile?.name || 'Unknown Candidate'}
+                                                {app.profiles?.name || 'Unknown Candidate'}
                                                 <StatusBadge status={app.status as any} />
-                                                {app.student_profile?.degree_level && (
+                                                {app.profiles?.degree_level && (
                                                     <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-wider bg-slate-800 text-slate-400 border border-slate-700">
-                                                        {app.student_profile.degree_level}
+                                                        {app.profiles.degree_level}
                                                     </span>
                                                 )}
                                             </h3>
-                                            <p className="text-slate-400 text-sm mt-1 flex items-center gap-2">
-                                                {app.student_profile?.college || 'No college specified'}
-                                                <span className="text-slate-600">•</span>
-                                                Applied {formatTimeAgo(app.applied_at)}
-                                            </p>
+                                            <div className="flex flex-col gap-1 mt-1">
+                                                <p className="text-slate-400 text-sm flex items-center gap-2">
+                                                    {app.profiles?.college || 'No college specified'}
+                                                    <span className="text-slate-600">•</span>
+                                                    Applied {formatTimeAgo(app.applied_at)}
+                                                </p>
+                                                {app.profiles?.email && (
+                                                    <p className="text-slate-500 text-xs flex items-center gap-1.5">
+                                                        <span className="font-semibold text-slate-400">Email:</span> {app.profiles.email}
+                                                    </p>
+                                                )}
+                                                {app.profiles?.phone_number && (
+                                                    <p className="text-slate-500 text-xs flex items-center gap-1.5">
+                                                        <span className="font-semibold text-slate-400">Phone:</span> {app.profiles.phone_number}
+                                                    </p>
+                                                )}
+                                            </div>
+                                            {app.profiles?.skills && (
+                                                <div className="flex flex-wrap gap-1.5 mt-3">
+                                                    {app.profiles.skills.split(',').map((skill, i) => (
+                                                        skill.trim() && (
+                                                            <span key={i} className="px-2 py-0.5 bg-slate-800/80 text-slate-400 text-[10px] font-medium rounded-md border border-slate-700/50">
+                                                                {skill.trim()}
+                                                            </span>
+                                                        )
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -350,15 +455,13 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                     )}
 
                                     <div className="flex flex-wrap gap-3 pt-2">
-                                        {app.resume_url && (
-                                            <a
-                                                href={app.resume_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                        {(app.resume_url || app.skillantra_resume_id) && (
+                                            <button
+                                                onClick={() => handleResumeView(app)}
                                                 className="inline-flex items-center gap-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg text-sm font-medium border border-blue-500/20 transition-colors"
                                             >
                                                 <FileText className="w-4 h-4" /> View Resume
-                                            </a>
+                                            </button>
                                         )}
                                         {app.linkedin_url && (
                                             <a
@@ -370,6 +473,12 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                                 <Linkedin className="w-4 h-4" /> LinkedIn Profile
                                             </a>
                                         )}
+                                        <button
+                                            onClick={() => router.push(`/profile/${app.profiles?.id}`)}
+                                            className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 transition-colors"
+                                        >
+                                            <Users className="w-4 h-4" /> View Profile (Portfolio)
+                                        </button>
                                         {app.answers && app.answers.length > 0 && (
                                             <button
                                                 onClick={() => setSelectedAnswers(app.answers || null)}
@@ -403,36 +512,29 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                     )}
 
                                     {app.status === 'accepted' && (
-                                        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 text-center">
-                                            <p className="text-indigo-300 text-xs mb-3 font-medium">Candidate Accepted! Send them an official offer letter.</p>
-                                            <label className="w-full cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-2">
-                                                <Upload className="w-4 h-4" /> Upload Offer Letter
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept=".pdf"
-                                                    onChange={(e) => {
-                                                        setUploadingFor({ id: app.id, type: 'offer' });
-                                                        handleFileUpload(e);
-                                                    }}
-                                                />
-                                            </label>
+                                        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 text-center space-y-3">
+                                            <p className="text-indigo-300 text-xs font-medium">Candidate Accepted!</p>
+                                            {app.profiles?.email && (
+                                                <a
+                                                    href={`mailto:${app.profiles.email}`}
+                                                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-2"
+                                                >
+                                                    <MessageSquare className="w-4 h-4" /> Email Candidate
+                                                </a>
+                                            )}
+                                            <button
+                                                onClick={() => router.push(`/profile/${app.profiles?.id}`)}
+                                                className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-2"
+                                            >
+                                                <Users className="w-4 h-4" /> Message Candidate
+                                            </button>
                                         </div>
                                     )}
 
                                     {app.status === 'offer_sent' && (
                                         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
                                             <p className="text-amber-400 text-sm font-medium mb-1">Offer Letter Sent</p>
-                                            <p className="text-slate-400 text-xs mb-3">Waiting for student to accept the offer.</p>
-                                            {app.offer_letter_url && (
-                                                <a href={app.offer_letter_url} target="_blank" rel="noopener noreferrer" className="text-amber-300 hover:text-amber-200 text-xs underline block mb-3">View Uploaded Offer Letter</a>
-                                            )}
-                                            <button
-                                                onClick={() => handleUpdateStatus(app.id, 'hired')}
-                                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-emerald-900/20"
-                                            >
-                                                Mark as Hired
-                                            </button>
+                                            <p className="text-slate-400 text-xs">Waiting for student to accept the offer.</p>
                                         </div>
                                     )}
 
@@ -441,19 +543,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                             <div className="mx-auto w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center mb-2 border border-emerald-500/30">
                                                 <CheckCircle className="w-5 h-5 text-emerald-400" />
                                             </div>
-                                            <p className="text-slate-200 text-sm font-medium mb-3">Candidate is hired.</p>
-                                            <label className="w-full cursor-pointer bg-slate-700 hover:bg-slate-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex justify-center items-center gap-2">
-                                                <Upload className="w-4 h-4" /> Upload Completion Letter
-                                                <input
-                                                    type="file"
-                                                    className="hidden"
-                                                    accept=".pdf"
-                                                    onChange={(e) => {
-                                                        setUploadingFor({ id: app.id, type: 'completion' });
-                                                        handleFileUpload(e);
-                                                    }}
-                                                />
-                                            </label>
+                                            <p className="text-slate-200 text-sm font-medium">Candidate is hired.</p>
                                         </div>
                                     )}
 
@@ -463,9 +553,6 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                                 <CheckCircle className="w-5 h-5 text-emerald-400" />
                                             </div>
                                             <p className="text-emerald-400 font-medium">Internship Completed</p>
-                                            {app.completion_letter_url && (
-                                                <a href={app.completion_letter_url} target="_blank" rel="noopener noreferrer" className="text-emerald-300 hover:text-emerald-200 text-xs underline block mt-2">View Completion Letter</a>
-                                            )}
                                         </div>
                                     )}
                                 </div>

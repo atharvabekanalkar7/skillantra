@@ -18,6 +18,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [degreeLevel, setDegreeLevel] = useState<'UG' | 'PG' | ''>('');
   const [rolePreference, setRolePreference] = useState<'skillseeker' | 'skillholder' | 'both' | 'SkillSeeker' | 'SkillHolder' | 'Both'>('both');
   const [isCollaborationAvailable, setIsCollaborationAvailable] = useState(true);
+  const [isResumePublic, setIsResumePublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +64,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       }
       setRolePreference((initialProfile as any).role_preference?.toLowerCase() || 'both');
       setIsCollaborationAvailable((initialProfile as any).is_collaboration_available ?? true);
+      setIsResumePublic((initialProfile as any).is_resume_public ?? true);
       setDegreeLevel((initialProfile as any).degree_level || '');
       setEmail((initialProfile as any).email || null);
     } else {
@@ -144,6 +146,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           role_preference: rolePreference.toLowerCase(),
           degree_level: degreeLevel,
           is_collaboration_available: isCollaborationAvailable,
+          is_resume_public: isResumePublic,
         }),
       });
 
@@ -321,6 +324,26 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
             <div className="w-11 h-6 bg-slate-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-500/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
           </label>
           <span className="text-sm text-slate-300">Available for collaboration</span>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-white mb-1">
+          Public Resume
+        </label>
+        <p className="text-xs text-slate-400 mb-2">Allow recruiters and other users to view your resume from your profile</p>
+        <div className="flex items-center gap-3">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isResumePublic}
+              onChange={(e) => setIsResumePublic(e.target.checked)}
+              disabled={loading || success}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-slate-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-500/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+          </label>
+          <span className="text-sm text-slate-300">Publicly visible</span>
         </div>
       </div>
 

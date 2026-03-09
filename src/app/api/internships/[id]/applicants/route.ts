@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { enforceEmailConfirmed } from '@/lib/api-helpers';
 
@@ -8,6 +8,7 @@ export async function GET(
 ) {
     const { id: internshipId } = await params;
     const supabase = await createClient();
+    const adminSupabase = createServiceRoleClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -39,7 +40,8 @@ export async function GET(
     }
 
     // Fetch applications with applicant profiles and answers
-    const { data: applications, error: appsError } = await supabase
+    // Note: We use adminSupabase to potentially fetch more details or handle complex joins if needed
+    const { data: applications, error: appsError } = await adminSupabase
         .from('internship_applications')
         .select(`
             id,
@@ -52,7 +54,17 @@ export async function GET(
             offer_letter_url,
             completion_letter_url,
             applied_at,
-            student_profile:profiles!internship_applications_student_id_fkey(name, college, skills, degree_level),
+            skillantra_resume_id,
+            profiles!student_id (
+                id,
+                user_id,
+                name,
+                phone_number,
+                degree_level,
+                college,
+                skills,
+                bio
+            ),
             answers:internship_application_answers(
                 id, answer_text, file_url,
                 question:internship_questions(question_text)
@@ -65,16 +77,33 @@ export async function GET(
         return NextResponse.json({ error: appsError.message }, { status: 500 });
     }
 
+    // Enrichment with email using service role if needed
+    if (applications && applications.length > 0) {
+        for (const app of applications) {
+            const profile = (Array.isArray(app.profiles) ? app.profiles[0] : app.profiles) as any;
+            if (profile?.user_id) {
+                const { data: { user: authUser } } = await adminSupabase.auth.admin.getUserById(profile.user_id);
+                if (authUser?.email) {
+                    profile.email = authUser.email;
+                }
+            }
+        }
+    }
+
     // Format answers
-    const formattedApps = applications?.map((app: any) => ({
-        ...app,
-        answers: app.answers?.map((ans: any) => ({
-            id: ans.id,
-            question_text: ans.question?.question_text || 'Unknown Question',
-            answer_text: ans.answer_text,
-            file_url: ans.file_url
-        })) || []
-    }));
+    const formattedApps = applications?.map((app: any) => {
+        const profile = Array.isArray(app.profiles) ? app.profiles[0] : app.profiles;
+        return {
+            ...app,
+            profiles: profile || null,
+            answers: app.answers?.map((ans: any) => ({
+                id: ans.id,
+                question_text: ans.question?.question_text || 'Unknown Question',
+                answer_text: ans.answer_text,
+                file_url: ans.file_url
+            })) || []
+        };
+    });
 
     return NextResponse.json({ internship, applications: formattedApps || [] });
 }

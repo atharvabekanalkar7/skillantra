@@ -120,7 +120,7 @@ export async function PATCH(request: Request) {
     body.role_preference = body.role_preference.toLowerCase();
   }
 
-  const { name, bio, skills, role_preference, college, phone_number, company_name, company_description, degree_level, designation, company_logo_url, is_collaboration_available } = body;
+  const { name, bio, skills, role_preference, college, phone_number, company_name, company_description, degree_level, designation, company_logo_url, is_collaboration_available, is_resume_public } = body;
 
   // Validate phone number if provided
   if (phone_number !== undefined) {
@@ -285,6 +285,9 @@ export async function PATCH(request: Request) {
     }
     if (is_collaboration_available !== undefined) {
       (updateData as any).is_collaboration_available = !!is_collaboration_available;
+    }
+    if (is_resume_public !== undefined) {
+      (updateData as any).is_resume_public = !!is_resume_public;
     }
   }
 

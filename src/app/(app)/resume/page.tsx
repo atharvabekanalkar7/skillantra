@@ -69,6 +69,100 @@ interface Achievement {
     description: string;
 }
 
+const generateResumeHTML = (
+    basicInfo: BasicInfo,
+    education: Education[],
+    experience: Experience[],
+    projects: Project[],
+    achievements: Achievement[]
+) => {
+    const hasData = (field: any) => field && field.length > 0;
+    const hasBasic = (val: string) => val && val.trim().length > 0;
+
+    return `
+        <div style="font-family: 'EB Garamond', serif; padding: 40px; color: #222; line-height: 1.6; background: #fff; width: 100%; box-sizing: border-box;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="margin: 0 0 5px 0; font-size: 28px; font-weight: bold; text-transform: uppercase; color: #000;">
+                    ${basicInfo.name || 'Your Name'}
+                </h1>
+                <div style="font-size: 14px; color: #444; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                    ${hasBasic(basicInfo.city) ? `<span>${basicInfo.city}</span>` : ''}
+                    ${hasBasic(basicInfo.phone) ? `<span>${hasBasic(basicInfo.city) ? ' | ' : ''}${basicInfo.phone}</span>` : ''}
+                    ${hasBasic(basicInfo.email) ? `<span>${(hasBasic(basicInfo.city) || hasBasic(basicInfo.phone)) ? ' | ' : ''}${basicInfo.email}</span>` : ''}
+                </div>
+                <div style="font-size: 14px; color: #444; margin-top: 4px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                    ${hasBasic(basicInfo.linkedin) ? `<span>LinkedIn: ${basicInfo.linkedin.replace(/https?:\/\/(www\.)?/, '')}</span>` : ''}
+                    ${hasBasic(basicInfo.github) ? `<span>${hasBasic(basicInfo.linkedin) ? ' | ' : ''}GitHub: ${basicInfo.github.replace(/https?:\/\/(www\.)?/, '')}</span>` : ''}
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 2px solid #333; margin-bottom: 20px;" />
+
+            ${hasBasic(basicInfo.summary) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Summary</h2>
+                    <p style="margin: 0; font-size: 14px; text-align: justify; white-space: pre-line;">${basicInfo.summary}</p>
+                </div>
+            ` : ''}
+
+            ${hasData(experience) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Experience</h2>
+                    ${experience.map(exp => `
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px;">
+                                <span>${exp.role}</span>
+                                <span>${exp.duration}</span>
+                            </div>
+                            <div style="font-style: italic; color: #444; margin-bottom: 4px; font-size: 14px;">${exp.company}</div>
+                            ${hasBasic(exp.description) ? `<p style="margin: 0; font-size: 14px; white-space: pre-line;">${exp.description}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${hasData(projects) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Projects</h2>
+                    ${projects.map(proj => `
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-weight: bold; font-size: 15px;">
+                                ${proj.title} ${hasBasic(proj.link) ? `<span style="font-weight: normal; font-size: 12px; color: #666; margin-left: 5px;">(${proj.link})</span>` : ''}
+                            </div>
+                            ${hasBasic(proj.description) ? `<p style="margin: 4px 0 0 0; font-size: 14px; white-space: pre-line;">${proj.description}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${hasData(education) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Education</h2>
+                    ${education.map(edu => `
+                        <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: bold; font-size: 15px;">${edu.degree}</div>
+                                <div style="font-size: 14px;">${edu.institution}${hasBasic(edu.grade) ? ` | Grade: ${edu.grade}` : ''}</div>
+                            </div>
+                            <div style="text-align: right; font-size: 14px;">${edu.year}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${hasData(achievements) ? `
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Achievements</h2>
+                    <ul style="padding-left: 20px; margin: 0;">
+                        ${achievements.map(ach => `
+                            <li style="font-size: 14px; margin-bottom: 4px;">${ach.description}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+};
 // ─── Shared Resume Content Component ──────────────────────────────────────
 // This component is used for BOTH the live preview and the isolated print target.
 // It uses strictly inline styles to bypass Tailwind/CSS parsing issues in html2canvas.
@@ -371,27 +465,47 @@ export default function ResumeBuilderPage() {
         }
 
         try {
-            const printTarget = printTargetRef.current;
+            const printDiv = document.createElement('div');
+            printDiv.style.cssText = `
+              position: fixed;
+              top: -9999px;
+              left: -9999px;
+              width: 794px;
+              background: #ffffff;
+              font-family: 'EB Garamond', serif;
+              color: #222;
+              padding: 40px;
+              line-height: 1.6;
+            `;
+            printDiv.innerHTML = generateResumeHTML(
+                basicInfo,
+                education,
+                experience,
+                projects,
+                achievements
+            );
+            document.body.appendChild(printDiv);
 
-            // Set up options
+            const canvas = await html2canvas(printDiv, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: '#ffffff',
+                logging: false,
+            });
+
+            document.body.removeChild(printDiv);
+
             const fileName = `resume-${basicInfo.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
 
-            // Generate PDF from the isolated target
             const opt = {
                 margin: 0,
                 filename: fileName,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
-                    logging: false
-                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            await window.html2pdf().set(opt).from(printTarget).save();
+            await window.html2pdf().set(opt).from(canvas).save();
             showToast('Resume PDF downloaded successfully!');
         } catch (err: any) {
             console.error('PDF Generation error:', err);

@@ -146,6 +146,13 @@ export default async function ProfileViewPage({
   // Get email for own profile only
   const profileEmail = isOwnProfile ? await getProfileEmail(profileId) : null;
 
+  // Fetch whether the viewed profile has a resume
+  const { data: hasResume } = await supabase
+    .from('skillantra_resumes')
+    .select('id')
+    .eq('student_id', profile.id)
+    .maybeSingle();
+
   // Hide phone_number from non-owners
   if (!isOwnProfile) {
     profile.phone_number = null;
@@ -248,6 +255,18 @@ export default async function ProfileViewPage({
           <div className="text-sm text-slate-500 mb-4">
             Member since {new Date(profile.created_at).toLocaleDateString()}
           </div>
+
+          {profile.user_type === 'student' && hasResume && profile.is_resume_public && (
+            <div className="mb-6">
+              <a
+                href={`/resume/${profile.id}`}
+                target="_blank"
+                className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all font-medium touch-manipulation shadow-lg shadow-indigo-500/20 w-full sm:w-auto"
+              >
+                View Skillantra Resume
+              </a>
+            </div>
+          )}
 
           {!isOwnProfile && currentUserProfile && (
             <div className="bg-slate-800/50 border border-slate-700 text-slate-200 px-5 py-4 rounded-xl flex items-center justify-between">
