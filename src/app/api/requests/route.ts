@@ -146,6 +146,26 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Request has already been responded to' }, { status: 400 });
   }
 
+  if (status === 'accepted') {
+    // Check if dm_conversation already exists
+    const { data: existingConvo } = await supabase
+      .from('dm_conversations')
+      .select('id')
+      .or(`and(sender_profile_id.eq.${existingRequest.sender_id},receiver_profile_id.eq.${userProfile.id}),and(sender_profile_id.eq.${userProfile.id},receiver_profile_id.eq.${existingRequest.sender_id})`)
+      .maybeSingle();
+
+    if (!existingConvo) {
+      await supabase
+        .from('dm_conversations')
+        .insert({
+          sender_profile_id: existingRequest.sender_id,
+          receiver_profile_id: userProfile.id,
+          status: 'active',
+          last_message_at: new Date().toISOString()
+        });
+    }
+  }
+
   const { data: updatedRequest, error: updateError } = await supabase
     .from('collaboration_requests')
     .update({

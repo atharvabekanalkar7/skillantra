@@ -185,6 +185,7 @@ export async function GET(request: Request) {
                 status: c.status,
                 created_at: c.created_at,
                 updated_at: c.updated_at,
+                ignored_at: c.ignored_at,
                 last_message_at: c.last_message_at,
                 is_sender: isSender,
                 other_user: otherUser,
@@ -193,8 +194,13 @@ export async function GET(request: Request) {
             };
         });
 
-        // Compute total unread for dot badge
-        const totalUnreadCount = formattedConvos.reduce((sum, c) => sum + (c.unread_count || 0), 0);
+        // Count conversations where current user has unread_count > 0, excluding ignored
+        const totalUnreadCount = conversations.filter(c => {
+            if (c.status === 'ignored') return false; // exclude ignored
+            const isReceiver = c.receiver_profile_id === userProfile.id
+            const unread = isReceiver ? (c.unread_count_receiver || 0) : (c.unread_count_sender || 0)
+            return unread > 0
+        }).length;
 
         return NextResponse.json({
             conversations: formattedConvos,

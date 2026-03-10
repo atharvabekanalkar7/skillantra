@@ -115,12 +115,9 @@ export async function PATCH(request: Request) {
 
   const body = await request.json();
 
-  // Sanitize role_preference to lowercase if provided
-  if (body.role_preference && typeof body.role_preference === 'string') {
-    body.role_preference = body.role_preference.toLowerCase();
-  }
 
-  const { name, bio, skills, role_preference, college, phone_number, company_name, company_description, degree_level, designation, company_logo_url, is_collaboration_available, is_resume_public } = body;
+
+  const { name, bio, skills, college, phone_number, company_name, company_description, degree_level, designation, company_logo_url, is_resume_public } = body;
 
   // Validate phone number if provided
   if (phone_number !== undefined) {
@@ -190,7 +187,6 @@ export async function PATCH(request: Request) {
     name === undefined &&
     bio === undefined &&
     skills === undefined &&
-    role_preference === undefined &&
     college === undefined;
 
   // Always read from DB, never from request body
@@ -214,9 +210,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    if (!isRecruiter && (!role_preference || !['skillseeker', 'skillholder', 'both', 'SkillSeeker', 'SkillHolder', 'Both'].includes(role_preference))) {
-      return NextResponse.json({ error: 'Valid role preference is required (skillseeker, skillholder, or both)' }, { status: 400 });
-    }
+
 
     if (isRecruiter) {
       if (!company_name || typeof company_name !== 'string' || company_name.trim().length === 0) {
@@ -277,15 +271,11 @@ export async function PATCH(request: Request) {
     if (skills !== undefined) {
       updateData.skills = skills ? skills.trim() : null;
     }
-    if (role_preference !== undefined) {
-      (updateData as any).role_preference = role_preference;
-    }
+
     if (degree_level !== undefined) {
       (updateData as any).degree_level = degree_level as 'UG' | 'PG';
     }
-    if (is_collaboration_available !== undefined) {
-      (updateData as any).is_collaboration_available = !!is_collaboration_available;
-    }
+
     if (is_resume_public !== undefined) {
       (updateData as any).is_resume_public = !!is_resume_public;
     }

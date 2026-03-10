@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { parseSkills } from '@/lib/utils';
 import Link from 'next/link';
 import { BadgeCheck } from 'lucide-react';
-import SendDMButton from '@/components/SendDMButton';
+import ConnectionButton from '@/components/ConnectionButton';
 import { AppCard } from '@/components/ui/app-card';
 
 async function getProfile(profileId: string) {
@@ -231,22 +231,12 @@ export default async function ProfileViewPage({
           )}
         </div>
 
-        {profile.role_preference && profile.user_type === 'student' && (
-          <div className="mb-6 flex gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-100 mb-2">I am a:</h2>
-              <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
-                {profile.role_preference}
-              </span>
-            </div>
-            {profile.degree_level && (
-              <div>
-                <h2 className="text-lg font-semibold text-slate-100 mb-2">Degree</h2>
-                <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
-                  {profile.degree_level}
-                </span>
-              </div>
-            )}
+        {profile.user_type === 'student' && profile.degree_level && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-slate-100 mb-2">Degree</h2>
+            <span className="inline-block bg-slate-800 text-slate-300 px-3 py-1 rounded-full text-sm font-medium border border-slate-700">
+              {profile.degree_level}
+            </span>
           </div>
         )}
 
@@ -302,9 +292,9 @@ export default async function ProfileViewPage({
             <div className="bg-slate-800/50 border border-slate-700 text-slate-200 px-5 py-4 rounded-xl flex items-center justify-between">
               <div>
                 <h3 className="font-semibold mb-1">Collaborate with {profile.name}</h3>
-                <p className="text-sm text-slate-400">Direct messages have arrived!</p>
+                <p className="text-sm text-slate-400">Expand your network.</p>
               </div>
-              <SendDMButton receiverId={profile.id} receiverName={profile.name} />
+              <ConnectionButton profileId={profile.id} />
             </div>
           )}
 

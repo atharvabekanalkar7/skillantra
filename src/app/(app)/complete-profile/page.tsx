@@ -23,7 +23,6 @@ export default function EditProfilePage() {
         name: 'Demo User',
         bio: 'This is a demo profile',
         skills: 'React, TypeScript, Node.js',
-        user_type: 'Both',
       });
       setLoading(false);
       return;

@@ -25,6 +25,7 @@ type Conversation = {
   last_message_at: string;
   updated_at: string;
   created_at: string;
+  ignored_at?: string;
   last_message: { content: string; created_at: string } | null;
 };
 
@@ -140,6 +141,10 @@ export default function MessagesPage() {
         // Auto mark incoming message as read since user is actively in the thread
         if (incomingMessage.sender_profile_id !== currentProfileId) {
           markConvoAsRead(activeConvoId);
+          // Also update local unread count to 0 in the conversation list
+          setConversations(prev => prev.map(c =>
+            c.id === activeConvoId ? { ...c, unread_count: 0 } : c
+          ));
         }
       })
       .on('postgres_changes', {
@@ -305,8 +310,8 @@ export default function MessagesPage() {
       if (!res.ok) throw new Error(data.error);
 
       // Update local state
-      setConversations(conversations.map(c => c.id === activeConvoId ? { ...c, status } : c));
-      if (activeConvoDetail) setActiveConvoDetail({ ...activeConvoDetail, status });
+      setConversations(conversations.map(c => c.id === activeConvoId ? { ...c, status, ignored_at: status === 'ignored' ? new Date().toISOString() : c.ignored_at } : c));
+      if (activeConvoDetail) setActiveConvoDetail({ ...activeConvoDetail, status, ignored_at: status === 'ignored' ? new Date().toISOString() : activeConvoDetail.ignored_at } as any);
 
       // If ignored, kick them out of the active view on mobile or switch tab
       if (status === 'ignored') {
@@ -326,7 +331,7 @@ export default function MessagesPage() {
   const currentList = activeTab === 'active' ? activeChatsList : requestsList;
 
   // Pending Badge Count
-  const pendingRequestsCount = requestsList.filter(c => c.unread_count > 0).length;
+  const pendingRequestsCount = requestsList.length;
 
   // Active Thread logic
   const isInputLocked = activeConvoDetail ? (
@@ -558,7 +563,18 @@ export default function MessagesPage() {
 
                   {activeConvoDetail.status === 'ignored' && (
                     <div className="text-center text-sm text-rose-400 bg-slate-800 rounded-xl p-3 border border-slate-700">
-                      This request was ignored. Messaging is permanently locked.
+                      {activeConvoDetail.is_sender && (activeConvoDetail as any).ignored_at ? (() => {
+                        const ignoredAt = new Date((activeConvoDetail as any).ignored_at).getTime();
+                        const now = Date.now();
+                        const hrs24 = 24 * 60 * 60 * 1000;
+                        if (now - ignoredAt < hrs24) {
+                          const remainingMs = hrs24 - (now - ignoredAt);
+                          const hrs = Math.floor(remainingMs / (1000 * 60 * 60));
+                          const mins = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                          return `This request was ignored. You can send a new request in ${hrs}h ${mins}m.`;
+                        }
+                        return 'This request was ignored.';
+                      })() : 'This request was ignored. Messaging is permanently locked.'}
                     </div>
                   )}
 

@@ -84,6 +84,11 @@ export async function PATCH(
             }
 
             updates.status = status;
+            if (status === 'ignored') {
+                updates.ignored_at = new Date().toISOString();
+                updates.unread_count_sender = 0;
+                updates.unread_count_receiver = 0;
+            }
         }
 
         if (Object.keys(updates).length === 1) { // Only updated_at

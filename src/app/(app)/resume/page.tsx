@@ -80,82 +80,82 @@ const generateResumeHTML = (
     const hasBasic = (val: string) => val && val.trim().length > 0;
 
     return `
-        <div style="font-family: 'EB Garamond', serif; padding: 40px; color: #222; line-height: 1.6; background: #fff; width: 100%; box-sizing: border-box;">
+        <div style="font-family: 'EB Garamond', Georgia, serif; color: #222222; line-height: 1.6; font-size: 14px;">
             <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="margin: 0 0 5px 0; font-size: 28px; font-weight: bold; text-transform: uppercase; color: #000;">
+                <h1 style="margin: 0 0 5px 0; font-size: 22px; font-weight: 700; text-transform: uppercase;">
                     ${basicInfo.name || 'Your Name'}
                 </h1>
-                <div style="font-size: 14px; color: #444; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
-                    ${hasBasic(basicInfo.city) ? `<span>${basicInfo.city}</span>` : ''}
-                    ${hasBasic(basicInfo.phone) ? `<span>${hasBasic(basicInfo.city) ? ' | ' : ''}${basicInfo.phone}</span>` : ''}
-                    ${hasBasic(basicInfo.email) ? `<span>${(hasBasic(basicInfo.city) || hasBasic(basicInfo.phone)) ? ' | ' : ''}${basicInfo.email}</span>` : ''}
-                </div>
-                <div style="font-size: 14px; color: #444; margin-top: 4px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
-                    ${hasBasic(basicInfo.linkedin) ? `<span>LinkedIn: ${basicInfo.linkedin.replace(/https?:\/\/(www\.)?/, '')}</span>` : ''}
-                    ${hasBasic(basicInfo.github) ? `<span>${hasBasic(basicInfo.linkedin) ? ' | ' : ''}GitHub: ${basicInfo.github.replace(/https?:\/\/(www\.)?/, '')}</span>` : ''}
+                <div style="font-size: 12px; color: #555555;">
+                    ${[
+            basicInfo.city,
+            basicInfo.phone,
+            basicInfo.email,
+            basicInfo.linkedin ? `LinkedIn: ${basicInfo.linkedin.replace(/https?:\/\/(www\.)?/, '')}` : '',
+            basicInfo.github ? `GitHub: ${basicInfo.github.replace(/https?:\/\/(www\.)?/, '')}` : ''
+        ].filter(Boolean).join(' | ')}
                 </div>
             </div>
 
-            <hr style="border: none; border-top: 2px solid #333; margin-bottom: 20px;" />
+            <hr style="border: none; border-top: 1px solid #cccccc; margin: 12px 0;" />
 
             ${hasBasic(basicInfo.summary) ? `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Summary</h2>
-                    <p style="margin: 0; font-size: 14px; text-align: justify; white-space: pre-line;">${basicInfo.summary}</p>
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Summary</h2>
+                    <p style="margin: 0; font-size: 13px; white-space: pre-line;">${basicInfo.summary}</p>
                 </div>
             ` : ''}
 
             ${hasData(experience) ? `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Experience</h2>
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Experience</h2>
                     ${experience.map(exp => `
-                        <div style="margin-bottom: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px;">
-                                <span>${exp.role}</span>
+                        <div class="entry" style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 13px;">
+                                <span class="role">${exp.role}</span>
                                 <span>${exp.duration}</span>
                             </div>
-                            <div style="font-style: italic; color: #444; margin-bottom: 4px; font-size: 14px;">${exp.company}</div>
-                            ${hasBasic(exp.description) ? `<p style="margin: 0; font-size: 14px; white-space: pre-line;">${exp.description}</p>` : ''}
+                            <div class="company" style="font-style: italic; color: #555555; font-size: 12px;">${exp.company}</div>
+                            ${hasBasic(exp.description) ? `<p style="margin: 4px 0 0 0; font-size: 13px; white-space: pre-line;">${exp.description}</p>` : ''}
                         </div>
                     `).join('')}
                 </div>
             ` : ''}
 
             ${hasData(projects) ? `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Projects</h2>
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Projects</h2>
                     ${projects.map(proj => `
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-weight: bold; font-size: 15px;">
-                                ${proj.title} ${hasBasic(proj.link) ? `<span style="font-weight: normal; font-size: 12px; color: #666; margin-left: 5px;">(${proj.link})</span>` : ''}
+                        <div class="entry" style="margin-bottom: 12px;">
+                            <div style="font-weight: 700; font-size: 13px;">
+                                ${proj.title} ${hasBasic(proj.link) ? `<span style="font-weight: 400; font-size: 11px; color: #666666; margin-left: 5px;">(${proj.link})</span>` : ''}
                             </div>
-                            ${hasBasic(proj.description) ? `<p style="margin: 4px 0 0 0; font-size: 14px; white-space: pre-line;">${proj.description}</p>` : ''}
+                            ${hasBasic(proj.description) ? `<p style="margin: 4px 0 0 0; font-size: 13px; white-space: pre-line;">${proj.description}</p>` : ''}
                         </div>
                     `).join('')}
                 </div>
             ` : ''}
 
             ${hasData(education) ? `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Education</h2>
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Education</h2>
                     ${education.map(edu => `
-                        <div style="margin-bottom: 8px; display: flex; justify-content: space-between;">
+                        <div class="entry" style="margin-bottom: 8px; display: flex; justify-content: space-between;">
                             <div>
-                                <div style="font-weight: bold; font-size: 15px;">${edu.degree}</div>
-                                <div style="font-size: 14px;">${edu.institution}${hasBasic(edu.grade) ? ` | Grade: ${edu.grade}` : ''}</div>
+                                <div style="font-weight: 700; font-size: 13px;">${edu.degree}</div>
+                                <div style="font-size: 13px;">${edu.institution}${hasBasic(edu.grade) ? ` | Grade: ${edu.grade}` : ''}</div>
                             </div>
-                            <div style="text-align: right; font-size: 14px;">${edu.year}</div>
+                            <div style="text-align: right; font-size: 13px;">${edu.year}</div>
                         </div>
                     `).join('')}
                 </div>
             ` : ''}
 
             ${hasData(achievements) ? `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-top: 0; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; color: #000;">Achievements</h2>
-                    <ul style="padding-left: 20px; margin: 0;">
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Achievements</h2>
+                    <ul style="padding-left: 18px; margin: 0;">
                         ${achievements.map(ach => `
-                            <li style="font-size: 14px; margin-bottom: 4px;">${ach.description}</li>
+                            <li style="font-size: 13px; margin-bottom: 3px;">${ach.description}</li>
                         `).join('')}
                     </ul>
                 </div>
@@ -447,14 +447,6 @@ export default function ResumeBuilderPage() {
     });
 
     const handleGeneratePdf = guardAction(async () => {
-        if (!printTargetRef.current) return;
-
-        const loaded = await loadHtml2Pdf();
-        if (!loaded) {
-            showToast('Failed to load PDF generator tool.');
-            return;
-        }
-
         setGenerating(true);
 
         // 1. Save progress first
@@ -465,47 +457,81 @@ export default function ResumeBuilderPage() {
         }
 
         try {
-            const printDiv = document.createElement('div');
-            printDiv.style.cssText = `
-              position: fixed;
-              top: -9999px;
-              left: -9999px;
-              width: 794px;
-              background: #ffffff;
-              font-family: 'EB Garamond', serif;
-              color: #222;
-              padding: 40px;
-              line-height: 1.6;
-            `;
-            printDiv.innerHTML = generateResumeHTML(
+            const { default: jsPDF } = await import('jspdf')
+            const { default: html2canvas } = await import('html2canvas')
+
+            // Create completely isolated iframe
+            const iframe = document.createElement('iframe')
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;height:1123px;border:none;'
+            document.body.appendChild(iframe)
+
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+            if (!iframeDoc) throw new Error('Could not create iframe')
+
+            // Write completely clean HTML with NO external stylesheets
+            iframeDoc.open()
+            iframeDoc.write(`
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+                <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { 
+                    font-family: 'EB Garamond', Georgia, serif; 
+                    color: #222222; 
+                    background: #ffffff;
+                    padding: 40px;
+                    line-height: 1.6;
+                    font-size: 14px;
+                  }
+                  h1 { font-size: 22px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+                  .contact { font-size: 12px; color: #555; margin-bottom: 12px; }
+                  hr { border: none; border-top: 1px solid #ccc; margin: 12px 0; }
+                  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 20px 0 8px 0; }
+                  .role { font-weight: 700; font-size: 13px; }
+                  .company { font-style: italic; color: #555; font-size: 12px; }
+                  ul { padding-left: 18px; }
+                  li { margin-bottom: 3px; font-size: 13px; }
+                  p { font-size: 13px; margin-bottom: 8px; }
+                  .entry { margin-bottom: 12px; }
+                </style>
+              </head>
+              <body>
+                ${generateResumeHTML(
                 basicInfo,
                 education,
                 experience,
                 projects,
                 achievements
-            );
-            document.body.appendChild(printDiv);
+            )}
+              </body>
+              </html>
+            `)
+            iframeDoc.close()
 
-            const canvas = await html2canvas(printDiv, {
+            // Wait for fonts to load
+            await new Promise(resolve => setTimeout(resolve, 1500))
+
+            const canvas = await html2canvas(iframeDoc.body, {
                 scale: 2,
                 useCORS: true,
                 allowTaint: false,
                 backgroundColor: '#ffffff',
                 logging: false,
-            });
+                windowWidth: 794,
+            })
 
-            document.body.removeChild(printDiv);
+            document.body.removeChild(iframe)
 
-            const fileName = `resume-${basicInfo.name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+            const imgData = canvas.toDataURL('image/png')
+            const pdf = new jsPDF('p', 'mm', 'a4')
+            const pdfWidth = pdf.internal.pageSize.getWidth()
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+            pdf.save(`resume-${basicInfo.name?.replace(/\s+/g, '-') || 'download'}.pdf`)
 
-            const opt = {
-                margin: 0,
-                filename: fileName,
-                image: { type: 'jpeg', quality: 0.98 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            await window.html2pdf().set(opt).from(canvas).save();
             showToast('Resume PDF downloaded successfully!');
         } catch (err: any) {
             console.error('PDF Generation error:', err);

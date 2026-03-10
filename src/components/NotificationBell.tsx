@@ -103,7 +103,7 @@ export default function NotificationBell({ isDemo = false }: { isDemo?: boolean 
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overscroll-contain">
+                <div className="absolute left-0 mt-2 w-80 max-h-96 overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overscroll-contain">
                     <div className="sticky top-0 bg-slate-900/95 backdrop-blur px-4 py-3 border-b border-slate-800 flex justify-between items-center z-10">
                         <h3 className="font-semibold text-slate-100">Notifications</h3>
                         {unreadCount > 0 && (

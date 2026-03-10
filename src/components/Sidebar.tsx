@@ -59,13 +59,14 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
 
   const fetchUnreadCount = async () => {
     try {
+      if (isDemo) return;
+
       const res = await fetch('/api/conversations');
+      if (!res.ok) return;
       const data = await res.json();
-      if (res.ok) {
-        setUnreadCount(data.totalUnreadCount || 0);
-      }
+      setUnreadCount(data.totalUnreadCount || 0);
     } catch (e) {
-      console.error('Failed to fetch unread count');
+      // silently fail — user may not be logged in
     }
   };
 
@@ -128,9 +129,14 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
       id: 'TEAM_COLLABORATION',
       title: 'TEAM COLLABORATION',
       items: [
-        { href: isDemo ? '/collaborate?demo=true' : '/collaborate', label: 'Collaborate', icon: Users },
-        { href: isDemo ? '/requests?demo=true' : '/requests', label: 'Requests', icon: Users },
-      ],
+        {
+          href: '#',
+          label: 'Team Collaboration',
+          icon: Users,
+          disabled: true,
+          badge: 'Soon'
+        }
+      ]
     },
   ];
 
@@ -176,6 +182,22 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
               {section.items.map((item: any) => {
                 const baseHref = item.href.split('?')[0];
                 const isActive = pathname === baseHref;
+
+                if (item.disabled) {
+                  return (
+                    <li key={item.href + item.label}>
+                      <div
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-500 cursor-not-allowed opacity-60"
+                      >
+                        <item.icon className="w-[18px] h-[18px]" />
+                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded-md text-slate-400">
+                          {item.badge || 'Soon'}
+                        </span>
+                      </div>
+                    </li>
+                  );
+                }
 
                 return (
                   <li key={item.href + item.label}>

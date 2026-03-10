@@ -71,65 +71,85 @@ function generateResumeHTML(resume: any, profile: any): string {
     const education = resume.education || [];
     const projects = resume.academic_projects || [];
     const achievements = resume.extra_curricular || [];
-    const skills = resume.skills || [];
 
     return `
-      <div style="font-family: Georgia, serif; color: #222; line-height: 1.6; background: white; padding: 40px;">
-        <h1 style="font-size: 24px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; color: #000;">${profile.name ?? ''}</h1>
-        <div style="font-size: 13px; color: #555; margin-bottom: 12px;">
-          ${[profile.college, profile.phone_number, profile.email].filter(Boolean).join(' | ')}
+        <div style="font-family: 'EB Garamond', Georgia, serif; color: #222222; line-height: 1.6; font-size: 14px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="margin: 0 0 5px 0; font-size: 22px; font-weight: 700; text-transform: uppercase;">
+                    ${profile.name ?? 'Student Name'}
+                </h1>
+                <div style="font-size: 12px; color: #555555;">
+                    ${[
+            profile.college,
+            profile.phone_number,
+            profile.email,
+            resume.portfolio_links?.linkedin ? `LinkedIn: ${resume.portfolio_links.linkedin.replace(/https?:\/\/(www\.)?/, '')}` : '',
+            resume.portfolio_links?.github ? `GitHub: ${resume.portfolio_links.github.replace(/https?:\/\/(www\.)?/, '')}` : ''
+        ].filter(Boolean).join(' | ')}
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #cccccc; margin: 12px 0;" />
+            
+            ${resume.career_objective ? `
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Summary</h2>
+                    <p style="margin: 0; font-size: 13px; white-space: pre-line;">${resume.career_objective}</p>
+                </div>
+            ` : ''}
+
+            ${workExperience.length ? `
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Work Experience</h2>
+                    ${workExperience.map((exp: any) => `
+                        <div class="entry" style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 13px;">
+                                <span class="role">${exp.role ?? ''}</span>
+                                <span>${exp.duration ?? ''}</span>
+                            </div>
+                            <div class="company" style="font-style: italic; color: #555555; font-size: 12px;">${exp.company ?? ''}</div>
+                            ${exp.description ? `<p style="margin: 4px 0 0 0; font-size: 13px; white-space: pre-line;">${exp.description}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${projects.length ? `
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Projects</h2>
+                    ${projects.map((p: any) => `
+                        <div class="entry" style="margin-bottom: 12px;">
+                            <div style="font-weight: 700; font-size: 13px;">${p.title ?? ''}</div>
+                            ${p.description ? `<p style="margin: 4px 0 0 0; font-size: 13px; white-space: pre-line;">${p.description}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${education.length ? `
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Education</h2>
+                    ${education.map((edu: any) => `
+                        <div class="entry" style="margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: 700;">${edu.institution ?? ''}</div>
+                                <div style="color: #555555;">${edu.degree ?? ''}</div>
+                            </div>
+                            <div style="text-align: right; color: #666666;">${edu.year ?? ''}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${achievements.length ? `
+                <div style="margin-bottom: 12px;">
+                    <h2 style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #dddddd; padding-bottom: 3px; margin: 20px 0 8px 0;">Achievements</h2>
+                    <ul style="padding-left: 18px; margin: 0; font-size: 13px;">
+                        ${achievements.map((a: any) => `<li style="margin-bottom: 3px;">${a.description || a}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
         </div>
-        <hr style="border: none; border-top: 1px solid #ccc; margin-bottom: 16px;" />
-        
-        ${resume.career_objective ? `
-          <h2 style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 16px 0 8px 0; color: #000;">Summary</h2>
-          <p style="margin: 0 0 12px 0; font-size: 13px; white-space: pre-line;">${resume.career_objective}</p>
-        ` : ''}
-
-        ${workExperience.length ? `
-          <h2 style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 16px 0 8px 0; color: #000;">Work Experience</h2>
-          ${workExperience.map((exp: any) => `
-            <div style="margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
-                <span>${exp.role ?? ''}</span>
-                <span style="font-weight: normal; color: #666;">${exp.duration ?? ''}</span>
-              </div>
-              <div style="font-style: italic; color: #555; font-size: 12px;">${exp.company ?? ''}</div>
-              <p style="margin: 4px 0 0 0; font-size: 13px; white-space: pre-line;">${exp.description ?? ''}</p>
-            </div>
-          `).join('')}
-        ` : ''}
-
-        ${projects.length ? `
-          <h2 style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 16px 0 8px 0; color: #000;">Projects</h2>
-          ${projects.map((p: any) => `
-            <div style="margin-bottom: 10px;">
-              <div style="font-weight: bold; font-size: 13px;">${p.title ?? ''}</div>
-              <div style="font-size: 13px; white-space: pre-line;">${p.description ?? ''}</div>
-            </div>
-          `).join('')}
-        ` : ''}
-
-        ${education.length ? `
-          <h2 style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 16px 0 8px 0; color: #000;">Education</h2>
-          ${education.map((edu: any) => `
-            <div style="margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between;">
-              <div>
-                <div style="font-weight: bold;">${edu.institution ?? ''}</div>
-                <div style="color: #555;">${edu.degree ?? ''}</div>
-              </div>
-              <div style="text-align: right; color: #666;">${edu.year ?? ''}</div>
-            </div>
-          `).join('')}
-        ` : ''}
-
-        ${achievements.length ? `
-          <h2 style="font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 16px 0 8px 0; color: #000;">Achievements</h2>
-          <ul style="padding-left: 18px; margin: 0; font-size: 13px;">
-            ${achievements.map((a: any) => `<li>${a.description || a}</li>`).join('')}
-          </ul>
-        ` : ''}
-      </div>
     `;
 }
 
@@ -346,54 +366,78 @@ export default function PublicResumePage({ params }: { params: Promise<{ profile
 
         setGenerating(true);
         try {
-            const { default: html2canvas } = await import('html2canvas');
-            const { default: jsPDF } = await import('jspdf');
+            const { default: jsPDF } = await import('jspdf')
+            const { default: html2canvas } = await import('html2canvas')
 
-            // Create isolated div with NO inherited styles
-            const printDiv = document.createElement('div');
-            printDiv.setAttribute('style', [
-                'position: fixed',
-                'top: -99999px',
-                'left: -99999px',
-                'width: 794px', // A4 width at 96 DPI
-                'background: #ffffff',
-                'color: #222222',
-                'font-family: Georgia, serif',
-                'padding: 40px',
-                'line-height: 1.6',
-                'font-size: 14px',
-                'z-index: -1',
-                'isolation: isolate',
-            ].join(';'));
+            // Create completely isolated iframe
+            const iframe = document.createElement('iframe')
+            iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:794px;height:1123px;border:none;'
+            document.body.appendChild(iframe)
 
-            // Generate resume HTML with ONLY inline styles
-            printDiv.innerHTML = generateResumeHTML(rawResume, rawProfile);
-            document.body.appendChild(printDiv);
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+            if (!iframeDoc) throw new Error('Could not create iframe')
 
-            const canvas = await html2canvas(printDiv, {
+            // Write completely clean HTML with NO external stylesheets
+            iframeDoc.open()
+            iframeDoc.write(`
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+                <style>
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  body { 
+                    font-family: 'EB Garamond', Georgia, serif; 
+                    color: #222222; 
+                    background: #ffffff;
+                    padding: 40px;
+                    line-height: 1.6;
+                    font-size: 14px;
+                  }
+                  h1 { font-size: 22px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+                  .contact { font-size: 12px; color: #555; margin-bottom: 12px; }
+                  hr { border: none; border-top: 1px solid #ccc; margin: 12px 0; }
+                  h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin: 20px 0 8px 0; }
+                  .role { font-weight: 700; font-size: 13px; }
+                  .company { font-style: italic; color: #555; font-size: 12px; }
+                  ul { padding-left: 18px; }
+                  li { margin-bottom: 3px; font-size: 13px; }
+                  p { font-size: 13px; margin-bottom: 8px; }
+                  .entry { margin-bottom: 12px; }
+                </style>
+              </head>
+              <body>
+                ${generateResumeHTML(rawResume, rawProfile)}
+              </body>
+              </html>
+            `)
+            iframeDoc.close()
+
+            // Wait for fonts to load
+            await new Promise(resolve => setTimeout(resolve, 1500))
+
+            const canvas = await html2canvas(iframeDoc.body, {
                 scale: 2,
                 useCORS: true,
                 allowTaint: false,
                 backgroundColor: '#ffffff',
                 logging: false,
-                ignoreElements: (el) => {
-                    // Ignore any element that might have lab() colors or external styles
-                    return el.tagName === 'STYLE' || el.tagName === 'LINK';
-                }
-            });
+                windowWidth: 794,
+            })
 
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            document.body.removeChild(iframe)
 
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save(`resume-${rawProfile.name?.replace(/\s+/g, '-') ?? 'download'}.pdf`);
+            const imgData = canvas.toDataURL('image/png')
+            const pdf = new jsPDF('p', 'mm', 'a4')
+            const pdfWidth = pdf.internal.pageSize.getWidth()
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+            pdf.save(`resume-${rawProfile.name?.replace(/\s+/g, '-') || 'download'}.pdf`)
+
         } catch (err: any) {
             console.error('PDF Generation error:', err);
         } finally {
-            const printDiv = document.querySelector('[style*="top: -99999px"]');
-            if (printDiv) document.body.removeChild(printDiv);
             setGenerating(false);
         }
     };

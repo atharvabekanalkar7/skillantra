@@ -2,6 +2,7 @@
 
 import type { CollaborationRequestWithProfiles } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 interface RequestCardProps {
   request: CollaborationRequestWithProfiles;
@@ -11,6 +12,7 @@ interface RequestCardProps {
 }
 
 export default function RequestCard({ request, isReceiver, onRespond, loading }: RequestCardProps) {
+  const router = useRouter();
   const otherProfile = isReceiver ? request.sender_profile : request.receiver_profile;
 
   return (
@@ -26,10 +28,10 @@ export default function RequestCard({ request, isReceiver, onRespond, loading }:
         </div>
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 ${request.status === 'accepted'
-              ? 'bg-green-500/20 text-green-300 border border-green-400/50'
-              : request.status === 'rejected'
-                ? 'bg-red-500/20 text-red-300 border border-red-400/50'
-                : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
+            ? 'bg-green-500/20 text-green-300 border border-green-400/50'
+            : request.status === 'rejected'
+              ? 'bg-red-500/20 text-red-300 border border-red-400/50'
+              : 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/50'
             }`}
         >
           {request.status}
@@ -56,6 +58,31 @@ export default function RequestCard({ request, isReceiver, onRespond, loading }:
           >
             Reject
           </button>
+        </div>
+      )}
+
+      {request.status === 'accepted' && (
+        <div className="mt-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+          <p className="text-green-400 text-xs font-semibold mb-3 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+            Collaboration accepted
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => router.push(`/messages?userId=${otherProfile.id}`)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-500 transition-colors active:scale-95"
+            >
+              Message
+            </button>
+            {(otherProfile as any).email && (
+              <a
+                href={`mailto:${(otherProfile as any).email}`}
+                className="px-4 py-2 bg-slate-800 text-slate-200 border border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
+              >
+                Email
+              </a>
+            )}
+          </div>
         </div>
       )}
 

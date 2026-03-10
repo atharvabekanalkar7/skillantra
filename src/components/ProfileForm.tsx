@@ -16,8 +16,6 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
   const [skills, setSkills] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('+91 ');
   const [degreeLevel, setDegreeLevel] = useState<'UG' | 'PG' | ''>('');
-  const [rolePreference, setRolePreference] = useState<'skillseeker' | 'skillholder' | 'both' | 'SkillSeeker' | 'SkillHolder' | 'Both'>('both');
-  const [isCollaborationAvailable, setIsCollaborationAvailable] = useState(true);
   const [isResumePublic, setIsResumePublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -62,8 +60,6 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       } else {
         setPhoneNumber('+91 ');
       }
-      setRolePreference((initialProfile as any).role_preference?.toLowerCase() || 'both');
-      setIsCollaborationAvailable((initialProfile as any).is_collaboration_available ?? true);
       setIsResumePublic((initialProfile as any).is_resume_public ?? true);
       setDegreeLevel((initialProfile as any).degree_level || '');
       setEmail((initialProfile as any).email || null);
@@ -143,9 +139,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
           bio: bio.trim() || null,
           skills: skills.trim() || null,
           phone_number: cleaned,
-          role_preference: rolePreference.toLowerCase(),
           degree_level: degreeLevel,
-          is_collaboration_available: isCollaborationAvailable,
           is_resume_public: isResumePublic,
         }),
       });
@@ -286,46 +280,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         />
       </div>
 
-      {(!initialProfile || initialProfile.user_type !== 'recruiter') && (
-        <div>
-          <label htmlFor="role_preference" className="block text-sm font-medium text-white mb-2">
-            I am a (Role Preference): <span className="text-red-400">*</span>
-          </label>
-          <select
-            id="role_preference"
-            value={rolePreference}
-            onChange={(e) => setRolePreference(e.target.value.toLowerCase() as any)}
-            required
-            disabled={loading || success}
-            className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
-          >
-            <option value="">Select...</option>
-            <option value="skillseeker" className="bg-slate-900">SkillSeeker</option>
-            <option value="skillholder" className="bg-slate-900">SkillHolder</option>
-            <option value="both" className="bg-slate-900">Both</option>
-          </select>
-          <p className="mt-2 text-sm text-slate-400">Choose how you want to use SkillAntra</p>
-        </div>
-      )}
 
-      <div>
-        <label className="block text-sm font-medium text-white mb-2">
-          Collaboration Availability
-        </label>
-        <div className="flex items-center gap-3">
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isCollaborationAvailable}
-              onChange={(e) => setIsCollaborationAvailable(e.target.checked)}
-              disabled={loading || success}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-slate-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-500/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
-          </label>
-          <span className="text-sm text-slate-300">Available for collaboration</span>
-        </div>
-      </div>
 
       <div>
         <label className="block text-sm font-medium text-white mb-1">

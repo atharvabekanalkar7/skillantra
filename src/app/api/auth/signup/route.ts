@@ -118,7 +118,6 @@ export async function POST(request: Request) {
           full_name: full_name.trim(),
           college: isRecruiter ? 'Other' : college.trim(),
           user_type: user_type,
-          role_preference: isRecruiter ? null : 'Both', // Default students to Both
           ...(isRecruiter && {
             company_name: company_name.trim(),
             company_description: company_description.trim(),

@@ -81,64 +81,47 @@ export async function GET(
     }, { status: 200 });
 }
 
-export async function PATCH(
-    request: Request,
-    { params }: { params: Promise<{ id: string }> | { id: string } }
-) {
-    const supabase = await createClient();
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // 1. Authenticate Request
-    const {
-        data: { user },
-        error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // 2. Fetch User's Profile ID to verify access
-    const { data: userProfile, error: profileError } = await supabase
+    const { data: profile } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .single()
 
-    if (profileError || !userProfile) {
-        return NextResponse.json({ error: 'Profile not found.' }, { status: 404 });
-    }
+    if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
     const resolvedParams = params instanceof Promise ? await params : params;
     const conversationId = resolvedParams.id;
 
-    if (!conversationId) {
-        return NextResponse.json({ error: 'Conversation ID is required' }, { status: 400 });
+    // Mark all messages in this conversation as read where sender is NOT current user
+    await supabase
+        .from('dm_messages')
+        .update({ is_read: true })
+        .eq('conversation_id', conversationId)
+        .neq('sender_profile_id', profile.id)
+
+    // Reset unread count for current user in dm_conversations
+    const { data: convo } = await supabase
+        .from('dm_conversations')
+        .select('sender_profile_id, receiver_profile_id')
+        .eq('id', conversationId)
+        .single()
+
+    if (convo) {
+        const isReceiver = convo.receiver_profile_id === profile.id
+        const updateField = isReceiver
+            ? { unread_count_receiver: 0 }
+            : { unread_count_sender: 0 }
+
+        await supabase
+            .from('dm_conversations')
+            .update(updateField)
+            .eq('id', conversationId)
     }
 
-    try {
-        const body = await request.json();
-        const { markAllRead } = body;
-
-        // 3. Update Message Read Status in batch
-        if (markAllRead) {
-            const { error: updateError } = await supabase
-                .from('dm_messages')
-                .update({ is_read: true })
-                .eq('conversation_id', conversationId)
-                .neq('sender_profile_id', userProfile.id)
-                .eq('is_read', false);
-
-            if (updateError) {
-                return NextResponse.json({ error: 'Failed to update message reads.' }, { status: 500 });
-            }
-
-            return NextResponse.json({ success: true }, { status: 200 });
-        }
-
-        return NextResponse.json({ error: 'No valid action provided.' }, { status: 400 });
-
-    } catch (err: any) {
-        console.error('Messages PATCH API error:', err);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+    return NextResponse.json({ success: true })
 }
