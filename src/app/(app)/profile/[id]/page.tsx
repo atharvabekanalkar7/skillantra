@@ -88,8 +88,10 @@ async function getProfileEmail(profileId: string) {
 
 export default async function ProfileViewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }> | { id: string };
+  searchParams: Promise<{ from?: string; internshipId?: string }> | { from?: string; internshipId?: string };
 }) {
   const supabase = await createClient();
   const {
@@ -103,6 +105,10 @@ export default async function ProfileViewPage({
   // Handle params - can be a Promise in Next.js 15+ or object in earlier versions
   const resolvedParams = params instanceof Promise ? await params : params;
   const profileId = resolvedParams.id;
+
+  const resolvedSearchParams = searchParams instanceof Promise ? await searchParams : searchParams;
+  const fromInternship = resolvedSearchParams.from === 'internship';
+  const internshipId = resolvedSearchParams.internshipId;
 
   if (!profileId) {
     return (
@@ -162,12 +168,21 @@ export default async function ProfileViewPage({
     <div className="max-w-3xl mx-auto opacity-0 animate-fade-in-up">
       <AppCard className="p-6 sm:p-8">
         <div className="mb-6">
-          <Link
-            href="/dashboard"
-            className="text-slate-400 hover:text-slate-200 text-sm font-medium mb-4 inline-flex items-center gap-1 min-h-[44px] py-2 touch-manipulation transition-colors"
-          >
-            ← Back to dashboard
-          </Link>
+          {fromInternship && internshipId ? (
+            <Link
+              href={`/internships/${internshipId}/applicants`}
+              className="text-indigo-400 hover:text-indigo-300 text-sm font-semibold mb-4 inline-flex items-center gap-1 min-h-[44px] py-2 touch-manipulation transition-colors"
+            >
+              ← Back to Internship Listing
+            </Link>
+          ) : (
+            <Link
+              href="/dashboard"
+              className="text-slate-400 hover:text-slate-200 text-sm font-medium mb-4 inline-flex items-center gap-1 min-h-[44px] py-2 touch-manipulation transition-colors"
+            >
+              ← Back to dashboard
+            </Link>
+          )}
           {profile.user_type === 'recruiter' && profile.company_logo_url && (
             <img src={profile.company_logo_url} alt="Company Logo" className="w-16 h-16 rounded-xl object-cover mb-4 border border-slate-700 bg-slate-800" />
           )}
@@ -261,9 +276,24 @@ export default async function ProfileViewPage({
               <a
                 href={`/resume/${profile.id}`}
                 target="_blank"
-                className="inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition-all font-medium touch-manipulation shadow-lg shadow-indigo-500/20 w-full sm:w-auto"
+                style={{
+                  background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+                  color: '#c7d2fe',
+                  padding: '10px 22px',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  fontSize: '14px',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)',
+                  transition: 'all 0.3s ease'
+                }}
               >
-                View Skillantra Resume
+                View SkillAntra Resume
               </a>
             </div>
           )}

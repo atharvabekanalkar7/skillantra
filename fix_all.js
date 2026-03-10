@@ -84,7 +84,7 @@ function processDir(dir) {
 processDir('c:/Users/drsac/Downloads/skillantra-main/skillantra - modify - Copy/src/app');
 
 // 2. Create toast.ts
-const toastContent = \`"use client";
+const toastContent = `"use client";
 export const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
   if (typeof window !== 'undefined') {
     // Basic fallback alert or custom div
@@ -103,11 +103,11 @@ export const showToast = (message: string, type: 'success' | 'error' | 'info' = 
     setTimeout(() => div.remove(), 3000);
   }
 };
-\`;
+`;
 fs.writeFileSync('c:/Users/drsac/Downloads/skillantra-main/skillantra - modify - Copy/src/lib/utils/toast.ts', toastContent);
 
 // 3. Create useDemoGuard.ts
-const demoGuardContent = \`"use client";
+const demoGuardContent = `"use client";
 import { showToast } from './toast';
 
 export function useDemoGuard() {
@@ -123,7 +123,7 @@ export function useDemoGuard() {
   };
   return { guardAction };
 }
-\`;
+`;
 fs.writeFileSync('c:/Users/drsac/Downloads/skillantra-main/skillantra - modify - Copy/src/lib/utils/useDemoGuard.ts', demoGuardContent);
 
 console.log('Automated cleanup done.');

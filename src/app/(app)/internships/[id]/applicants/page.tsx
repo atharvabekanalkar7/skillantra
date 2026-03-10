@@ -178,7 +178,9 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
     const [actionId, setActionId] = useState<string | null>(null);
     const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
-    const [degreeFilter, setDegreeFilter] = useState<'All' | 'UG' | 'PG'>('All');
+    const [degreeFilter, setDegreeFilter] = useState<string>('all');
+    const [rejectingId, setRejectingId] = useState<string | null>(null);
+    const [rejectReason, setRejectReason] = useState('');
 
     // Modals state
     const [selectedAnswers, setSelectedAnswers] = useState<ApplicationAnswer[] | null>(null);
@@ -213,13 +215,13 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
         loadData();
     }, [loadData]);
 
-    const handleUpdateStatus = guardAction(async (applicationId: string, status: string) => {
+    const handleUpdateStatus = guardAction(async (applicationId: string, status: string, reason?: string) => {
         setActionId(applicationId);
         try {
             const res = await fetch(`/api/internship-applications/${applicationId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status }),
+                body: JSON.stringify({ status, reason }),
             });
             const data = await res.json();
             if (!res.ok) {
@@ -227,6 +229,8 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                 return;
             }
             showToast(`Application ${status}`);
+            setRejectingId(null);
+            setRejectReason('');
             loadData();
         } catch {
             showToast('An unexpected error occurred', 'error');
@@ -252,7 +256,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
 
     const filteredApplications = applications.filter((app) => {
         if (statusFilter !== 'all' && app.status !== statusFilter) return false;
-        if (degreeFilter !== 'All' && app.profiles?.degree_level !== degreeFilter) return false;
+        if (degreeFilter !== 'all' && app.profiles?.degree_level?.toLowerCase() !== degreeFilter) return false;
         return true;
     });
 
@@ -366,14 +370,23 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-slate-400">Degree:</span>
-                        <div className="flex gap-2 bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-                            {['All', 'UG', 'PG'].map((d) => (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {['All', 'UG', 'PG'].map((deg) => (
                                 <button
-                                    key={d}
-                                    onClick={() => setDegreeFilter(d as any)}
-                                    className={`px - 3 py - 1 rounded - md text - sm font - medium transition ${degreeFilter === d ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'} `}
+                                    key={deg}
+                                    onClick={() => setDegreeFilter(deg.toLowerCase())}
+                                    style={{
+                                        padding: '6px 14px',
+                                        borderRadius: '20px',
+                                        border: '1px solid var(--color-border)',
+                                        background: degreeFilter === deg.toLowerCase() ? 'var(--color-accent)' : 'transparent',
+                                        color: degreeFilter === deg.toLowerCase() ? '#fff' : 'var(--color-text-secondary)',
+                                        cursor: 'pointer',
+                                        fontSize: '13px',
+                                        fontWeight: '500'
+                                    }}
                                 >
-                                    {d}
+                                    {deg}
                                 </button>
                             ))}
                         </div>
@@ -474,7 +487,7 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                             </a>
                                         )}
                                         <button
-                                            onClick={() => router.push(`/profile/${app.profiles?.id}`)}
+                                            onClick={() => router.push(`/profile/${app.profiles?.id}?from=internship&internshipId=${internshipId}`)}
                                             className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700 transition-colors"
                                         >
                                             <Users className="w-4 h-4" /> View Profile (Portfolio)
@@ -502,12 +515,37 @@ export default function ApplicantsPage({ params }: { params: Promise<{ id: strin
                                             >
                                                 <CheckCircle className="w-4 h-4" /> Accept Candidate
                                             </button>
-                                            <button
-                                                onClick={() => handleUpdateStatus(app.id, 'rejected')}
-                                                className="w-full bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-300 border border-slate-700 hover:border-rose-900 py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex justify-center items-center gap-2"
-                                            >
-                                                <XCircle className="w-4 h-4" /> Reject
-                                            </button>
+                                            {rejectingId === app.id ? (
+                                                <div className="space-y-2 group">
+                                                    <textarea
+                                                        placeholder="Reason for rejection (optional)"
+                                                        value={rejectReason}
+                                                        onChange={(e) => setRejectReason(e.target.value)}
+                                                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-rose-500 min-h-[80px] resize-none"
+                                                    />
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(app.id, 'rejected', rejectReason)}
+                                                            className="flex-1 bg-rose-600 hover:bg-rose-500 text-white py-1.5 px-3 rounded-lg text-xs font-bold transition-colors"
+                                                        >
+                                                            Confirm Reject
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setRejectingId(null); setRejectReason(''); }}
+                                                            className="bg-slate-800 hover:bg-slate-700 text-slate-400 py-1.5 px-3 rounded-lg text-xs font-medium transition-colors border border-slate-700"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => setRejectingId(app.id)}
+                                                    className="w-full bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-300 border border-slate-700 hover:border-rose-900 py-2.5 px-4 rounded-xl text-sm font-medium transition-colors flex justify-center items-center gap-2"
+                                                >
+                                                    <XCircle className="w-4 h-4" /> Reject
+                                                </button>
+                                            )}
                                         </>
                                     )}
 

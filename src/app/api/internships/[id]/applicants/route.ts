@@ -55,6 +55,7 @@ export async function GET(
             completion_letter_url,
             applied_at,
             skillantra_resume_id,
+            rejection_reason,
             profiles!student_id (
                 id,
                 user_id,

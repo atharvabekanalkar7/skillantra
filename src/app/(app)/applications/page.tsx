@@ -11,6 +11,7 @@ import type { Task } from '@/lib/types';
 import { AppCard } from '@/components/ui/app-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { createClient } from '@/lib/supabase/client';
+import { Sparkles } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,7 @@ interface InternshipApplication {
   applicant_profile_id: string;
   status: 'pending' | 'accepted' | 'rejected' | 'hired';
   cover_note: string | null;
+  rejection_reason: string | null;
   applied_at: string;
   internship?: {
     id: string;
@@ -417,8 +419,26 @@ function InternshipsTab() {
                   )}
                 </div>
               </div>
-              <div className="flex-shrink-0 ml-3">
+              <div className="flex-shrink-0 ml-3 text-right">
                 <StatusBadge status={application.status} />
+                {application.status === 'accepted' && (
+                  <p style={{
+                    color: 'var(--color-success)',
+                    fontSize: '13px',
+                    marginTop: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    gap: '6px'
+                  }}>
+                    <Sparkles size={14} /> Congratulations! The recruiter will contact you soon.
+                  </p>
+                )}
+                {application.status === 'rejected' && application.rejection_reason && (
+                  <p className="text-rose-400 text-[11px] font-medium mt-1.5 max-w-[120px] leading-tight">
+                    Reason: {application.rejection_reason}
+                  </p>
+                )}
               </div>
             </div>
 

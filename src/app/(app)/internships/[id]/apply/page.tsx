@@ -217,7 +217,7 @@ export default function ApplicationFlowPage({ params }: { params: Promise<{ id: 
             }
 
             // Success string
-            router.push(`/applications?success=true`);
+            router.push(`/applications?success=true&tab=internships`);
 
         } catch (err: any) {
             setError(err.message || 'Failed to submit application');

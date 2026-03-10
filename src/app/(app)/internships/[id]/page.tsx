@@ -107,10 +107,34 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
 
     // Rate limit state
     const [appCount48h, setAppCount48h] = useState(0);
+    const [oldestApplicationTime, setOldestApplicationTime] = useState<string | null>(null);
+    const [timeLeft, setTimeLeft] = useState<string>('');
 
     useEffect(() => {
         loadAll();
     }, [internshipId]);
+
+    useEffect(() => {
+        if (!oldestApplicationTime) return;
+
+        const interval = setInterval(() => {
+            const resetTime = new Date(oldestApplicationTime).getTime() + 48 * 60 * 60 * 1000;
+            const now = Date.now();
+            const diff = resetTime - now;
+
+            if (diff <= 0) {
+                setTimeLeft('');
+                clearInterval(interval);
+                return;
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            setTimeLeft(`${hours}h ${minutes}m`);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [oldestApplicationTime]);
 
     const loadAll = async () => {
         setLoading(true);
@@ -165,13 +189,17 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
 
                     // Check application count in last 48 hours for rate limiting UI
                     const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-                    const { count: recentCount } = await supabase
+                    const { data: recentApps, count: recentCount } = await supabase
                         .from('internship_applications')
-                        .select('id', { count: 'exact', head: true })
+                        .select('id, applied_at', { count: 'exact' })
                         .eq('student_id', profile.id)
-                        .gte('applied_at', twoDaysAgo);
+                        .gte('applied_at', twoDaysAgo)
+                        .order('applied_at', { ascending: true });
 
                     setAppCount48h(recentCount || 0);
+                    if (recentApps && recentApps.length > 0) {
+                        setOldestApplicationTime(recentApps[0].applied_at);
+                    }
                 }
             }
         } catch {
@@ -434,7 +462,10 @@ export default function InternshipDetailPage({ params }: { params: Promise<{ id:
                                 ) : isRateLimited ? (
                                     <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
                                         <p className="text-amber-400 text-xs font-semibold mb-1">Rate Limit Reached</p>
-                                        <p className="text-slate-400 text-xs leading-relaxed">You have reached your limit of 3 applications per 48 hours to ensure high quality submissions.</p>
+                                        <p className="text-slate-400 text-xs leading-relaxed">
+                                            You've reached the 3 application limit.
+                                            {timeLeft && ` You can apply again in ${timeLeft}.`}
+                                        </p>
                                     </div>
                                 ) : (
                                     <Link

@@ -186,8 +186,9 @@ export default function InternshipsPage() {
     const [skillFilter, setSkillFilter] = useState('');
     const [durationFilter, setDurationFilter] = useState('All');
     const [workModeFilter, setWorkModeFilter] = useState<WorkModeFilter>('All');
-    const [stipendFilter, setStipendFilter] = useState<StipendFilter>('All');
-    const [degreeFilter, setDegreeFilter] = useState<DegreeFilter>('All');
+    const [stipendFilter, setStipendFilter] = useState<string>('all');
+    const [minStipend, setMinStipend] = useState('');
+    const [degreeFilter, setDegreeFilter] = useState<string>('All');
     const [crossCampusTooltip, setCrossCampusTooltip] = useState(false);
 
     useEffect(() => {
@@ -308,10 +309,11 @@ export default function InternshipsPage() {
             }
 
             // Stipend filter
-            if (stipendFilter !== 'All') {
-                if (stipendFilter === 'Unpaid' && !item.is_unpaid) return false;
-                if (stipendFilter === 'Paid' && item.is_unpaid) return false;
-                if (stipendFilter === '₹10k+' && (item.is_unpaid || item.stipend_max < 10000)) return false;
+            if (stipendFilter === 'unpaid') {
+                if (!item.is_unpaid) return false;
+            } else if (minStipend) {
+                const minVal = parseInt(minStipend);
+                if (item.is_unpaid || item.stipend_min < minVal) return false;
             }
 
             // Degree filter
@@ -428,23 +430,39 @@ export default function InternshipsPage() {
                         ))}
                     </div>
 
-                    {/* Row 3: Stipend pills */}
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-3">
                         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1 w-16">
                             Stipend:
                         </span>
-                        {STIPEND_OPTIONS.map((s) => (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <button
-                                key={s}
-                                onClick={() => setStipendFilter(s)}
-                                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-150 border ${stipendFilter === s
-                                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-sm'
-                                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                                onClick={() => {
+                                    setStipendFilter(stipendFilter === 'unpaid' ? 'all' : 'unpaid');
+                                    setMinStipend('');
+                                }}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-150 border ${stipendFilter === 'unpaid'
+                                    ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_15px_rgba(79,70,229,0.3)]'
+                                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'
                                     }`}
                             >
-                                {s}
+                                Unpaid
                             </button>
-                        ))}
+                            <span className="text-slate-600 text-[10px] font-bold uppercase tracking-wider">or min</span>
+                            <div className="flex items-center bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 transition-all">
+                                <span className="text-slate-500 text-sm mr-1">₹</span>
+                                <input
+                                    type="number"
+                                    placeholder="e.g. 5000"
+                                    value={minStipend}
+                                    onChange={(e) => {
+                                        setMinStipend(e.target.value);
+                                        setStipendFilter('custom');
+                                    }}
+                                    className="bg-transparent border-none text-slate-100 text-sm focus:outline-none w-20 placeholder:text-slate-600"
+                                />
+                                <span className="text-slate-500 text-[10px] ml-2 font-medium">/month</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Row 4: Degree Level pills */}
@@ -496,7 +514,8 @@ export default function InternshipsPage() {
                             setSkillFilter('');
                             setDurationFilter('All');
                             setWorkModeFilter('All');
-                            setStipendFilter('All');
+                            setStipendFilter('all');
+                            setMinStipend('');
                         }}
                         className="text-indigo-400 hover:text-indigo-300 text-sm font-medium mt-2 bg-indigo-500/10 px-4 py-2 rounded-lg"
                     >

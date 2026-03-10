@@ -50,7 +50,7 @@ export async function PATCH(
     }
 
     // Capture update fields from body
-    const { status, offer_letter_url, completion_letter_url } = body;
+    const { status, offer_letter_url, completion_letter_url, reason } = body;
     const updateData: any = {};
 
     if (isStudent) {
@@ -65,6 +65,9 @@ export async function PATCH(
     } else if (isRecruiter) {
         // Recruiters can update status and upload letters
         if (status) updateData.status = status;
+        if (status === 'rejected') {
+            updateData.rejection_reason = reason ?? null;
+        }
         if (offer_letter_url) updateData.offer_letter_url = offer_letter_url;
         if (completion_letter_url) updateData.completion_letter_url = completion_letter_url;
     }
