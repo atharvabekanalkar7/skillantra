@@ -34,7 +34,7 @@ interface InternshipApplication {
   id: string;
   internship_id: string;
   applicant_profile_id: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'hired';
+  status: 'pending' | 'accepted' | 'rejected' | 'hired' | 'under_review' | 'shortlisted';
   cover_note: string | null;
   rejection_reason: string | null;
   applied_at: string;
@@ -120,6 +120,46 @@ function CompanyLogo({
   );
 }
 
+function CreatorEmail({ profileId }: { profileId: string }) {
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/profile?profileId=${profileId}`);
+        const data = await res.json();
+        if (data.profile?.email) {
+          setEmail(data.profile.email);
+        }
+      } catch (err) {
+        console.error('Error fetching creator email:', err);
+      }
+    })();
+  }, [profileId]);
+
+  if (!email) return null;
+
+  return (
+    <a
+      href={`mailto:${email}`}
+      style={{
+        padding: '5px 14px',
+        background: 'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
+        color: '#94a3b8',
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: '500',
+        border: '1px solid #334155',
+        textDecoration: 'none',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+        transition: 'all 0.2s ease'
+      }}
+    >
+      Email
+    </a>
+  );
+}
+
 // ─── Tab bar ───────────────────────────────────────────────────────────────────
 
 function TabBar({
@@ -166,7 +206,7 @@ function TabBar({
 
 // ─── Task Applications Tab ─────────────────────────────────────────────────────
 
-function TasksTab({ isDemo }: { isDemo: boolean }) {
+function TasksTab({ isDemo, router }: { isDemo: boolean; router: ReturnType<typeof useRouter> }) {
   const [applications, setApplications] = useState<TaskApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -313,13 +353,36 @@ function TasksTab({ isDemo }: { isDemo: boolean }) {
                 </div>
               )}
 
-              {application.status === 'accepted' && application.task?.creator?.phone_number && (
+              {application.status === 'accepted' && application.task?.creator && (
                 <div className="mb-4 p-3 bg-slate-800/50 border border-slate-800 rounded-lg">
                   <p className="text-xs font-semibold text-slate-500 mb-1">Contact Information:</p>
                   <p className="text-sm text-slate-200 font-medium">{application.task.creator.name}</p>
-                  <p className="text-sm text-emerald-400 font-medium mt-1">
-                    📞 +91 {application.task.creator.phone_number}
-                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
+                    {application.task.creator.phone_number && (
+                      <span style={{ fontSize: '13px', color: 'var(--color-text-secondary, #94a3b8)' }}>
+                        📞 +91 {application.task.creator.phone_number}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => router.push(`/profile/${application.task?.creator?.id}`)}
+                      style={{
+                        padding: '5px 14px',
+                        background: 'linear-gradient(135deg, #1e293b 0%, #020617 100%)',
+                        color: '#f8fafc',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        border: '1px solid #4f46e5',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Message
+                    </button>
+                    <CreatorEmail profileId={application.task.creator.id} />
+                  </div>
                 </div>
               )}
 
@@ -342,12 +405,59 @@ function TasksTab({ isDemo }: { isDemo: boolean }) {
   );
 }
 
-function InternshipsTab() {
+function InternshipsTab({ isDemo }: { isDemo: boolean }) {
   const [applications, setApplications] = useState<InternshipApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isDemo) {
+      setApplications([
+        {
+          id: 'demo-1',
+          internship_id: 'demo-intern-1',
+          applicant_profile_id: 'demo-user',
+          status: 'under_review',
+          cover_note: null,
+          rejection_reason: null,
+          applied_at: new Date().toISOString(),
+          internship: {
+            id: 'demo-intern-1',
+            title: 'Frontend Developer Intern',
+            company_name: 'TechVentures Pvt. Ltd.',
+            company_logo_url: null,
+            stipend_min: 15000,
+            stipend_max: 15000,
+            is_unpaid: false,
+            duration_months: 2,
+            location: 'Remote',
+          },
+        },
+        {
+          id: 'demo-2',
+          internship_id: 'demo-intern-2',
+          applicant_profile_id: 'demo-user',
+          status: 'shortlisted',
+          cover_note: null,
+          rejection_reason: null,
+          applied_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          internship: {
+            id: 'demo-intern-2',
+            title: 'Data Analyst Intern',
+            company_name: 'Analytics Co.',
+            company_logo_url: null,
+            stipend_min: 12000,
+            stipend_max: 12000,
+            is_unpaid: false,
+            duration_months: 3,
+            location: 'Hybrid — Delhi',
+          },
+        },
+      ] as InternshipApplication[]);
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       setLoading(true);
       setError(null);
@@ -367,7 +477,7 @@ function InternshipsTab() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [isDemo]);
 
   if (loading) return <LoadingSpinner />;
 
@@ -548,10 +658,10 @@ export default function MyApplicationsPage() {
 
       {/* Tab content — always mounted but hidden so they don't reload on tab switch */}
       <div className={activeTab === 'tasks' ? 'block' : 'hidden'}>
-        <TasksTab isDemo={isDemo} />
+        <TasksTab isDemo={isDemo} router={router} />
       </div>
       <div className={activeTab === 'internships' ? 'block' : 'hidden'}>
-        <InternshipsTab />
+        <InternshipsTab isDemo={isDemo} />
       </div>
     </div>
   );

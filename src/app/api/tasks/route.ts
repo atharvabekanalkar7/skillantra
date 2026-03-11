@@ -3,6 +3,52 @@ import { NextResponse } from 'next/server';
 import { enforceEmailConfirmed } from '@/lib/api-helpers';
 
 export async function GET(request: Request) {
+  // Demo Mode Check
+  const { searchParams } = new URL(request.url);
+  const isDemo = searchParams.get('demo') === 'true' || request.headers.get('referer')?.includes('demo=true');
+
+  if (isDemo) {
+    return NextResponse.json({
+      tasks: [
+        {
+          id: 'demo-task-1',
+          creator_profile_id: 'demo-creator-id',
+          title: 'Build a Next.js Landing Page',
+          description: 'Looking for someone to help build a high-conversion landing page using Next.js and Tailwind CSS.',
+          skills_required: 'Next.js, Tailwind CSS, TypeScript',
+          payment_type: 'stipend',
+          stipend_min: 5000,
+          stipend_max: 8000,
+          status: 'open',
+          created_at: new Date().toISOString(),
+          creator: {
+            id: 'demo-creator-id',
+            name: 'John Doe',
+            college: 'IIT Mandi',
+            user_type: 'SkillSeeker'
+          }
+        },
+        {
+          id: 'demo-task-2',
+          creator_profile_id: 'demo-creator-2',
+          title: 'Logo Design for Campus Event',
+          description: 'Need a professional logo for our upcoming tech fest. Should be modern and represent "innovation".',
+          skills_required: 'Figma, Illustrator, Graphic Design',
+          payment_type: 'other',
+          payment_other_details: 'Certificate and free t-shirt',
+          status: 'open',
+          created_at: new Date(Date.now() - 172800000).toISOString(),
+          creator: {
+            id: 'demo-creator-2',
+            name: 'Sarah Lee',
+            college: 'IIT Mandi',
+            user_type: 'SkillSeeker'
+          }
+        }
+      ]
+    });
+  }
+
   const supabase = await createClient();
 
   const {
@@ -30,8 +76,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Profile not found. Please create your profile first.' }, { status: 404 });
   }
 
-  const { searchParams } = new URL(request.url);
-  const mine = searchParams.get('mine') === 'true';
+  const { searchParams: getSearchParams } = new URL(request.url);
+  const mine = getSearchParams.get('mine') === 'true';
 
   let query;
 

@@ -85,38 +85,43 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in-up">
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 md:mb-3">
-          {phoneRequired ? 'Phone Number Required' : profile ? 'Edit Profile' : isSetup ? 'Complete Your Profile' : 'Create Profile'}
-        </h1>
-        <p className="text-white/70">
-          {phoneRequired
-            ? 'Phone number is now required to use SkillAntra. Please add your phone number below.'
-            : profile
-              ? 'Update your profile information'
-              : isSetup
-                ? 'Welcome to SkillAntra! Please complete your profile to get started.'
-                : 'Create your profile to get started'}
-        </p>
-        {phoneRequired && (
-          <div className="mt-4 bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
-            <p className="text-sm text-blue-200">
-              <strong className="font-semibold">Why we need your phone number:</strong> Your phone number will be displayed to other users (both SkillSeekers and SkillHolders) on the platform to facilitate communication and collaboration. This helps build trust and enables direct contact between users.
-            </p>
-          </div>
-        )}
+    <>
+      <div className="w-full bg-indigo-600/10 border-b border-indigo-500/20 px-4 py-3 text-center text-sm text-indigo-300 sticky top-14 md:top-0 z-20 backdrop-blur-sm -mt-4 md:mt-0 mb-6">
+        ⚠️ Your profile is incomplete. Please fill all required fields marked <span className="text-white font-semibold">*</span> to access SkillAntra.
       </div>
+      <div className="max-w-2xl mx-auto animate-fade-in-up pb-8">
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 md:mb-3">
+            {phoneRequired ? 'Phone Number Required' : profile ? 'Edit Profile' : isSetup ? 'Complete Your Profile' : 'Create Profile'}
+          </h1>
+          <p className="text-white/70">
+            {phoneRequired
+              ? 'Phone number is now required to use SkillAntra. Please add your phone number below.'
+              : profile
+                ? 'Update your profile information'
+                : isSetup
+                  ? 'Welcome to SkillAntra! Please complete your profile to get started.'
+                  : 'Create your profile to get started'}
+          </p>
+          {phoneRequired && (
+            <div className="mt-4 bg-blue-500/10 border border-blue-400/30 rounded-lg p-4">
+              <p className="text-sm text-blue-200">
+                <strong className="font-semibold">Why we need your phone number:</strong> Your phone number will be displayed to other users (both SkillSeekers and SkillHolders) on the platform to facilitate communication and collaboration. This helps build trust and enables direct contact between users.
+              </p>
+            </div>
+          )}
+        </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
-        {profile?.user_type === 'student' ? (
-          <ProfileForm initialProfile={profile} />
-        ) : profile?.user_type === 'recruiter' ? (
-          <RecruiterProfileForm initialProfile={profile} />
-        ) : (
-          <div className="text-center font-medium text-slate-300">Invalid user type. Please contact support.</div>
-        )}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+          {profile?.user_type === 'student' ? (
+            <ProfileForm initialProfile={profile} />
+          ) : profile?.user_type === 'recruiter' ? (
+            <RecruiterProfileForm initialProfile={profile} />
+          ) : (
+            <div className="text-center font-medium text-slate-300">Invalid user type. Please contact support.</div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -5,10 +5,45 @@ import { adminApprovalEmail } from '@/lib/email-templates';
 import { sendEmail } from '@/lib/notifications';
 import crypto from 'crypto';
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@skillantra.in';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'atharvasachinofficial@gmail.com';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'fallback-secret-for-dev';
 
 export async function GET(request: Request) {
+    // Demo Mode Check
+    const { searchParams } = new URL(request.url);
+    const isDemo = searchParams.get('demo') === 'true' || request.headers.get('referer')?.includes('demo=true');
+
+    if (isDemo) {
+        return NextResponse.json({
+            internships: [
+                {
+                    id: 'demo-internship-1',
+                    title: 'Full Stack Developer',
+                    company_name: 'TechCorp',
+                    location: 'Remote',
+                    duration_months: 6,
+                    stipend_min: 15000,
+                    stipend_max: 20000,
+                    apply_by: new Date(Date.now() + 86400000 * 30).toISOString(),
+                    status: 'approved',
+                    applicant_count: 12
+                },
+                {
+                    id: 'demo-internship-2',
+                    title: 'UI/UX Designer',
+                    company_name: 'Creative Labs',
+                    location: 'Hybrid',
+                    duration_months: 3,
+                    stipend_min: 10000,
+                    stipend_max: 12000,
+                    apply_by: new Date(Date.now() + 86400000 * 15).toISOString(),
+                    status: 'approved',
+                    applicant_count: 8
+                }
+            ]
+        });
+    }
+
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -26,8 +61,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const mine = searchParams.get('mine') === 'true';
+    const { searchParams: getSearchParams } = new URL(request.url);
+    const mine = getSearchParams.get('mine') === 'true';
 
     let query = supabase
         .from('internships')

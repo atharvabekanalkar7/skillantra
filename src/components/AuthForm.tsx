@@ -393,8 +393,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
                         setIsRecruiter(false);
                       }}
                       className={`flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left ${userType === 'student'
-                          ? 'bg-indigo-600/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]'
-                          : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
+                        ? 'bg-indigo-600/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]'
+                        : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
                         }`}
                     >
                       <div className="flex items-center gap-3 mb-2">
@@ -418,8 +418,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
                         setIsRecruiter(true);
                       }}
                       className={`flex flex-col items-start p-4 rounded-xl border-2 transition-all text-left ${userType === 'recruiter'
-                          ? 'bg-indigo-600/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]'
-                          : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
+                        ? 'bg-indigo-600/20 border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.2)]'
+                        : 'bg-slate-800/40 border-slate-700 hover:border-slate-500'
                         }`}
                     >
                       <div className="flex items-center gap-3 mb-2">
@@ -613,6 +613,16 @@ export default function AuthForm({ mode }: AuthFormProps) {
                     </svg>
                   </button>
                 </div>
+                {mode === 'login' && (
+                  <div className="flex justify-end mt-2">
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs text-slate-400 hover:text-indigo-300 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {mode === 'signup' && (

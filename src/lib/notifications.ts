@@ -1,9 +1,5 @@
-import { showToast } from '@/lib/utils/toast';
-/**
- * Notification utilities — in-app, email, and WhatsApp (placeholder)
- */
-
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { showToast } from '@/lib/utils/toast';
 
 // ─── In-App Notification ──────────────────────────────────────────────────────
 
@@ -33,36 +29,43 @@ export async function createNotification(
 // ─── Email ────────────────────────────────────────────────────────────────────
 
 export async function sendEmail(to: string, subject: string, htmlBody: string) {
+    if (!process.env.RESEND_API_KEY) {
+        console.log(`📧 EMAIL (no API key):\n  To: ${to}\n  Subject: ${subject}`)
+        return { success: true }
+    }
+
     try {
-        // Use Supabase Edge Function or direct SMTP
-        // For MVP, we'll use the Supabase auth.admin API to send a magic link-style email
-        // In production, integrate Resend or similar
-        const supabase = createServiceRoleClient();
+        const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: 'SkillAntra <onboarding@resend.dev>',
+                to,
+                subject,
+                html: htmlBody
+            })
+        })
 
-        // Try using Supabase's built-in email (via auth.admin.inviteUserByEmail as a workaround)
-        // For a proper implementation, integrate Resend:
-        // const res = await fetch('https://api.resend.com/emails', {
-        //   method: 'POST',
-        //   headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ from: 'Skillantra <noreply@skillantra.in>', to, subject, html: htmlBody }),
-        // });
+        if (!res.ok) {
+            const err = await res.json()
+            console.error('Resend error:', err)
+            return { success: false, error: err }
+        }
 
-        console.log(`📧 EMAIL SENT (simulated):\n  To: ${to}\n  Subject: ${subject}\n  Body length: ${htmlBody.length} chars`);
-
-        // TODO: Replace with actual email provider (Resend, SendGrid, etc.)
-        // For now, log to console so the flow works end-to-end
-        return { success: true };
+        console.log(`📧 EMAIL SENT via Resend to: ${to}`)
+        return { success: true }
     } catch (err) {
-        console.error('sendEmail error:', err);
-        showToast('Something went wrong. Please try again.', 'error');
-        return { success: false, error: err };
+        console.error('sendEmail error:', err)
+        return { success: false, error: err }
     }
 }
 
 // ─── WhatsApp (PLACEHOLDER) ──────────────────────────────────────────────────
 
 export async function sendWhatsApp(phone: string, message: string) {
-    // TODO: Integrate WhatsApp Business API (Twilio, Meta Cloud API, etc.)
     console.log(`📱 WHATSAPP (placeholder):\n  To: ${phone}\n  Message: ${message}`);
     return { success: true, placeholder: true };
 }

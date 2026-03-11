@@ -99,6 +99,15 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
         }
     };
 
+    const isFormValid = !!(
+        formData.name.trim() &&
+        formData.company_name.trim() &&
+        formData.designation.trim() &&
+        email &&
+        formData.phone_number.replace(/^\+91\s*/, '').trim() &&
+        formData.company_description.trim()
+    );
+
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
@@ -119,7 +128,7 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
             {email && (
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
-                        Company Email
+                        Company Email <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
@@ -219,7 +228,7 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
 
             <div>
                 <label htmlFor="company_description" className="block text-sm font-medium text-slate-300 mb-2">
-                    Company Description
+                    Company Description <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                     <div className="absolute left-4 top-3 text-slate-500">
@@ -228,6 +237,7 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
                     <textarea
                         id="company_description"
                         rows={4}
+                        required
                         value={formData.company_description}
                         onChange={(e) => setFormData(prev => ({ ...prev, company_description: e.target.value }))}
                         className="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
@@ -253,8 +263,11 @@ export default function RecruiterProfileForm({ initialProfile }: RecruiterProfil
             <div className="pt-4">
                 <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading || !isFormValid}
+                    className={`w-full font-medium py-3 px-4 rounded-xl transition-colors ${!isFormValid || loading
+                            ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]'
+                        }`}
                 >
                     {loading ? 'Saving...' : 'Complete Profile'}
                 </button>

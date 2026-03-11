@@ -4,6 +4,38 @@ import { NextResponse } from 'next/server';
 // ─── GET /api/notifications — current user's notifications ──────────────────
 
 export async function GET(request: Request) {
+    // Demo Mode Check
+    const { searchParams } = new URL(request.url);
+    const isDemo = searchParams.get('demo') === 'true' || request.headers.get('referer')?.includes('demo=true');
+
+    if (isDemo) {
+        return NextResponse.json({
+            data: [
+                {
+                    id: 'demo-notif-1',
+                    user_id: 'demo-profile-id',
+                    type: 'internship_applied',
+                    title: 'Application Received',
+                    body: 'Your application for Full Stack Developer has been received.',
+                    is_read: false,
+                    created_at: new Date().toISOString(),
+                    metadata: {}
+                },
+                {
+                    id: 'demo-notif-2',
+                    user_id: 'demo-profile-id',
+                    type: 'internship_accepted',
+                    title: 'Congratulations!',
+                    body: 'You have been accepted for the UI/UX Design internship.',
+                    is_read: true,
+                    created_at: new Date(Date.now() - 86400000).toISOString(),
+                    metadata: {}
+                }
+            ],
+            unread_count: 1
+        });
+    }
+
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {

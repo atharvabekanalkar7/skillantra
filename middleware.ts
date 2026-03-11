@@ -1,7 +1,13 @@
 import { updateSession } from '@/lib/supabase/middleware';
-import { type NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // Demo Mode Bypass: Allow requests with ?demo=true or a demo cookie to pass through without auth
+  const isDemo = request.nextUrl.searchParams.get('demo') === 'true' || request.cookies.has('demo');
+  if (isDemo) {
+    return NextResponse.next();
+  }
+
   return await updateSession(request);
 }
 

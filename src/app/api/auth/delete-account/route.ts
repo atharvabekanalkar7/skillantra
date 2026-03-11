@@ -8,7 +8,7 @@ export async function DELETE(request: Request) {
   try {
     const supabase = await createClient();
     let adminSupabase;
-    
+
     try {
       adminSupabase = createServiceRoleClient();
     } catch (adminClientError: any) {
@@ -18,12 +18,12 @@ export async function DELETE(request: Request) {
         name: adminClientError?.name,
         error: adminClientError,
       });
-      
+
       // Return user-friendly message directing them to contact support
       return NextResponse.json(
         createAuthError(
           AuthErrorCode.INTERNAL_ERROR,
-          "Delete account functionality isn't working properly. Please contact us at skillantra0511@gmail.com to delete all your information from our database."
+          "Delete account functionality isn't working properly. Please contact us at atharvasachinofficial@gmail.com to delete all your information from our database."
         ),
         { status: 500 }
       );
@@ -88,11 +88,11 @@ export async function DELETE(request: Request) {
         .select('id')
         .eq('user_id', userId)
         .maybeSingle();
-      
+
       if (profileData?.id) {
         profileId = profileData.id;
       }
-      
+
       if (profileFetchError && !profileFetchError.message?.includes('does not exist')) {
         console.error('Error fetching profile for deletion:', profileFetchError);
       }
@@ -195,7 +195,7 @@ export async function DELETE(request: Request) {
       name: error?.name,
       error: error,
     });
-    
+
     // Provide more specific error messages
     let errorMessage = 'An unexpected error occurred during account deletion';
     if (error?.message) {
@@ -207,7 +207,7 @@ export async function DELETE(request: Request) {
         errorMessage = `Failed to delete account: ${error.message}`;
       }
     }
-    
+
     return NextResponse.json(
       createAuthError(
         AuthErrorCode.INTERNAL_ERROR,

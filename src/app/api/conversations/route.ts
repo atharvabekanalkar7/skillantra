@@ -121,6 +121,34 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+    // Demo Mode Check
+    const { searchParams } = new URL(request.url);
+    const isDemo = searchParams.get('demo') === 'true' || request.headers.get('referer')?.includes('demo=true');
+
+    if (isDemo) {
+        return NextResponse.json({
+            conversations: [
+                {
+                    id: 'demo-convo-1',
+                    status: 'accepted',
+                    last_message_at: new Date().toISOString(),
+                    is_sender: false,
+                    other_user: {
+                        id: 'demo-user-2',
+                        name: 'Jane Smith',
+                        user_type: 'SkillHolder'
+                    },
+                    unread_count: 1,
+                    last_message: {
+                        content: 'Hey, I saw your project and would love to collaborate!',
+                        created_at: new Date().toISOString()
+                    }
+                }
+            ],
+            totalUnreadCount: 1
+        });
+    }
+
     const supabase = await createClient();
 
     // 1. Authenticate Request

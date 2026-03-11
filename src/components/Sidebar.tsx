@@ -15,19 +15,24 @@ import {
   Settings,
   LogOut,
   Sparkles,
-  List
+  List,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { HiOutlineIdentification } from 'react-icons/hi';
 import SidebarButton from './SidebarButton';
 import NotificationBell from './NotificationBell';
+import { showToast } from '@/lib/utils/toast';
 
 interface SidebarProps {
   isDemo?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+  onToggle?: () => void;
+  profileComplete?: boolean;
 }
 
-export default function Sidebar({ isDemo = false, isOpen = false, onClose }: SidebarProps) {
+export default function Sidebar({ isDemo = false, isOpen = false, onClose, onToggle, profileComplete = true }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -70,9 +75,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     }
   };
 
-  useEffect(() => {
-    onClose?.();
-  }, [pathname]);
+
 
   const handleLogout = async () => {
     if (isDemo) {
@@ -92,6 +95,13 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
       console.error('Logout error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNavClick = (e: React.MouseEvent) => {
+    if (!profileComplete) {
+      e.preventDefault();
+      showToast('Please complete your profile before continuing.', 'error');
     }
   };
 
@@ -159,7 +169,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
     <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800">
       <div className="p-5 border-b border-slate-800">
         <div className="flex justify-between items-center">
-          <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} className="flex items-center gap-2 group">
+          <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} onClick={handleNavClick} className="flex items-center gap-2 group">
             <span className="text-xl font-bold text-slate-100 tracking-tight">
               Skill<span className="text-indigo-400">Antra</span>
             </span>
@@ -208,7 +218,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
                       isActive={isActive}
                       comingSoon={item.comingSoon}
                       unreadCount={item.unread}
-                      onClick={onClose}
+                      onClick={handleNavClick}
                     />
                   </li>
                 );
@@ -227,7 +237,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
                   icon={<FileText className="w-[18px] h-[18px]" />}
                   label="My Applications"
                   isActive={pathname === '/applications'}
-                  onClick={onClose}
+                  onClick={handleNavClick}
                 />
               </li>
               <li>
@@ -236,7 +246,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
                   icon={<HiOutlineIdentification className="w-[18px] h-[18px]" />}
                   label="My Resume"
                   isActive={pathname === '/resume'}
-                  onClick={onClose}
+                  onClick={handleNavClick}
                 />
               </li>
             </ul>
@@ -260,7 +270,7 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
                     isActive={isActive}
                     comingSoon={item.comingSoon}
                     unreadCount={item.unread}
-                    onClick={onClose}
+                    onClick={handleNavClick}
                   />
                 </li>
               );
@@ -284,20 +294,49 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose }: Sid
 
   return (
     <>
+      {/* Desktop Toggle Button */}
+      <button
+        onClick={onToggle}
+        className="hidden md:flex"
+        style={{
+          position: 'fixed',
+          top: '20px',
+          left: isOpen ? '208px' : '12px',
+          zIndex: 50,
+          background: 'var(--color-bg-elevated, #1e293b)',
+          border: '1px solid var(--color-border, #334155)',
+          borderRadius: '6px',
+          padding: '6px',
+          cursor: 'pointer',
+          color: 'var(--color-text-secondary, #94a3b8)',
+          transition: 'all 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+        title={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
+      >
+        {isOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+      </button>
+
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex fixed left-0 top-0 h-full w-64 z-40 flex-col"
+        className={`hidden md:flex fixed left-0 top-0 h-full z-40 flex-col transition-all duration-200 ease-in-out overflow-hidden`}
+        style={{
+          width: isOpen ? '256px' : '0px',
+          minWidth: isOpen ? '256px' : '0px',
+        }}
         aria-label="Main navigation"
       >
-        {sidebarContent}
+        <div style={{ width: '256px', height: '100%' }}>
+          {sidebarContent}
+        </div>
       </aside>
 
       {/* Mobile overlay */}
       {mounted && (
         <div
           className={`md:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          onClick={onClose}
-          onTouchEnd={onClose}
           aria-hidden="true"
         />
       )}

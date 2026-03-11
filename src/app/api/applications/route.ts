@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { enforceEmailConfirmed } from '@/lib/api-helpers';
 
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
   }
 
   // Filter contact information: only show if application status is 'accepted'
-  const filteredApplications = (applications || []).map((app: any) => {
+  const finalApplications = await Promise.all((applications || []).map(async (app: any) => {
     const filtered = { ...app };
 
     if (sent) {
@@ -115,16 +115,35 @@ export async function GET(request: Request) {
     } else if (received) {
       // For received applications: hide applicant's contact info unless accepted
       if (filtered.applicant) {
-        if (filtered.status !== 'accepted') {
+        if (filtered.status === 'accepted') {
+          // Fetch applicant email via service role client as requested
+          try {
+            const adminSupabase = createServiceRoleClient();
+            const { data: profileData } = await adminSupabase
+              .from('profiles')
+              .select('user_id')
+              .eq('id', filtered.applicant.id)
+              .single();
+
+            if (profileData?.user_id) {
+              const { data: authUser } = await adminSupabase.auth.admin.getUserById(profileData.user_id);
+              if (authUser?.user?.email) {
+                filtered.applicant_email = authUser.user.email;
+              }
+            }
+          } catch (err) {
+            console.error('Error fetching applicant email:', err);
+          }
+        } else {
           filtered.applicant.phone_number = null;
         }
       }
     }
 
     return filtered;
-  });
+  }));
 
-  return NextResponse.json({ applications: filteredApplications });
+  return NextResponse.json({ applications: finalApplications });
 }
 
 export async function POST(request: Request) {

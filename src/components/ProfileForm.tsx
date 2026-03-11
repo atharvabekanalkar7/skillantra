@@ -178,6 +178,14 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
     }
   };
 
+  const isFormValid = !!(
+    name.trim() &&
+    bio.trim() &&
+    skills.trim() &&
+    degreeLevel &&
+    phoneNumber.replace(/^\+91\s*/, '').trim()
+  );
+
   // Derive button text and style from state
   const getButtonContent = () => {
     if (loading) {
@@ -209,6 +217,9 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
     if (success) {
       return `${base} bg-emerald-600 focus:ring-emerald-500`;
+    }
+    if (!isFormValid) {
+      return `${base} bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed`;
     }
     return `${base} bg-indigo-600 hover:bg-indigo-500 focus:ring-indigo-500 disabled:opacity-50`;
   };
@@ -250,7 +261,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
       {email && (
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-white mb-2">
-            Email
+            Email <span className="text-red-400">*</span>
           </label>
           <input
             id="email"
@@ -338,13 +349,14 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
       <div>
         <label htmlFor="bio" className="block text-sm font-medium text-white mb-2">
-          Bio
+          Bio <span className="text-red-400">*</span>
         </label>
         <textarea
           id="bio"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           rows={4}
+          required
           disabled={loading || success}
           className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
           placeholder="Tell us about yourself..."
@@ -353,13 +365,14 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
 
       <div>
         <label htmlFor="skills" className="block text-sm font-medium text-white mb-2">
-          Skills
+          Skills <span className="text-red-400">*</span>
         </label>
         <input
           id="skills"
           type="text"
           value={skills}
           onChange={(e) => setSkills(e.target.value)}
+          required
           disabled={loading || success}
           className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-60"
           placeholder="React, TypeScript, Node.js (comma-separated)"
@@ -404,7 +417,7 @@ export default function ProfileForm({ initialProfile }: ProfileFormProps) {
         </button>
         <button
           type="submit"
-          disabled={loading || success}
+          disabled={loading || success || !isFormValid}
           className={getButtonClasses()}
         >
           {getButtonContent()}

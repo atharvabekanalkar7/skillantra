@@ -8,6 +8,8 @@ const STATUS_STYLES: Record<string, string> = {
     rejected: "bg-rose-900/70 text-rose-300 border border-rose-700/70",
     hired: "bg-green-900 text-green-300 border border-green-700",
     filled: "bg-slate-800 text-slate-400 border border-slate-700",
+    under_review: "bg-amber-900/50 text-amber-400 border border-amber-700/50",
+    shortlisted: "bg-emerald-900/50 text-emerald-400 border border-emerald-700/50",
 };
 
 const STATUS_LABELS: Record<string, string> = {

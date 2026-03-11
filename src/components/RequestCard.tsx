@@ -62,27 +62,57 @@ export default function RequestCard({ request, isReceiver, onRespond, loading }:
       )}
 
       {request.status === 'accepted' && (
-        <div className="mt-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-          <p className="text-green-400 text-xs font-semibold mb-3 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-            Collaboration accepted
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => router.push(`/messages?userId=${otherProfile.id}`)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-500 transition-colors active:scale-95"
+        <div style={{
+          marginTop: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          flexWrap: 'wrap'
+        }}>
+          {(otherProfile as any).phone_number && (
+            <span style={{
+              fontSize: '13px',
+              color: 'var(--color-text-secondary, #94a3b8)'
+            }}>
+              📞 {(otherProfile as any).phone_number}
+            </span>
+          )}
+          <button
+            onClick={() => router.push(`/profile/${otherProfile.id}`)}
+            style={{
+              padding: '6px 16px',
+              background: 'linear-gradient(135deg, #1e293b 0%, #020617 100%)',
+              color: '#f8fafc',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: '600',
+              border: '1px solid #4f46e5',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            Message Now
+          </button>
+          {(otherProfile as any).email && (
+            <a
+              href={`mailto:${(otherProfile as any).email}`}
+              style={{
+                padding: '6px 16px',
+                background: 'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
+                color: '#94a3b8',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '500',
+                border: '1px solid #334155',
+                textDecoration: 'none',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                transition: 'all 0.2s ease'
+              }}
             >
-              Message
-            </button>
-            {(otherProfile as any).email && (
-              <a
-                href={`mailto:${(otherProfile as any).email}`}
-                className="px-4 py-2 bg-slate-800 text-slate-200 border border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
-              >
-                Email
-              </a>
-            )}
-          </div>
+              Email
+            </a>
+          )}
         </div>
       )}
 

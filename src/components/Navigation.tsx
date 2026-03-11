@@ -3,8 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { showToast } from '@/lib/utils/toast';
 
-export default function Navigation() {
+interface NavigationProps {
+  profileComplete?: boolean;
+}
+
+export default function Navigation({ profileComplete = true }: NavigationProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -46,41 +51,53 @@ export default function Navigation() {
     }
   };
 
+  const handleNavClick = (e: React.MouseEvent) => {
+    if (!profileComplete) {
+      e.preventDefault();
+      showToast('Please complete your profile before continuing.', 'error');
+    }
+  };
+
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/dashboard" className="text-xl font-bold text-blue-600">
+            <Link href="/dashboard" onClick={handleNavClick} className="text-xl font-bold text-blue-600">
               SkillAntra
             </Link>
             <div className="ml-10 flex space-x-4">
               <Link
                 href="/dashboard"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 Dashboard
               </Link>
               <Link
                 href="/tasks"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 Browse Tasks
               </Link>
               <Link
                 href="/tasks/mine"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 My Tasks
               </Link>
               <Link
                 href="/applications"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 My Applications
               </Link>
               <Link
                 href="/messages"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5"
               >
                 Messages
@@ -92,18 +109,21 @@ export default function Navigation() {
               </Link>
               <Link
                 href="/leaderboard"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-not-allowed"
               >
                 Leaderboard <span className="text-xs">(Coming soon)</span>
               </Link>
               <Link
                 href="/profile/edit"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 Profile
               </Link>
               <Link
                 href="/settings"
+                onClick={handleNavClick}
                 className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 Settings
@@ -124,4 +144,3 @@ export default function Navigation() {
     </nav>
   );
 }
-

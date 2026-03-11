@@ -20,12 +20,14 @@ async function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center py-20">
-        <div className="text-white">Loading...</div>
-      </div>
-    }>
-      <SignupForm />
-    </Suspense>
+    <div className="min-h-screen bg-[#060910] flex flex-col items-center justify-start py-10 px-4">
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-20">
+          <div className="text-white">Loading...</div>
+        </div>
+      }>
+        <SignupForm />
+      </Suspense>
+    </div>
   );
 }

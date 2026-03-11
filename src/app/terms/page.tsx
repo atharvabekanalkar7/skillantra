@@ -1,135 +1,165 @@
 import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { FileText, ArrowLeft } from 'lucide-react';
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-slate-950 overflow-x-hidden">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <div className="min-h-screen bg-[#060910] overflow-x-hidden">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-white/80 hover:text-white bg-white/5 hover:bg-white/10 px-4 py-3 min-h-[44px] rounded-lg transition-all mb-8 touch-manipulation"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-12 group"
         >
-          <span>←</span>
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span className="text-sm font-medium">Back to Home</span>
         </Link>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 sm:p-8 md:p-12">
-          <h1 className="flex items-center gap-3 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
-            <span className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 shrink-0">
-              <FileText className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.75} />
-            </span>
-            Terms of Service
-          </h1>
-          <p className="text-white/60 mb-8">Last updated: 21-12-2025</p>
+        <div className="space-y-12">
+          <header className="border-b border-slate-800/60 pb-12">
+            <div className="flex items-center gap-4 mb-6">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                <FileText className="w-6 h-6" strokeWidth={1.5} />
+              </span>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+                Terms of Service
+              </h1>
+            </div>
+            <p className="text-slate-400">
+              SkillAntra — Last updated: <span className="text-slate-300">March 11, 2026</span>
+            </p>
+          </header>
 
-          <div className="prose prose-invert max-w-none space-y-8 text-white/90">
+          <div className="space-y-12">
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">1. About SkillAntra</h2>
-              <p className="mb-4">
-                SkillAntra is a campus-first platform that helps students collaborate on real projects by connecting students who need skills with students who have skills.
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">1.</span>
+                Acceptance of Terms
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                By creating an account or using SkillAntra ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Platform.
               </p>
-              <p className="mb-4">Users on SkillAntra participate in one or more of the following roles:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 mb-4">
-                <li><strong>SkillSeeker:</strong> A student who posts a task or project and is looking for collaborators with specific skills.</li>
-                <li><strong>SkillHolder:</strong> A student who possesses certain skills and applies to work on tasks posted by others.</li>
-              </ul>
-              <p className="mb-4">A user may act as both a SkillSeeker and a SkillHolder.</p>
-              <p>SkillAntra is currently in an early/beta stage and is intended for educational and collaborative purposes.</p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">2. Eligibility</h2>
-              <p className="mb-4">To use SkillAntra, you must:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Be a student or recent graduate</li>
-                <li>Provide accurate and truthful information</li>
-                <li>Use the platform responsibly and respectfully</li>
-              </ul>
-              <p className="mt-4">SkillAntra may restrict access to specific institutions as the platform evolves.</p>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">2.</span>
+                Eligibility
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                SkillAntra is exclusively available to students and verified recruiters associated with IIT Mandi. Student accounts require a valid @students.iitmandi.ac.in or @iitmandi.ac.in email address. Recruiter accounts are subject to manual verification and approval by the SkillAntra team before access is granted.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">3. User Accounts</h2>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>You are responsible for maintaining the security of your account.</li>
-                <li>You must not impersonate others or provide false information.</li>
-                <li>Each user may maintain only one account.</li>
-                <li>SkillAntra reserves the right to suspend or terminate accounts that violate these terms.</li>
-              </ul>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">3.</span>
+                Account Responsibilities
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                You are responsible for maintaining the confidentiality of your account credentials. You must not share your account with others. You must provide accurate and truthful information during signup and profile setup. SkillAntra reserves the right to suspend or terminate accounts that violate these terms or provide false information.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">4. Tasks, Applications & Collaboration</h2>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>SkillSeekers may post tasks or projects.</li>
-                <li>SkillHolders may apply to tasks that match their skills.</li>
-                <li>SkillAntra does not guarantee the quality, completion, or outcome of any collaboration.</li>
-                <li>All collaborations occur directly between users. SkillAntra is not responsible for disputes, losses, or outcomes resulting from collaborations.</li>
-              </ul>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">4.</span>
+                Platform Use
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                SkillAntra is intended for legitimate academic and professional collaboration. You agree not to use the Platform to harass, spam, or harm other users. You agree not to post false, misleading, or fraudulent internship listings or collaboration requests. You agree not to scrape, reverse-engineer, or attempt to access the Platform's backend systems. You agree not to use the Platform for any commercial purpose not explicitly permitted by SkillAntra.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">5. Phone Number & Contact</h2>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Providing a valid phone number is mandatory to use SkillAntra.</li>
-                <li>Phone numbers are required so that SkillSeekers and SkillHolders can contact each other after a task application is accepted.</li>
-                <li>Phone numbers are not publicly visible.</li>
-                <li>A phone number is shared only after a task application is accepted, and only between the matched SkillSeeker and SkillHolder.</li>
-                <li>SkillAntra does not monitor or mediate communication that occurs outside the platform.</li>
-              </ul>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">5.</span>
+                Collaboration & Tasks
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                Students may post tasks, collaboration requests, and project listings. By posting, you confirm you have the right to seek collaboration on the described work. SkillAntra does not guarantee the quality, completion, or outcome of any collaboration formed on the Platform. Disputes between collaborators are the sole responsibility of the involved parties.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">6. Acceptable Use</h2>
-              <p className="mb-4">You agree not to:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Harass, abuse, or spam other users</li>
-                <li>Post misleading, illegal, or harmful content</li>
-                <li>Use SkillAntra for scams or commercial spam</li>
-                <li>Attempt to exploit or disrupt the platform</li>
-              </ul>
-              <p className="mt-4">Violations may result in account suspension or removal.</p>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">6.</span>
+                Internships
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                Recruiters may post internship opportunities after account verification. SkillAntra does not guarantee employment or internship placement. SkillAntra is not a party to any agreement between a recruiter and a student. All offer letters, completion letters, and related documents are the responsibility of the recruiting company.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">7. Demo Mode</h2>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>SkillAntra may provide a demo mode for exploration purposes.</li>
-                <li>Demo mode does not reflect real user data.</li>
-                <li>Actions taken in demo mode may not be saved.</li>
-              </ul>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">7.</span>
+                Messaging & Communications
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                Messages sent through SkillAntra are private between participants. SkillAntra does not actively monitor message content but reserves the right to review messages in response to reported violations. Do not share sensitive personal information (passwords, financial details) through the messaging system.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">8. Platform Availability</h2>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>SkillAntra is provided on an "as-is" basis.</li>
-                <li>We do not guarantee uninterrupted availability.</li>
-                <li>Features may change, be added, or be removed at any time.</li>
-              </ul>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">8.</span>
+                Intellectual Property
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                All content on SkillAntra — including its design, codebase, branding, and UI — is the intellectual property of SkillAntra. User-generated content (profiles, posts, project descriptions) remains owned by the user, but you grant SkillAntra a non-exclusive license to display it on the Platform.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">9. Limitation of Liability</h2>
-              <p className="mb-4">SkillAntra is not liable for:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Disputes between users</li>
-                <li>Missed opportunities or project outcomes</li>
-                <li>Any communication or interaction outside the platform</li>
-              </ul>
-              <p className="mt-4">Use SkillAntra at your own discretion.</p>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">9.</span>
+                Termination
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                SkillAntra reserves the right to suspend or permanently terminate any account at its discretion, including for violation of these terms, inactivity, or misuse of the Platform.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">10. Changes to These Terms</h2>
-              <p>These Terms may be updated from time to time. Continued use of SkillAntra implies acceptance of the updated terms.</p>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">10.</span>
+                Disclaimer of Warranties
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                SkillAntra is provided "as is" without warranties of any kind. We do not guarantee uninterrupted access, error-free operation, or any specific outcome from use of the Platform.
+              </p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-bold text-white mb-4">11. Contact</h2>
-              <p>For questions regarding these Terms, contact:</p>
-              <p className="mt-2">
-                <a href="mailto:skillantra0511@gmail.com" className="text-indigo-400 hover:text-indigo-300 underline">skillantra0511@gmail.com</a>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">11.</span>
+                Limitation of Liability
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                To the maximum extent permitted by law, SkillAntra and its founders shall not be liable for any indirect, incidental, or consequential damages arising from your use of the Platform.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">12.</span>
+                Changes to Terms
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                We may update these Terms at any time. Continued use of the Platform after changes constitutes acceptance of the new terms. Major changes will be communicated via the registered email address.
+              </p>
+            </section>
+
+            <section className="pt-8 border-t border-slate-800/60 transition-colors">
+              <h2 className="text-xl font-semibold text-white mb-4 flex items-baseline">
+                <span className="font-mono text-indigo-400 mr-3 text-sm">13.</span>
+                Contact
+              </h2>
+              <p className="text-slate-400 leading-relaxed">
+                For questions about these Terms, contact us at{' '}
+                <a href="mailto:sanitocorleone@gmail.com" className="text-indigo-400 hover:text-indigo-300 transition-colors underline underline-offset-4">
+                  sanitocorleone@gmail.com
+                </a>
+                .
               </p>
             </section>
           </div>
@@ -138,4 +168,5 @@ export default function TermsPage() {
     </div>
   );
 }
+
 

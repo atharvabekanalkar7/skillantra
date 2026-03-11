@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { formatTimeAgo } from '@/lib/utils/timeAgo';
@@ -42,6 +42,7 @@ interface Application {
 }
 
 export default function MyTasksPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isDemo = searchParams?.get('demo') === 'true';
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -356,10 +357,50 @@ export default function MyTasksPage() {
                             {application.applicant?.college && (
                               <p className="text-xs text-slate-400 mt-0.5">{application.applicant.college}</p>
                             )}
-                            {application.status === 'accepted' && application.applicant?.phone_number && (
-                              <p className="text-xs text-emerald-400 font-medium mt-1">
-                                📞 +91 {application.applicant.phone_number}
-                              </p>
+                            {application.status === 'accepted' && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                {application.applicant?.phone_number && (
+                                  <span style={{ fontSize: '13px', color: 'var(--color-text-secondary, #94a3b8)' }}>
+                                    📞 +91 {application.applicant.phone_number}
+                                  </span>
+                                )}
+                                <button
+                                  onClick={() => router.push(`/profile/${application.applicant?.id}`)}
+                                  style={{
+                                    padding: '5px 14px',
+                                    background: 'linear-gradient(135deg, #1e293b 0%, #020617 100%)',
+                                    color: '#f8fafc',
+                                    borderRadius: '8px',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    border: '1px solid #4f46e5',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                                    transition: 'all 0.2s ease'
+                                  }}
+                                >
+                                  Message
+                                </button>
+                                {(application as any).applicant_email && (
+                                  <a
+                                    href={`mailto:${(application as any).applicant_email}`}
+                                    style={{
+                                      padding: '5px 14px',
+                                      background: 'linear-gradient(135deg, #0f172a 0%, #020617 100%)',
+                                      color: '#94a3b8',
+                                      borderRadius: '8px',
+                                      fontSize: '13px',
+                                      fontWeight: '500',
+                                      border: '1px solid #334155',
+                                      textDecoration: 'none',
+                                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                                      transition: 'all 0.2s ease'
+                                    }}
+                                  >
+                                    Email
+                                  </a>
+                                )}
+                              </div>
                             )}
                           </div>
                           <StatusBadge status={application.status} />

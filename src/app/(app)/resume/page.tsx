@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { Plus, Trash2, Download, Save, CheckCircle, FileText } from 'lucide-react';
@@ -290,6 +290,8 @@ const ResumeContent = ({
 
 export default function ResumeBuilderPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const isDemo = searchParams?.get('demo') === 'true';
     const { guardAction } = useDemoGuard();
     const supabase = createClient();
     const previewRef = useRef<HTMLDivElement>(null);
@@ -319,6 +321,44 @@ export default function ResumeBuilderPage() {
 
     useEffect(() => {
         async function loadData() {
+            if (isDemo) {
+                setBasicInfo({
+                    name: 'Arjun Mehta',
+                    email: 'arjun.mehta@iitmandi.ac.in',
+                    phone: '+91 98765 43210',
+                    city: 'IIT Mandi',
+                    linkedin: 'linkedin.com/in/arjunmehta',
+                    github: 'github.com/arjunmehta',
+                    portfolio: 'arjunmehta.vercel.app',
+                    summary: 'B.Tech CSE student passionate about full-stack development, open source, and building products that solve real problems.\n\nSkills: React, Next.js, TypeScript, Node.js, Python, Supabase, Tailwind CSS, Git'
+                });
+                setEducation([{
+                    id: 'edu-1',
+                    degree: 'B.Tech - Computer Science & Engineering (3rd Year)',
+                    institution: 'IIT Mandi',
+                    year: '2022 - 2026',
+                    grade: '8.8 CGPA'
+                }]);
+                setExperience([
+                    {
+                        id: 'exp-1',
+                        role: 'Frontend Lead',
+                        company: 'Campus Event App',
+                        duration: '2024 - Present',
+                        description: 'Built a real-time event discovery app for IIT Mandi students using Next.js and Supabase.'
+                    },
+                    {
+                        id: 'exp-2',
+                        role: 'Collaborator',
+                        company: 'ML Research Assistant',
+                        duration: '2023 - 2024',
+                        description: 'Assisted a PhD student with data preprocessing and visualization pipelines in Python.'
+                    }
+                ]);
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -384,7 +424,7 @@ export default function ResumeBuilderPage() {
             }
         }
         loadData();
-    }, [router, supabase]);
+    }, [router, supabase, isDemo]);
 
     const printTargetRef = useRef<HTMLDivElement>(null);
 
@@ -746,7 +786,14 @@ export default function ResumeBuilderPage() {
                     </h2>
 
                     {/* High-fidelity Live Preview with EB Garamond */}
-                    <div className="bg-slate-800/40 rounded-xl overflow-hidden border border-slate-700 shadow-2xl min-h-[500px]">
+                    <div className="bg-slate-800/40 rounded-xl overflow-hidden border border-slate-700 shadow-2xl min-h-[500px] relative">
+                        {isDemo && (
+                            <div className="absolute top-4 right-4 z-10">
+                                <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-md">
+                                    Demo Profile
+                                </span>
+                            </div>
+                        )}
                         <div className="bg-white text-slate-900 shadow-inner">
                             <ResumeContent
                                 basicInfo={basicInfo}

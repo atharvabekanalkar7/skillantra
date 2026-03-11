@@ -11,7 +11,7 @@ interface SidebarButtonProps {
     unreadCount?: number;
     isNew?: boolean;
     className?: string;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent) => void;
 }
 
 export default function SidebarButton({
@@ -43,19 +43,17 @@ export default function SidebarButton({
         <Link
             href={href}
             onClick={onClick}
-            className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[44px] transition-all duration-200 ${
-                isActive
+            className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[44px] transition-all duration-200 ${isActive
                     ? 'bg-slate-900/80 text-slate-50 font-medium shadow-[0_0_0_1px_rgba(79,70,229,0.5)]'
                     : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
-            } ${className}`}
+                } ${className}`}
         >
             {isActive && (
                 <span className="absolute inset-y-1 left-1 w-0.5 rounded-full bg-gradient-to-b from-indigo-400 via-indigo-500 to-violet-500" />
             )}
             <span
-                className={`text-[18px] transition-transform shrink-0 ${
-                    isActive ? 'text-indigo-400 scale-105' : 'text-slate-500 group-hover:text-slate-200'
-                }`}
+                className={`text-[18px] transition-transform shrink-0 ${isActive ? 'text-indigo-400 scale-105' : 'text-slate-500 group-hover:text-slate-200'
+                    }`}
             >
                 {icon}
             </span>

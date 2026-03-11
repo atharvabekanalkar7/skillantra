@@ -28,6 +28,7 @@ interface Question {
 
 export default function NewInternshipPage() {
     const router = useRouter();
+    const isDemo = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true';
 
     // Core fields
     const [title, setTitle] = useState('');
@@ -72,6 +73,12 @@ export default function NewInternshipPage() {
     const [isVerified, setIsVerified] = useState(false);
 
     useEffect(() => {
+        if (isDemo) {
+            window.alert('Demo mode: Posting internships is not available. Sign up to access recruiter features!');
+            router.back();
+            return;
+        }
+
         async function checkAccess() {
             const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
@@ -101,7 +108,7 @@ export default function NewInternshipPage() {
         }
 
         checkAccess();
-    }, [router]);
+    }, [router, isDemo]);
 
     const handleSkillKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -262,6 +269,7 @@ export default function NewInternshipPage() {
         d.setDate(d.getDate() + 1);
         return d.toISOString().slice(0, 10);
     };
+
 
     if (isCheckingAccess) {
         return (

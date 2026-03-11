@@ -142,9 +142,9 @@ export async function POST(request: Request) {
 
       // Check for redirect URL errors
       if (error.message?.includes('redirect') || error.message?.includes('redirect_to') || error.message?.includes('redirect URL')) {
-        errorMessage = 'Email confirmation redirect URL is not configured. Please contact support at skillantra0511@gmail.com.';
+        errorMessage = 'Email confirmation redirect URL is not configured. Please contact support at atharvasachinofficial@gmail.com.';
       } else if (error.message?.includes('email') && error.message?.includes('send')) {
-        errorMessage = 'Unable to send confirmation email. Please check your email address and try again, or contact support at skillantra0511@gmail.com.';
+        errorMessage = 'Unable to send confirmation email. Please check your email address and try again, or contact support at atharvasachinofficial@gmail.com.';
       }
 
       return NextResponse.json(
@@ -192,6 +192,30 @@ export async function POST(request: Request) {
             company_description: company_description.trim(),
           }),
         }, { onConflict: 'user_id' });
+
+        if (isRecruiter) {
+          try {
+            const { sendEmail } = await import('@/lib/notifications')
+            const adminEmail = process.env.ADMIN_EMAIL || 'atharvasachinofficial@gmail.com'
+            await sendEmail(
+              adminEmail,
+              'New Recruiter Signup — Approval Required',
+              `
+                <h2>New Recruiter Registration</h2>
+                <p>A new recruiter has signed up and needs approval:</p>
+                <ul>
+                  <li><strong>Name:</strong> ${full_name.trim()}</li>
+                  <li><strong>Email:</strong> ${email.toLowerCase().trim()}</li>
+                  <li><strong>Company:</strong> ${company_name.trim()}</li>
+                  <li><strong>Description:</strong> ${company_description.trim()}</li>
+                </ul>
+                <p>Log in to the Supabase dashboard to set <code>is_verified = true</code> on their profile to approve them.</p>
+              `
+            )
+          } catch (emailErr) {
+            console.error('Failed to send admin notification email:', emailErr)
+          }
+        }
       } catch (profileErr) {
         console.error('Failed to create/update profile during signup:', profileErr);
       }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PhoneNumberModal from '@/components/PhoneNumberModal';
 import type { TaskAttachment } from '@/lib/types';
@@ -20,6 +20,15 @@ interface AttachmentRow {
 
 export default function NewTaskPage() {
   const router = useRouter();
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const isDemo = searchParams?.get('demo') === 'true';
+
+  useEffect(() => {
+    if (isDemo) {
+      window.alert('Demo mode: Creating tasks is not available. Sign up to post tasks and collaborate!');
+      router.back();
+    }
+  }, [isDemo, router]);
 
   // Core fields
   const [title, setTitle] = useState('');
@@ -184,6 +193,7 @@ export default function NewTaskPage() {
     const d = new Date(Date.now() + 5 * 60 * 1000);
     return d.toISOString().slice(0, 16);
   };
+
 
   return (
     <div className="max-w-2xl mx-auto opacity-0 animate-fade-in-up">

@@ -3,7 +3,31 @@ import { NextResponse } from 'next/server';
 import type { Profile } from '@/lib/types';
 import { enforceEmailConfirmed } from '@/lib/api-helpers';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // Demo Mode Check
+  const { searchParams } = new URL(request.url);
+  const isDemo = searchParams.get('demo') === 'true' || request.headers.get('referer')?.includes('demo=true');
+
+  if (isDemo) {
+    return NextResponse.json({
+      profile: {
+        id: 'demo-profile-id',
+        user_id: 'demo-user-id',
+        name: 'Demo Student',
+        bio: 'I am a demo account exploring SkillAntra.',
+        skills: 'Next.js, TypeScript, Tailwind CSS, Python, UI/UX Design',
+        college: 'IIT Mandi',
+        phone_number: '+91 9999999999',
+        user_type: 'SkillHolder',
+        degree_level: 'UG',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        email: 'demo@example.com',
+        is_profile_complete: true
+      }
+    });
+  }
+
   const supabase = await createClient();
 
   const {
@@ -21,33 +45,65 @@ export async function GET() {
     return emailCheck;
   }
 
-  // Try to select with phone_number first, fall back if column doesn't exist
+  const { searchParams: getSearchParams } = new URL(request.url);
+  const profileId = getSearchParams.get('profileId');
+
   let profile: any = null;
   let error: any = null;
 
-  // First try with phone_number
-  const { data: profileWithPhone, error: errorWithPhone } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (errorWithPhone && errorWithPhone.message?.includes('phone_number')) {
-    // phone_number column doesn't exist - select without it
-    const { data: profileWithoutPhone, error: errorWithoutPhone } = await supabase
+  if (profileId) {
+    // Return a specific profile
+    const { data, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at, company_name, company_description, degree_level')
+      .select('*')
+      .eq('id', profileId)
+      .maybeSingle();
+
+    profile = data;
+    error = profileErr;
+
+    if (profile) {
+      // Fetch email using service role client
+      try {
+        const adminSupabase = createServiceRoleClient();
+        const { data: authUser } = await adminSupabase.auth.admin.getUserById(profile.user_id);
+        if (authUser?.user?.email) {
+          profile.email = authUser.user.email;
+        }
+      } catch (err) {
+        console.error('Error fetching email for profileId:', err);
+      }
+    }
+  } else {
+    // Return the current user's profile
+    // First try with phone_number
+    const { data: profileWithPhone, error: errorWithPhone } = await supabase
+      .from('profiles')
+      .select('*')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    profile = profileWithoutPhone;
-    error = errorWithoutPhone;
-    if (profile) {
-      profile.phone_number = null; // Set to null if column doesn't exist
+    if (errorWithPhone && errorWithPhone.message?.includes('phone_number')) {
+      // phone_number column doesn't exist - select without it
+      const { data: profileWithoutPhone, error: errorWithoutPhone } = await supabase
+        .from('profiles')
+        .select('id, user_id, name, bio, skills, college, user_type, created_at, updated_at, company_name, company_description, degree_level')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      profile = profileWithoutPhone;
+      error = errorWithoutPhone;
+      if (profile) {
+        profile.phone_number = null; // Set to null if column doesn't exist
+      }
+    } else {
+      profile = profileWithPhone;
+      error = errorWithPhone;
     }
-  } else {
-    profile = profileWithPhone;
-    error = errorWithPhone;
+
+    if (profile) {
+      profile.email = user.email;
+    }
   }
 
   if (error) {
@@ -75,13 +131,11 @@ export async function GET() {
     }
 
     // For other errors, return null profile (user might not have one yet)
-    // This is normal - user needs to create their profile
     return NextResponse.json({ profile: null }, { status: 200 });
   }
 
-  // Add email from auth user to profile
+  // Clean profile object
   if (profile) {
-    profile.email = user.email;
     if (profile.user_type === 'recruiter') {
       delete profile.bio;
       delete profile.skills;
@@ -96,6 +150,22 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
+  // Demo Mode Check
+  const { searchParams } = new URL(request.url);
+  const isDemo = searchParams.get('demo') === 'true' || request.headers.get('referer')?.includes('demo=true');
+
+  if (isDemo) {
+    const body = await request.json();
+    return NextResponse.json({
+      profile: {
+        id: 'demo-profile-id',
+        user_id: 'demo-user-id',
+        ...body,
+        updated_at: new Date().toISOString()
+      }
+    });
+  }
+
   const supabase = await createClient();
 
   const {
