@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
 import { SplashScreen } from "@/components/ui/splash-screen";
+import ClickSoundProvider from "@/components/providers/ClickSoundProvider";
 
 const satoshi = localFont({
   src: [
@@ -76,9 +77,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${satoshi.variable} font-sans antialiased bg-slate-950 text-slate-200 min-h-screen touch-manipulation`}>
-        <SplashScreen>
-          {children}
-        </SplashScreen>
+        <ClickSoundProvider>
+          <SplashScreen>
+            {children}
+          </SplashScreen>
+        </ClickSoundProvider>
       </body>
     </html>
   );

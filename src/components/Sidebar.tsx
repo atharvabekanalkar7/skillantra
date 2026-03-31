@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import {
   LayoutDashboard,
   Search,
@@ -75,8 +75,6 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
     }
   };
 
-
-
   const handleLogout = async () => {
     if (isDemo) {
       router.push('/');
@@ -128,25 +126,20 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
       ],
     },
     {
-      id: '1_ON_1_HELP',
-      title: '1-ON-1 HELP',
+      id: 'COLLABORATIONS',
+      title: 'PROJECT & RESEARCH COLLABORATIONS',
       items: [
-        { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse Tasks', icon: Search },
+        { href: isDemo ? '/tasks?demo=true' : '/tasks', label: 'Browse', icon: Search },
         { href: isDemo ? '/tasks/mine?demo=true' : '/tasks/mine', label: 'My Tasks', icon: ClipboardList },
       ],
     },
     {
-      id: 'TEAM_COLLABORATION',
-      title: 'TEAM COLLABORATION',
+      id: 'OTHER',
+      title: 'OTHER',
       items: [
-        {
-          href: '#',
-          label: 'Team Collaboration',
-          icon: Users,
-          disabled: true,
-          badge: 'Soon'
-        }
-      ]
+        { href: isDemo ? '/applications?demo=true' : '/applications', label: 'My Applications', icon: FileText },
+        { href: isDemo ? '/resume?demo=true' : '/resume', label: 'My Resume', icon: HiOutlineIdentification },
+      ],
     },
   ];
 
@@ -159,6 +152,16 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
     return true; // For student/others, show all
   });
 
+  useEffect(() => {
+    if (mounted && typeof window !== 'undefined') {
+      if (isOpen && window.innerWidth < 768) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    }
+  }, [isOpen, mounted]);
+
   const bottomItems = [
     { href: isDemo ? '/messages?demo=true' : '/messages', label: 'Messages', icon: MessageSquare, unread: unreadCount },
     { href: isDemo ? '/profile/edit?demo=true' : (userProfile?.id ? `/profile/${userProfile.id}` : '#'), label: 'Profile', icon: UserCircle },
@@ -166,96 +169,69 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800">
-      <div className="p-5 border-b border-slate-800">
-        <div className="flex justify-between items-center">
-          <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} onClick={handleNavClick} className="flex items-center gap-2 group">
-            <span className="text-xl font-bold text-slate-100 tracking-tight">
-              Skill<span className="text-indigo-400">Antra</span>
-            </span>
-          </Link>
-          <NotificationBell isDemo={isDemo} />
+    <div className="flex flex-col h-full bg-slate-950 border-r border-slate-800 shadow-2xl">
+      <div className="p-5 border-b border-slate-800 flex justify-between items-center">
+        <Link href={isDemo ? '/dashboard?demo=true' : '/dashboard'} onClick={handleNavClick} className="flex items-center gap-2 group">
+          <span className="text-xl font-bold text-slate-100 tracking-tight">
+            Skill<span className="text-indigo-400">Antra</span>
+          </span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <button 
+            className="md:hidden p-2 text-slate-400 hover:text-white"
+            onClick={onClose}
+            aria-label="Close menu"
+          >
+            <PanelLeftClose className="w-5 h-5" />
+          </button>
         </div>
-        {isDemo && (
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-indigo-500/40 text-xs font-semibold text-indigo-100 shadow-[0_0_18px_rgba(79,70,229,0.45)]">
+      </div>
+      
+      {isDemo && (
+        <div className="px-5 py-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-indigo-500/40 text-xs font-semibold text-indigo-100 shadow-[0_0_18px_rgba(79,70,229,0.45)]">
             <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
             <span>Demo preview</span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 overscroll-contain space-y-4">
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 overscroll-contain space-y-2">
         {menuSections.map((section, idx) => (
-          <div key={idx} className="mb-4">
-            <p className="px-3 text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">{section.title}</p>
-            <ul className="space-y-1">
-              {section.items.map((item: any) => {
-                const baseHref = item.href.split('?')[0];
-                const isActive = pathname === baseHref;
+          <Fragment key={section.id}>
+            {idx > 0 && <div className="my-4 h-px bg-white/10 mx-2" />}
+            <div className="mb-4">
+              <p className="px-3 text-xs uppercase tracking-wider font-semibold text-white/50 mb-3">{section.title}</p>
+              <ul className="space-y-1">
+                {section.items.map((item: any) => {
+                  const baseHref = item.href.split('?')[0];
+                  const isActive = pathname === baseHref;
 
-                if (item.disabled) {
                   return (
                     <li key={item.href + item.label}>
-                      <div
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-500 cursor-not-allowed opacity-60"
-                      >
-                        <item.icon className="w-[18px] h-[18px]" />
-                        <span className="text-sm font-medium">{item.label}</span>
-                        <span className="ml-auto text-[10px] px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded-md text-slate-400">
-                          {item.badge || 'Soon'}
-                        </span>
-                      </div>
+                      <SidebarButton
+                        href={item.href}
+                        icon={<item.icon className="w-[18px] h-[18px]" />}
+                        label={item.label}
+                        isActive={isActive}
+                        comingSoon={item.comingSoon}
+                        unreadCount={item.unread}
+                        onClick={(e) => {
+                          handleNavClick(e);
+                          if (window.innerWidth < 768) onClose?.();
+                        }}
+                      />
                     </li>
                   );
-                }
-
-                return (
-                  <li key={item.href + item.label}>
-                    <SidebarButton
-                      href={item.href}
-                      icon={<item.icon className="w-[18px] h-[18px]" />}
-                      label={item.label}
-                      isActive={isActive}
-                      comingSoon={item.comingSoon}
-                      unreadCount={item.unread}
-                      onClick={handleNavClick}
-                    />
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                })}
+              </ul>
+            </div>
+          </Fragment>
         ))}
 
-        {userProfile?.user_type !== 'recruiter' && (
-          <>
-            <div className="border-t border-gray-700 my-2" />
-            <ul className="space-y-1">
-              <li>
-                <SidebarButton
-                  href={isDemo ? '/applications?demo=true' : '/applications'}
-                  icon={<FileText className="w-[18px] h-[18px]" />}
-                  label="My Applications"
-                  isActive={pathname === '/applications'}
-                  onClick={handleNavClick}
-                />
-              </li>
-              <li>
-                <SidebarButton
-                  href={isDemo ? '/resume?demo=true' : '/resume'}
-                  icon={<HiOutlineIdentification className="w-[18px] h-[18px]" />}
-                  label="My Resume"
-                  isActive={pathname === '/resume'}
-                  onClick={handleNavClick}
-                />
-              </li>
-            </ul>
-            <div className="border-t border-gray-700 my-2" />
-          </>
-        )}
-
+        <div className="my-4 h-px bg-white/10 mx-2" />
         <div className="mt-4">
-          <p className="px-3 text-xs uppercase tracking-wide font-semibold text-slate-500 mb-2">ACCOUNT</p>
+          <p className="px-3 text-xs uppercase tracking-wider font-semibold text-white/50 mb-3">ACCOUNT</p>
           <ul className="space-y-1">
             {bottomItems.map((item: any) => {
               const baseHref = item.href.split('?')[0];
@@ -270,7 +246,10 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
                     isActive={isActive}
                     comingSoon={item.comingSoon}
                     unreadCount={item.unread}
-                    onClick={handleNavClick}
+                    onClick={(e) => {
+                      handleNavClick(e);
+                      if (window.innerWidth < 768) onClose?.();
+                    }}
                   />
                 </li>
               );
@@ -294,7 +273,6 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
 
   return (
     <>
-      {/* Desktop Toggle Button */}
       <button
         onClick={onToggle}
         className="hidden md:flex"
@@ -319,7 +297,6 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
         {isOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
       </button>
 
-      {/* Desktop sidebar */}
       <aside
         className={`hidden md:flex fixed left-0 top-0 h-full z-40 flex-col transition-all duration-200 ease-in-out overflow-hidden`}
         style={{
@@ -333,15 +310,14 @@ export default function Sidebar({ isDemo = false, isOpen = false, onClose, onTog
         </div>
       </aside>
 
-      {/* Mobile overlay */}
       {mounted && (
         <div
           className={`md:hidden fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => onClose?.()}
           aria-hidden="true"
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside
         className={`md:hidden fixed left-0 top-0 h-full w-[min(280px,85vw)] max-w-[280px] z-50 flex flex-col transform transition-transform duration-300 ease-out overscroll-contain ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{

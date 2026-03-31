@@ -115,7 +115,7 @@ export function getRedirectUrl(): string {
  * In production mode: Only allows @students.iitmandi.ac.in and @iitmandi.ac.in
  * In developer mode: Allows any valid email format
  */
-export function isValidIITMandiEmail(email: string): boolean {
+export function isIITMandiEmail(email: string): boolean {
   if (isDeveloperMode()) {
     return true; // Developer mode bypasses domain restrictions
   }

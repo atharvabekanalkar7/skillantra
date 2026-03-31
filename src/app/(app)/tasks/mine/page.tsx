@@ -41,6 +41,12 @@ interface Application {
   };
 }
 
+const TASK_TYPE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  project: { label: 'Project', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  research: { label: 'Research', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  competition: { label: 'Competition', color: 'text-orange-400', bg: 'bg-orange-500/10' },
+};
+
 export default function MyTasksPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,18 +72,19 @@ export default function MyTasksPage() {
         {
           id: 'demo-mine-1',
           creator_profile_id: 'demo-user',
-          title: 'My Demo Task',
-          description: 'This is a demo task created by you.',
-          skills_required: 'React, Node.js',
+          title: 'Build a Full Stack Portfolio Platform',
+          description: 'This is a demo project you are currently leading. Looking for React + Node.js developers.',
+          skills_required: 'React, Node.js, MongoDB',
+          task_type: 'project',
           payment_type: 'stipend',
-          stipend_min: 4000,
-          stipend_max: 7000,
+          stipend_min: 5000,
+          stipend_max: 8000,
           payment_other_details: null,
-          application_deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          application_deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
           mode_of_work: 'remote',
           attachments: [],
           status: 'open',
-          created_at: new Date().toISOString(),
+          created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
         },
       ]);
       setApplicationsByTask({
@@ -255,11 +262,20 @@ export default function MyTasksPage() {
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="text-lg font-semibold text-slate-100">{task.title}</h3>
-                    <StatusBadge status={task.status} />
+                  <div className="flex flex-col mb-2">
+                    <div className="flex items-center gap-3 mb-1 wrap">
+                      <h3 className="text-lg font-bold text-slate-100">{task.title}</h3>
+                      <StatusBadge status={task.status} />
+                    </div>
+                    {task.task_type && TASK_TYPE_CONFIG[task.task_type] && (
+                      <div className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-tighter ${TASK_TYPE_CONFIG[task.task_type].color} ${TASK_TYPE_CONFIG[task.task_type].bg} px-2 py-0.5 rounded-full border border-white/5 w-fit`}>
+                        {TASK_TYPE_CONFIG[task.task_type].label}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
                     {task.mode_of_work && (
-                      <span className="px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
                         {MODE_LABELS[task.mode_of_work] || task.mode_of_work}
                       </span>
                     )}

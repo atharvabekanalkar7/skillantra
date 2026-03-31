@@ -1,5 +1,56 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { MAINTENANCE_MODE } from '@/config/app';
+
+/**
+ * Handle maintenance mode redirection
+ */
+export function handleMaintenanceMode(request: NextRequest) {
+  if (!MAINTENANCE_MODE) return null;
+
+  const pathname = request.nextUrl.pathname;
+  const isDemoMode = request.nextUrl.searchParams.get('demo') === 'true' || request.cookies.has('demo');
+  
+  // Routes always allowed
+  const isPublicAllowed = 
+    pathname === '/' || 
+    pathname === '/maintenance' || 
+    pathname === '/join-waitlist' || 
+    pathname === '/waitlist-success' ||
+    pathname === '/waitlist-questions' ||
+    pathname.startsWith('/_next') ||
+    pathname.includes('/api/waitlist') ||
+    pathname.includes('/SkillAntra-Logo.png') ||
+    pathname.includes('/favicon.ico');
+
+  // Block Auth completely
+  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup');
+  if (isAuthRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/maintenance';
+    return NextResponse.redirect(url);
+  }
+
+  // Allow app routes IF in demo mode
+  if (isDemoMode) return null;
+
+  // Otherwise block restricted routes
+  const isRestrictedRoute = 
+    pathname.startsWith('/dashboard') || 
+    pathname.startsWith('/tasks') || 
+    pathname.startsWith('/internships') || 
+    pathname.startsWith('/messages') ||
+    pathname.startsWith('/profile') ||
+    pathname.startsWith('/settings');
+
+  if (isRestrictedRoute && !isPublicAllowed) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/maintenance';
+    return NextResponse.redirect(url);
+  }
+
+  return null;
+}
 
 /**
  * Quickly checks if an error is a connection/timeout issue.
@@ -27,6 +78,9 @@ function isConnectionError(error: any): boolean {
 }
 
 export async function updateSession(request: NextRequest) {
+  const maintenanceResponse = handleMaintenanceMode(request);
+  if (maintenanceResponse) return maintenanceResponse;
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -85,7 +139,7 @@ export async function updateSession(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
     const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/auth/callback');
     const isApiRoute = pathname.startsWith('/api');
-    const isPublicRoute = pathname === '/terms' || pathname === '/privacy';
+    const isPublicRoute = pathname === '/terms' || pathname === '/privacy' || pathname === '/join-waitlist' || pathname === '/waitlist-success' || pathname === '/waitlist-questions';
     const isLandingPage = pathname === '/';
     const isDemoMode = request.nextUrl.searchParams.get('demo') === 'true' || request.cookies.has('demo');
 
@@ -107,13 +161,22 @@ export async function updateSession(request: NextRequest) {
   const isProfileEditRoute = pathname.startsWith('/profile/edit');
   const isCompleteProfileRoute = pathname.startsWith('/complete-profile');
   const isLogoutRoute = pathname.startsWith('/logout');
-  const isPublicRoute = pathname === '/terms' || pathname === '/privacy';
+    const isPublicRoute = pathname === '/terms' || pathname === '/privacy' || pathname === '/join-waitlist' || pathname === '/waitlist-success' || pathname === '/waitlist-questions';
 
-  // If user is logged in and visits landing page, redirect to dashboard
+  // If user is logged in and visits landing page, redirect to dashboard IF approved
   if (user && isLandingPage) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/dashboard';
-    return NextResponse.redirect(redirectUrl);
+    const { data: waitlistEntry } = await supabase
+      .from('waitlist_users')
+      .select('status')
+      .eq('email', user.email)
+      .maybeSingle();
+
+    if (waitlistEntry?.status === 'approved') {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/dashboard';
+      return NextResponse.redirect(redirectUrl);
+    }
+    // Otherwise keep them on landing page (where they can see their status or CTA is gone)
   }
 
   // Allow landing page, demo mode, and public routes without auth
@@ -134,13 +197,33 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Check if profile is complete
-  if (user && !isApiRoute && !isLogoutRoute && !isDemoMode && !isCompleteProfileRoute) {
+  if (user && !isApiRoute && !isLogoutRoute && !isDemoMode && !isCompleteProfileRoute && !isPublicRoute) {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('is_profile_complete, user_type')
         .eq('user_id', user.id)
         .maybeSingle();
+
+      // STEP 8 — RESTRICT PLATFORM ACCESS
+      // Check waitlist status
+      const { data: waitlistEntry } = await supabase
+        .from('waitlist_users')
+        .select('status')
+        .eq('email', user.email)
+        .maybeSingle();
+
+      const isApproved = waitlistEntry?.status === 'approved';
+
+      if (!isApproved) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = '/';
+        // Add a flag to show they are waitlisted if they try to access restricted areas
+        if (pathname !== '/') {
+           redirectUrl.searchParams.set('waitlist', 'true');
+        }
+        return NextResponse.redirect(redirectUrl);
+      }
 
       const isComplete = profile?.is_profile_complete === true;
 

@@ -61,6 +61,7 @@ export interface Task {
   payment_other_details: string | null;
   application_deadline: string | null;
   mode_of_work: 'remote' | 'hybrid' | 'in-person' | null;
+  task_type: 'project' | 'research' | 'competition' | null;
   attachments: TaskAttachment[];
   status: 'open' | 'closed';
   created_at: string;

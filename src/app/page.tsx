@@ -40,9 +40,18 @@ export default async function LandingPage({
     }
   }
 
-  // If user is logged in, redirect to dashboard
+  // If user is logged in, redirect to dashboard IF approved
   if (user) {
-    redirect('/dashboard');
+    const supabase = await createClient();
+    const { data: waitlistEntry } = await supabase
+      .from('waitlist_users')
+      .select('status')
+      .eq('email', user.email)
+      .maybeSingle();
+
+    if (waitlistEntry?.status === 'approved') {
+      redirect('/dashboard');
+    }
   }
 
   return <LandingPageClient />;

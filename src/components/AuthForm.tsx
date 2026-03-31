@@ -237,8 +237,21 @@ export default function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        // Login successful - redirect to profile edit page
-        router.push('/profile/edit?setup=true');
+        const supabase = createClient();
+        // Login successful - check waitlist status
+        const { data: waitlistEntry } = await supabase
+          .from('waitlist_users')
+          .select('status')
+          .eq('email', email.trim())
+          .maybeSingle();
+
+        if (waitlistEntry?.status === 'approved') {
+          router.push('/profile/edit?setup=true');
+        } else {
+          // If not approved, sign out to ensure waitlist is separated from app
+          await supabase.auth.signOut();
+          router.push('/waitlist-success');
+        }
         router.refresh();
       }
     } catch (err: any) {

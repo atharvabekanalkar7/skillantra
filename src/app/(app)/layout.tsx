@@ -47,6 +47,17 @@ export default async function AppLayout({
     .eq('user_id', session.user.id)
     .single();
 
+  // STEP 3 - WAITLIST PROTECTION
+  const { data: waitlistEntry } = await supabase
+    .from('waitlist_users')
+    .select('status')
+    .eq('email', session.user.email)
+    .maybeSingle();
+
+  if (!waitlistEntry || waitlistEntry.status !== 'approved') {
+    redirect('/waitlist-success');
+  }
+
   const profileComplete = isProfileComplete(profile);
 
   return (

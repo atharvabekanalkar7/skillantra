@@ -12,6 +12,12 @@ const MODE_OPTIONS = [
   { value: 'in-person', label: 'In-person' },
 ] as const;
 
+const TASK_TYPE_OPTIONS = [
+  { value: 'project', label: 'Project', icon: '💻' },
+  { value: 'research', label: 'Research', icon: '🧪' },
+  { value: 'competition', label: 'Competition', icon: '🏆' },
+] as const;
+
 interface AttachmentRow {
   id: string; // client-side key for React
   category: typeof ATTACHMENT_CATEGORIES[number];
@@ -34,6 +40,7 @@ export default function NewTaskPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [skillsRequired, setSkillsRequired] = useState('');
+  const [taskType, setTaskType] = useState<'project' | 'research' | 'competition' | ''>('project');
 
   // Payment
   const [paymentType, setPaymentType] = useState<'stipend' | 'other' | ''>('');
@@ -77,6 +84,7 @@ export default function NewTaskPage() {
   // Client-side validation
   const validate = (): string | null => {
     if (!title.trim()) return 'Title is required';
+    if (!taskType) return 'Task type is required';
 
     if (paymentType === 'stipend') {
       if (!stipendMin) return 'Minimum stipend is required';
@@ -132,6 +140,7 @@ export default function NewTaskPage() {
         title: title.trim(),
         description: description.trim() || null,
         skills_required: skillsRequired.trim() || null,
+        task_type: taskType,
         payment_type: paymentType || null,
         mode_of_work: modeOfWork || null,
         application_deadline: applicationDeadline || null,
@@ -224,6 +233,30 @@ export default function NewTaskPage() {
               className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[44px]"
               placeholder="e.g., Build a React dashboard"
             />
+          </div>
+
+          {/* Task Type */}
+          <div>
+            <label className="block text-sm font-medium text-white mb-3">
+              Select Type <span className="text-red-400">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {TASK_TYPE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setTaskType(opt.value)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 ${
+                    taskType === opt.value
+                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-400 ring-2 ring-indigo-500/20'
+                      : 'bg-slate-800/50 border-white/10 text-slate-400 hover:bg-slate-800 hover:border-white/20'
+                  }`}
+                >
+                  <span className="text-2xl">{opt.icon}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">{opt.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Description */}
