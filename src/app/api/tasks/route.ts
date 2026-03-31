@@ -19,6 +19,7 @@ export async function GET(request: Request) {
           payment_type: 'stipend',
           stipend_min: 5000,
           stipend_max: 8000,
+          task_type: 'project',
           status: 'open',
           created_at: new Date().toISOString(),
           creator: {
@@ -36,6 +37,7 @@ export async function GET(request: Request) {
           skills_required: 'Figma, Illustrator, Graphic Design',
           payment_type: 'other',
           payment_other_details: 'Certificate and free t-shirt',
+          task_type: 'research',
           status: 'open',
           created_at: new Date(Date.now() - 172800000).toISOString(),
           creator: {

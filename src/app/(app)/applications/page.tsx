@@ -232,6 +232,7 @@ function TasksTab({ isDemo, router }: { isDemo: boolean; router: ReturnType<type
             payment_other_details: null,
             application_deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
             mode_of_work: 'remote',
+            task_type: 'project',
             attachments: [],
             status: 'open',
             created_at: new Date().toISOString(),

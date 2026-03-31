@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { isIITMandiEmail } from '@/lib/auth-utils';
+import { isValidIITMandiEmail } from '@/lib/auth-utils';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const googleId = user.id;
 
     // STEP 3 — ENFORCE IIT MANDI EMAIL RESTRICTION
-    if (!isIITMandiEmail(email)) {
+    if (!isValidIITMandiEmail(email)) {
       await supabase.auth.signOut();
       redirect('/?error=only_iit_mandi_allowed');
       return;
