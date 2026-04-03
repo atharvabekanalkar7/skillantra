@@ -94,14 +94,18 @@ export default function WaitlistQuestionsPage() {
 
       // Requirement: Redirect to success page
       // Sign out here as the questionnaire is the final step where auth was needed
-      if (!isDemo) {
-        await supabase.auth.signOut();
+      if (isDemo) {
+        router.push('/dashboard?demo=true');
+        return;
       }
+
+      await supabase.auth.signOut();
       router.push('/waitlist-success');
     } catch (err) {
       console.error('Submission error:', err);
       // Fallback redirect
-      router.push('/waitlist-success');
+      const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
+      router.push(isDemo ? '/dashboard?demo=true' : '/waitlist-success');
     } finally {
       setLoading(false);
     }

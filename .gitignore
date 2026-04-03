@@ -53,3 +53,5 @@ ts_errors.txt
 out.txt
 diff.txt
 all_tracked_files.txt
+.vercel
+.env*.local

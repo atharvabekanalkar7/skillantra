@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const next = url.searchParams.get('next') || '/';
+  const isDemo = url.searchParams.get('demo') === 'true';
 
   const supabase = await createClient();
 
@@ -42,8 +43,8 @@ export async function GET(request: Request) {
 
     if (existingUser) {
       // If user is already approved, they might be logging in to the full platform
-      if (existingUser.status === 'approved') {
-        redirect('/dashboard');
+      if (existingUser.status === 'approved' || isDemo) {
+        redirect(isDemo ? '/dashboard?demo=true' : '/dashboard');
         return;
       }
       
@@ -72,7 +73,11 @@ export async function GET(request: Request) {
     // Success — user is now on the waitlist
     // Redirect to questions page to gather more info
     // We keep the session for now so the questions page can get the user's email
-    redirect('/waitlist-questions');
+    if (isDemo) {
+      redirect('/dashboard?demo=true');
+    } else {
+      redirect('/waitlist-questions');
+    }
     return;
   }
 

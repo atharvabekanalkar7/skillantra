@@ -15,9 +15,31 @@ function isProfileComplete(profile: any): boolean {
 
 export default async function AppLayout({
   children,
+  ...props
 }: {
   children: React.ReactNode;
+  [key: string]: any;
 }) {
+  const searchParams = (props as any)?.searchParams || {};
+  const isDemo = searchParams?.demo === "true";
+
+  if (isDemo) {
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-slate-700"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-indigo-500 absolute top-0 left-0"></div>
+          </div>
+        </div>
+      }>
+        <AppLayoutClient profileComplete={true} isDemo={true}>
+          {children}
+        </AppLayoutClient>
+      </Suspense>
+    );
+  }
+
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
 

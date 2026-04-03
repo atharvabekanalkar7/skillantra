@@ -245,8 +245,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
           .eq('email', email.trim())
           .maybeSingle();
 
-        if (waitlistEntry?.status === 'approved') {
-          router.push('/profile/edit?setup=true');
+        const isDemo = searchParams?.get('demo') === 'true';
+        if (waitlistEntry?.status === 'approved' || isDemo) {
+          router.push(isDemo ? '/dashboard?demo=true' : '/profile/edit?setup=true');
         } else {
           // If not approved, sign out to ensure waitlist is separated from app
           await supabase.auth.signOut();

@@ -12,7 +12,7 @@ export default function ClickSoundProvider({ children }: { children: React.React
       // Check if the clicked element OR any of its parents is a button
       const button = target.closest("button");
 
-      if (button) {
+      if (button && e.isTrusted) {
         playClickSound();
       }
     };
